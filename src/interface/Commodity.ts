@@ -1,5 +1,5 @@
-import type Resource from '@/entity/Resource';
-import type User from '@/entity/User';
+import type Resource from '@/interface/Resource';
+import type User from '@/interface/User';
 export default interface Commodity {
     cid: number,
     uid: number,

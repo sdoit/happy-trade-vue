@@ -69,13 +69,17 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref, onMounted, defineEmits } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
 import constant from "@/common/constant";
-import type Commodity from '@/entity/Commodity';
-import type CommonResult from "@/entity/CommonResult";
+import type Commodity from '@/interface/Commodity';
+import type CommonResult from "@/interface/CommonResult";
+
 
 const props = defineProps(['scrollbar'])
+
+const emits = defineEmits(['loadDone'])
+
 const rawCount = ref(0);
 const page = ref(0);
 const loading = ref(false);
@@ -88,10 +92,9 @@ const load = function () {
     fetchcommodities(page.value);
 }
 const Route = useRoute();
-// const emits = defineEmits(["loadDone"]);
-const fetchcommodities = (page: number) => {
+const fetchcommodities = (PageNum: number) => {
     console.log(Route.params.keyword);
-    fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/commodity?keyword=" + Route.params.keyword + "&page=" + page)
+    fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/commodity?keyword=" + Route.params.keyword + "&page=" + PageNum)
         .then(response => response.json())
         .then((json: CommonResult) => {
             if (json.data.length < 28) {
@@ -102,7 +105,10 @@ const fetchcommodities = (page: number) => {
             data.value = data.value.concat(json.data);
             rawCount.value += json.data.length / 4;
             loading.value = false;
-            // emits("loadDone");
+            if (PageNum == 1) {
+                //首次加载完成
+                emits('loadDone');
+            }
         })
 }
 

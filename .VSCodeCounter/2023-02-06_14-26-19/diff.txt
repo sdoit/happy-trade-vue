@@ -1,0 +1,66 @@
+Date : 2023-02-06 14:26:19
+Directory : d:\Vue_project\happy-trade-vue
+Total : 29 files,  558 codes, 11 comments, 43 blanks, all 612 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| vue        |          7 |        367 |          1 |         18 |        386 |
+| TypeScript |         20 |        131 |         10 |         25 |        166 |
+| JSON       |          2 |         60 |          0 |          0 |         60 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                         | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                            |         29 |        558 |         11 |         43 |        612 |
+| . (Files)                                                    |          4 |         61 |          0 |          1 |         62 |
+| src                                                          |         25 |        497 |         11 |         42 |        550 |
+| src (Files)                                                  |          3 |        -26 |          0 |         -4 |        -30 |
+| src\common                                                   |          1 |          2 |          0 |          3 |          5 |
+| src\components                                               |          4 |         24 |          0 |         -1 |         23 |
+| src\entity                                                   |          6 |        -72 |          0 |         -4 |        -76 |
+| src\interface                                                |          6 |         73 |          0 |          4 |         77 |
+| src\router                                                   |          1 |          0 |          0 |          1 |          1 |
+| src\stores                                                   |          1 |         85 |          5 |         10 |        100 |
+| src\util                                                     |          1 |         36 |          5 |          6 |         47 |
+| src\views                                                    |          2 |        375 |          1 |         27 |        403 |
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                     | language   | code       | comment    | blank      | total      |
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+| d:\Vue_project\happy-trade-vue\auto-imports.d.ts             | TypeScript |         -1 |          0 |          1 |          0 |
+| d:\Vue_project\happy-trade-vue\components.d.ts               | TypeScript |          2 |          0 |          0 |          2 |
+| d:\Vue_project\happy-trade-vue\package-lock.json             | JSON       |         57 |          0 |          0 |         57 |
+| d:\Vue_project\happy-trade-vue\package.json                  | JSON       |          3 |          0 |          0 |          3 |
+| d:\Vue_project\happy-trade-vue\src\App.vue                   | vue        |        -32 |          0 |         -8 |        -40 |
+| d:\Vue_project\happy-trade-vue\src\common\constant.ts        | TypeScript |          2 |          0 |          3 |          5 |
+| d:\Vue_project\happy-trade-vue\src\components\BidStep1.vue   | vue        |         -7 |          0 |         -2 |         -9 |
+| d:\Vue_project\happy-trade-vue\src\components\BidStep2.vue   | vue        |          5 |          0 |          1 |          6 |
+| d:\Vue_project\happy-trade-vue\src\components\BidStep3.vue   | vue        |          4 |          0 |          0 |          4 |
+| d:\Vue_project\happy-trade-vue\src\components\Header.vue     | vue        |         22 |          0 |          0 |         22 |
+| d:\Vue_project\happy-trade-vue\src\entity\Commodity.ts       | TypeScript |        -19 |          0 |         -2 |        -21 |
+| d:\Vue_project\happy-trade-vue\src\entity\CommodityBid.ts    | TypeScript |        -14 |          0 |         -1 |        -15 |
+| d:\Vue_project\happy-trade-vue\src\entity\CommonResult.ts    | TypeScript |         -6 |          0 |          0 |         -6 |
+| d:\Vue_project\happy-trade-vue\src\entity\Resource.ts        | TypeScript |         -8 |          0 |          0 |         -8 |
+| d:\Vue_project\happy-trade-vue\src\entity\User.ts            | TypeScript |        -12 |          0 |         -1 |        -13 |
+| d:\Vue_project\happy-trade-vue\src\entity\UserAddress.ts     | TypeScript |        -13 |          0 |          0 |        -13 |
+| d:\Vue_project\happy-trade-vue\src\interface\Commodity.ts    | TypeScript |         19 |          0 |          2 |         21 |
+| d:\Vue_project\happy-trade-vue\src\interface\CommodityBid.ts | TypeScript |         14 |          0 |          1 |         15 |
+| d:\Vue_project\happy-trade-vue\src\interface\CommonResult.ts | TypeScript |          6 |          0 |          0 |          6 |
+| d:\Vue_project\happy-trade-vue\src\interface\Resource.ts     | TypeScript |          8 |          0 |          0 |          8 |
+| d:\Vue_project\happy-trade-vue\src\interface\User.ts         | TypeScript |         13 |          0 |          1 |         14 |
+| d:\Vue_project\happy-trade-vue\src\interface\UserAddress.ts  | TypeScript |         13 |          0 |          0 |         13 |
+| d:\Vue_project\happy-trade-vue\src\main.ts                   | TypeScript |          4 |          0 |          3 |          7 |
+| d:\Vue_project\happy-trade-vue\src\router\index.ts           | TypeScript |          0 |          0 |          1 |          1 |
+| d:\Vue_project\happy-trade-vue\src\shims-vue.d.ts            | TypeScript |          2 |          0 |          1 |          3 |
+| d:\Vue_project\happy-trade-vue\src\stores\index.ts           | TypeScript |         85 |          5 |         10 |        100 |
+| d:\Vue_project\happy-trade-vue\src\util\fetchUtil.ts         | TypeScript |         36 |          5 |          6 |         47 |
+| d:\Vue_project\happy-trade-vue\src\views\Commodity.vue       | vue        |        371 |          1 |         24 |        396 |
+| d:\Vue_project\happy-trade-vue\src\views\Search.vue          | vue        |          4 |          0 |          3 |          7 |
+| Total                                                        |            |        558 |         11 |         43 |        612 |
++--------------------------------------------------------------+------------+------------+------------+------------+------------+

@@ -13,7 +13,7 @@
 import { onMounted, ref, computed } from "vue";
 import { Link, Search } from '@element-plus/icons-vue'
 import constant from "@/common/constant";
-import type CommonResult from "@/entity/CommonResult";
+import type CommonResult from "@/interface/CommonResult";
 defineProps(['scrollTop'])
 // 搜索框大小控制
 const width = ref(100)

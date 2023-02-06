@@ -1,257 +1,381 @@
 <template>
-    <el-row justify="center">
-        <el-col :span="16">
-            <el-row>
-                <el-col :span="7">
-                    <el-carousel class="imgs" :arrow="'hover'">
-                        <el-carousel-item v-for="res in commodity?.resources" :key="res.fileName" class="imgs">
-                            <el-image loading="lazy" :src="
-                                constant.NGINX_SERVER_HOST + '/'
-                                + res.type + '/'
-                                + res.uid + '/'
-                                + res.date + '/'
-                                + res.fileName
-                            " :fit="'fill'" class="res-img">
-                                <template #placeholder>
-                                    <div class="img-slot-wrapper">
-                                        <img src="/img/loading.svg" alt="正在加载" />
-                                    </div>
-                                </template>
-                                <template #error>
-                                    <div class="img-slot-wrapper">
-                                        <img src="/img/error.svg" alt="图片加载失败" />
-                                    </div>
-                                </template>
-                            </el-image>
+    <el-result v-if="resultVisible" title="商品已售出" sub-title="来晚了，去看看其他商品把">
+        <template #icon>
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
+                <path fill="#888888"
+                    d="M704 288h131.072a32 32 0 0 1 31.808 28.8L886.4 512h-64.384l-16-160H704v96a32 32 0 1 1-64 0v-96H384v96a32 32 0 0 1-64 0v-96H217.92l-51.2 512H512v64H131.328a32 32 0 0 1-31.808-35.2l57.6-576a32 32 0 0 1 31.808-28.8H320v-22.336C320 154.688 405.504 64 512 64s192 90.688 192 201.664v22.4zm-64 0v-22.336C640 189.248 582.272 128 512 128c-70.272 0-128 61.248-128 137.664v22.4h256zm201.408 476.16a32 32 0 1 1 45.248 45.184l-128 128a32 32 0 0 1-45.248 0l-128-128a32 32 0 1 1 45.248-45.248L704 837.504V608a32 32 0 1 1 64 0v229.504l73.408-73.408z" />
+            </svg>
+        </template>
+        <template #extra>
+            <el-button type="primary">回到首页</el-button>
+        </template>
+    </el-result>
+    <div v-if="contentVisible">
+        <el-row justify="center">
+            <el-col :span="16">
+                <el-row>
+                    <el-col :span="7">
+                        <el-carousel class="imgs" :arrow="'hover'">
+                            <el-carousel-item v-for="res in commodity?.resources" :key="res.fileName" class="imgs">
+                                <el-image loading="lazy" :src="
+                                    constant.NGINX_SERVER_HOST + '/'
+                                    + res.type + '/'
+                                    + res.uid + '/'
+                                    + res.date + '/'
+                                    + res.fileName
+                                " :fit="'fill'" class="res-img">
+                                    <template #placeholder>
+                                        <div class="img-slot-wrapper">
+                                            <img src="/img/loading.svg" alt="正在加载" />
+                                        </div>
+                                    </template>
+                                    <template #error>
+                                        <div class="img-slot-wrapper">
+                                            <img src="/img/error.svg" alt="图片加载失败" />
+                                        </div>
+                                    </template>
+                                </el-image>
 
-                        </el-carousel-item>
-                    </el-carousel>
-                </el-col>
-                <el-col :span="15" :offset="2">
+                            </el-carousel-item>
+                        </el-carousel>
+                    </el-col>
+                    <el-col :span="15" :offset="2">
 
-                    <el-row>
-                        <el-col>
-                            <span class="name">{{ commodity?.name }}</span>
-                        </el-col>
-                    </el-row>
-                    <el-row justify="space-between" class="tips">
-                        <el-col :span="12">
-                            <el-row justify="start">
-                                <el-col :span="3"><span class="quality">{{
-                                    Math.round(
-                                        commodity?.quality! * 10)
-                                }}新</span></el-col>
-                                <el-col :span="3"><span class="free-shipping">包邮</span></el-col>
-                            </el-row>
-                        </el-col>
-                        <el-col :span="5" class="right-wrapper"><span class="view-count">{{ commodity?.viewCount == 0 ?
-                        '您是本商品的第1个看客' : commodity?.viewCount + '人浏览过'}}</span></el-col>
-                    </el-row>
+                        <el-row>
+                            <el-col>
+                                <span class="name">{{ commodity?.name }}</span>
+                            </el-col>
+                        </el-row>
+                        <el-row justify="space-between" class="tips">
+                            <el-col :span="12">
+                                <el-row justify="start">
+                                    <el-col :span="3"><span class="quality">{{
+                                        Math.round(
+                                            commodity?.quality! * 10)
+                                    }}新</span></el-col>
+                                    <el-col :span="3"><span class="free-shipping">包邮</span></el-col>
+                                </el-row>
+                            </el-col>
+                            <el-col :span="5" class="right-wrapper"><span class="view-count">{{ commodity?.viewCount ==
+                            0 ?
+                            '您是本商品的第1个看客' : commodity?.viewCount + '人浏览过'}}</span></el-col>
+                        </el-row>
 
-                    <el-row class="price-wrapper" justify="space-between">
-                        <el-col :span="5">
-                            <span style="color: #e4393c;">￥</span><span class="price">{{ commodity?.price }}</span>
-                        </el-col>
-                        <el-col :span="5" class="right-wrapper">
-                            <el-button type="warning" :icon="Star" circle />
-                        </el-col>
-                    </el-row>
-                    <el-row class="seller-wrapper">
-                        <el-col>
-                            <el-card class="box-card">
-                                <el-row justify="space-between" class="seller-item">
-                                    <el-col :span="17">
-                                        <el-row class="seller-item">
-                                            <el-col :span="4">
-                                                <el-avatar :size="70"
-                                                    :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
-                                            </el-col>
-                                            <el-col :span="20">
-                                                <el-row>
-                                                    <el-col class="seller-item-text-wrapper seller-item"><span
-                                                            class="seller-nickname">{{
-                                                                seller?.nickname
+                        <el-row class="price-wrapper" justify="space-between">
+                            <el-col :span="5">
+                                <span style="color: #e4393c;">￥</span><span class="price">{{ commodity?.price }}</span>
+                            </el-col>
+                            <el-col :span="5" class="right-wrapper">
+                                <el-button type="warning" :icon="Star" circle />
+                            </el-col>
+                        </el-row>
+                        <el-row class="seller-wrapper">
+                            <el-col>
+                                <el-card class="box-card">
+                                    <el-row justify="space-between" class="seller-item">
+                                        <el-col :span="17">
+                                            <el-row class="seller-item">
+                                                <el-col :span="4">
+                                                    <el-avatar :size="70"
+                                                        :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
+                                                </el-col>
+                                                <el-col :span="20">
+                                                    <el-row>
+                                                        <el-col class="seller-item-text-wrapper seller-item"><span
+                                                                class="seller-nickname">{{
+                                                                    seller?.nickname
+                                                                }}</span></el-col>
+                                                        <el-col class="seller-item-text-wrapper seller-item"><span
+                                                                class="seller-username">@{{
+                                                                    seller?.username
+                                                                }}</span></el-col>
+                                                    </el-row>
+                                                    <el-row class="introduction-wrapper">
+                                                        <el-col
+                                                            class="seller-item-text-wrapper seller-item introduction"><span>{{
+                                                                seller?.introduction
                                                             }}</span></el-col>
-                                                    <el-col class="seller-item-text-wrapper seller-item"><span
-                                                            class="seller-username">@{{
-                                                                seller?.username
-                                                            }}</span></el-col>
-                                                </el-row>
-                                                <el-row class="introduction-wrapper">
-                                                    <el-col
-                                                        class="seller-item-text-wrapper seller-item introduction"><span>{{
-                                                            seller?.introduction
-                                                        }}</span></el-col>
-                                                </el-row>
-                                            </el-col>
-                                        </el-row>
+                                                    </el-row>
+                                                </el-col>
+                                            </el-row>
+                                        </el-col>
+                                        <el-col :span="7">
+                                            <el-row class="seller-item">
+                                                <el-col class="right-wrapper seller-item-text-wrapper seller-item">
+                                                    <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
+                                                </el-col>
+                                            </el-row>
+                                            <el-row class="seller-item">
+                                                <el-col class="right-wrapper seller-item-text-wrapper seller-item">
+                                                    <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
+                                                </el-col>
+                                            </el-row>
+                                        </el-col>
+                                    </el-row>
+                                </el-card>
+                            </el-col>
+                        </el-row>
+                        <el-row class="button-wrapper" justify="end">
+                            <el-col :span="3">
+                                <el-popconfirm title="你确定不通过出价购买，而用卖家标价直接购买本商品吗?" confirm-button-text="继续购买"
+                                    cancel-button-text="我要出价" confirm-button-type="danger" cancel-button-type="primary"
+                                    @confirm="goOrder" @cancel="toBidView" width="20rem">
+                                    <template #reference>
+                                        <el-button type="danger">直接购买</el-button>
+                                    </template>
+                                </el-popconfirm>
+
+                            </el-col>
+                            <el-col :span="3">
+                                <el-button type="success">联系卖家</el-button>
+                            </el-col>
+                            <el-col :span="2">
+                                <el-button type="primary" @click="toBidView">出价</el-button>
+                            </el-col>
+
+                        </el-row>
+                    </el-col>
+
+
+
+                </el-row>
+                <el-divider class="divider">商品详情</el-divider>
+                <el-row v-for="res in commodity?.resources">
+                    <el-col class="image-wrapper">
+                        <el-image :src="constant.NGINX_SERVER_HOST + '/'
+                        + res.type + '/'
+                        + res.uid + '/'
+                        + res.date + '/'
+                        + res.fileName" :fit="'contain'" />
+                    </el-col>
+                </el-row>
+                <el-divider content-position="left" class="divider">商品描述</el-divider>
+                <el-row>
+                    <el-col>
+                        <p class="description-text"> {{ commodity?.description }}</p>
+                    </el-col>
+                </el-row>
+                <el-divider content-position="left" class="divider">出价历史</el-divider>
+                <el-row>
+                    <el-col>
+                        <el-timeline>
+                            <el-timeline-item v-for="bid in commodityBids"
+                                :type="bid.replySeller ? (bid.agree ? status.agree.type : status.reject.type) : status.unanswered.type"
+                                :hollow="bid.replySeller ? (bid.agree ? status.agree.hollow : status.reject.hollow) : status.unanswered.hollow"
+                                :size="'large'" :timestamp="bid.time" placement="top">
+                                <el-card>
+                                    <div class="bid-wrapper">
+                                        <div :span="4" style="display: flex; align-items: center;">
+                                            <el-avatar :size="50" :src="constant.NGINX_SERVER_HOST + bid.avatar" />
+                                            <div style="margin-left:.5rem;">
+                                                <div class="quotation-swapper">
+                                                    <div><span class="quotation-username"> {{
+                                                        bid.nickname
+                                                    }}</span>
+                                                        <el-tag style="margin-left: .2rem;"
+                                                            v-if="userStore.logged && bid.uidBuyer == userStore.user.uid">我</el-tag>
+                                                    </div>
+                                                </div>
+                                                <div class="quotation-swapper">
+                                                    <div><span style="color: #e4393c;">￥</span><span
+                                                            class="quotation-price">{{ bid.price }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="message-wrapper">
+                                            <el-alert class="quotation-message" :title="bid.messageBuyer" type="success"
+                                                :closable="false" />
+                                        </div>
+                                    </div>
+                                    <div v-if="bid.agree != undefined" class="reply-wrapper">
+                                        <div class="diversio-wire-wrapper">
+                                            <div class="diversio-wire"></div>
+                                        </div>
+                                        <div class="quotation-padding"><el-avatar :size="50"
+                                                :src="constant.NGINX_SERVER_HOST + seller?.avatar" /></div>
+                                        <div class="quotation-padding seller-nickname-wrapper">
+                                            <div class="nickname-wrapper">
+                                                <div>
+                                                    <span class="quotation-username">{{
+                                                        seller?.nickname
+                                                    }}</span><el-tag class="seller-tag">卖家</el-tag>
+                                                </div>
+                                            </div>
+                                            <div class="nickname-wrapper">
+                                                <div><span
+                                                        :class="bid.agree ? 'seller-responese-agree' : 'seller-responese-reject'">{{
+                                                            bid.agree ? "卖家同意了此报价" : "卖家拒绝了此报价"
+                                                        }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="message-wrapper quotation-padding">
+                                            <el-alert class="quotation-message" :title="bid.replySeller"
+                                                :type="bid.agree ? 'success' : 'error'" :closable="false" />
+                                        </div>
+                                    </div>
+                                </el-card>
+                            </el-timeline-item>
+                        </el-timeline>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col class="right-wrapper">
+                        <el-button type="primary" size="large" @click="goBid">我要出价</el-button>
+                    </el-col>
+                </el-row>
+            </el-col>
+        </el-row>
+
+
+
+        <el-dialog v-model="bidFormVisible" title="出价" :width="'60%'" :close-on-click-modal="false"
+            :close-on-press-escape="false">
+            <div class="bid-dialog-wrapper">
+                <el-steps direction="vertical" :active="step" class="steps" finish-status="success">
+                    <el-step class="step" title="基本信息" description="填写报价和留言" />
+                    <el-step class="step" title="选择收货地址" description="选择正确的收货地址，一旦报价被卖家接受，则会按照此收货地址自动创建订单" />
+                    <el-step class="step" title="付款" description="付款后24小时内不可撤销" />
+                </el-steps>
+                <div>
+                    <div class="step-content-wrapper">
+                        <Transition enter-from-class="fade-enter-from" enter-active-class="fade-enter-active"
+                            leave-active-class="fade-leave-active" leave-to-class="fade-leave-to">
+                            <component :is="stepComponents[step]" :ref="setStepComponent"></component>
+                        </Transition>
+                    </div>
+                    <el-button-group class="margin-top2 right-wrapper">
+                        <el-button type="primary" :icon="ArrowLeft" :disabled="step == 0"
+                            @click="stepLast">上一步</el-button>
+
+
+                        <el-button :type="nextType" @click="stepNext" :disabled="goPayAlready">
+                            {{ nextStep }}
+                            <el-icon class="el-icon--right">
+                                <ArrowRight />
+                            </el-icon>
+                        </el-button>
+                    </el-button-group>
+                </div>
+
+            </div>
+        </el-dialog>
+        <!-- 订单dialog -->
+        <el-dialog v-model="orderFormVisible" title="直接购买" width="50rem" :close-on-click-modal="false"
+            :close-on-press-escape="false">
+            <div class="order-wrapper">
+                <div>
+                    <el-space wrap>
+                        <el-image :src="constant.NGINX_SERVER_HOST + '/'
+                            + commodity?.resources[0].type + '/'
+                            + commodity?.resources[0].uid + '/'
+                            + commodity?.resources[0].date + '/'
+                            + commodity?.resources[0].fileName
+                        " style="width: 2rem; height: 2rem"></el-image>
+                        <span class="order-commodity-name">{{ commodity?.name }}</span>
+                    </el-space>
+                </div>
+
+                <div>
+                    <el-card>
+                        <el-row justify="space-between" class="seller-item">
+                            <el-col :span="10">
+                                <el-row class="seller-item">
+                                    <el-col :span="6">
+                                        <el-avatar :size="40" :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
                                     </el-col>
-                                    <el-col :span="7">
-                                        <el-row class="seller-item">
-                                            <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                                <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
-                                            </el-col>
-                                        </el-row>
-                                        <el-row class="seller-item">
-                                            <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                                <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
-                                            </el-col>
+                                    <el-col :span="18">
+                                        <el-row>
+                                            <el-col class="seller-item-text-wrapper seller-item"><span
+                                                    class="seller-nickname">{{
+                                                        seller?.nickname
+                                                    }}</span></el-col>
+                                            <el-col class="seller-item-text-wrapper seller-item"><span
+                                                    class="seller-username">@{{
+                                                        seller?.username
+                                                    }}</span></el-col>
                                         </el-row>
                                     </el-col>
                                 </el-row>
-                            </el-card>
-                        </el-col>
-                    </el-row>
-                    <el-row class="button-wrapper" justify="end">
-                        <el-col :span="3">
-                            <el-button type="danger">直接购买</el-button>
-                        </el-col>
-                        <el-col :span="3">
-                            <el-button type="success">联系卖家</el-button>
-                        </el-col>
-                        <el-col :span="2">
-                            <el-button type="primary">出价</el-button>
-                        </el-col>
-
-                    </el-row>
-                </el-col>
-
-
-
-            </el-row>
-            <el-divider class="divider">商品详情</el-divider>
-            <el-row v-for="res in commodity?.resources">
-                <el-col class="image-wrapper">
-                    <el-image :src="constant.NGINX_SERVER_HOST + '/'
-                    + res.type + '/'
-                    + res.uid + '/'
-                    + res.date + '/'
-                    + res.fileName" :fit="'contain'" />
-                </el-col>
-            </el-row>
-            <el-divider content-position="left" class="divider">商品描述</el-divider>
-            <el-row>
-                <el-col>
-                    <p class="description-text"> {{ commodity?.description }}</p>
-                </el-col>
-            </el-row>
-            <el-divider content-position="left" class="divider">出价历史</el-divider>
-            <el-row>
-                <el-col>
-                    <el-timeline>
-                        <el-timeline-item v-for="bid in commodityBids"
-                            :type="bid.replySeller ? (bid.agree ? status.agree.type : status.reject.type) : status.unanswered.type"
-                            :hollow="bid.replySeller ? (bid.agree ? status.agree.hollow : status.reject.hollow) : status.unanswered.hollow"
-                            :size="'large'" :timestamp="bid.time" placement="top">
-                            <el-card>
-                                <div class="bid-wrapper">
-                                    <div :span="4" style="display: flex; align-items: center;">
-                                        <el-avatar :size="50" :src="constant.NGINX_SERVER_HOST + bid.avatar" />
-                                        <div style="margin-left:.5rem;">
-                                            <div class="quotation-swapper">
-                                                <div><span class="quotation-username">{{ bid.nickname }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="quotation-swapper">
-                                                <div><span style="color: #e4393c;">￥</span><span
-                                                        class="quotation-price">{{ bid.price }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-row class="seller-item">
+                                    <el-col class="right-wrapper seller-item-text-wrapper seller-item">
+                                        <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
+                                    </el-col>
+                                </el-row>
+                                <el-row class="seller-item">
+                                    <el-col class="right-wrapper seller-item-text-wrapper seller-item">
+                                        <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
+                                    </el-col>
+                                </el-row>
+                            </el-col>
+                        </el-row>
+                    </el-card>
+                </div>
+                <div>
+                    <el-card class="addr-view">
+                        <el-space direction="vertical" :fill="true">
+                            <div>
+                                <el-space wrap>
+                                    <div>
+                                        <el-tag>默认</el-tag>
                                     </div>
-                                    <div class="message-wrapper">
-                                        <el-alert class="quotation-message" :title="bid.messageBuyer" type="success"
-                                            :closable="false" />
+                                    <div>
+                                        <span class="addr-name">{{ addressDeafult?.name }}</span>
                                     </div>
+                                    <div :span="20">
+                                        <span class="addr-phone">{{ addressDeafult?.phone }}</span>
+                                    </div>
+                                </el-space>
+                            </div>
+                            <div>
+                                <div>
+                                    <span>{{
+                                        addressDeafult?.province + ' ' + addressDeafult?.city + ' ' +
+                                        addressDeafult?.district + ' ' +
+                                        addressDeafult?.street
+                                        + ' ' + addressDeafult?.address
+                                    }} </span>
                                 </div>
-                                <div class="reply-wrapper">
-                                    <div class="diversio-wire-wrapper">
-                                        <div class="diversio-wire"></div>
-                                    </div>
-                                    <div class="quotation-padding"><el-avatar :size="50"
-                                            :src="constant.NGINX_SERVER_HOST + seller?.avatar" /></div>
-                                    <div class="quotation-padding seller-nickname-wrapper">
-                                        <div class="nickname-wrapper">
-                                            <div>
-                                                <span class="quotation-username">{{
-                                                    seller?.nickname
-                                                }}</span><el-tag class="seller-tag">卖家</el-tag>
-                                            </div>
-                                        </div>
-                                        <div class="nickname-wrapper">
-                                            <div><span
-                                                    :class="bid.agree ? 'seller-responese-agree' : 'seller-responese-reject'">{{
-                                                        bid.agree ? "卖家同意了此报价" : "卖家拒绝了此报价"
-                                                    }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="message-wrapper quotation-padding">
-                                        <el-alert class="quotation-message" :title="bid.replySeller"
-                                            :type="bid.agree ? 'success' : 'error'" :closable="false" />
-                                    </div>
+                            </div>
 
-                                </div>
-
-                            </el-card>
-                        </el-timeline-item>
-                    </el-timeline>
-                </el-col>
-            </el-row>
-            <el-row>
-                <el-col class="right-wrapper">
-                    <el-button type="primary" size="large" @click="bidFormVisible = true">我要出价</el-button>
-                </el-col>
-            </el-row>
-        </el-col>
-    </el-row>
-
-
-
-
-
-    <el-dialog v-model="bidFormVisible" title="出价" :width="'60%'">
-        <div class="bid-dialog-wrapper">
-            <el-steps direction="vertical" :active="step" class="steps">
-                <el-step class="step" title="基本信息" description="填写报价和留言" />
-                <el-step class="step" title="选择收货地址" description="选择正确的收货地址，一旦报价被卖家接受，则会按照此收货地址自动创建订单" />
-                <el-step class="step" title="付款" description="付款后24小时内不可撤销" />
-            </el-steps>
-            <div>
-                <Transition name="step">
-                    <BidStep1 v-if="step==1" :commodity="commodity" :seller="seller" />
-                </Transition>
-                <el-button-group class="margin-top2 right-wrapper">
-                    <el-button type="primary" :icon="ArrowLeft">上一步</el-button>
-                    <el-button type="primary" @click="nextStep">
-                        下一步<el-icon class="el-icon--right">
-                            <ArrowRight />
-                        </el-icon>
+                        </el-space>
+                        <div class="right-wrapper">
+                            <el-button type="info" :size="'small'" link>更改收货地址</el-button>
+                        </div>
+                    </el-card>
+                </div>
+                <div class="right-wrapper">
+                    <span class="order-price-seller">￥{{ commodity?.price }}</span>
+                </div>
+                <div class="right-wrapper">
+                    <el-button :type="nextType" @click="directGoPay" :disabled="goPayAlreadyOrder">
+                        立即支付
                     </el-button>
-                </el-button-group>
+                </div>
             </div>
 
-        </div>
-    </el-dialog>
+        </el-dialog>
 
 
 
-
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
 
 
+    </div>
 
 
 
@@ -262,22 +386,43 @@ import { Star, ArrowLeft } from '@element-plus/icons-vue'
 
 import constant from '@/common/constant';
 import { useRoute } from 'vue-router';
-import type Commodity from '@/entity/Commodity';
-import type CommodityBid from '@/entity/CommodityBid';
-import type CommonResult from "@/entity/CommonResult";
-import type User from '@/entity/User';
-import { ref, onMounted } from 'vue';
+import type Commodity from '@/interface/Commodity';
+import type CommodityBid from '@/interface/CommodityBid';
+import type CommonResult from "@/interface/CommonResult";
+import type UserAddress from "@/interface/UserAddress";
+import type User from '@/interface/User';
+import { ref, onMounted, computed, shallowRef } from 'vue';
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 import BidStep1 from "@/components/BidStep1.vue";
+import BidStep2 from "@/components/BidStep2.vue";
+import BidStep3 from "@/components/BidStep3.vue";
+import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
+import { EventSourcePolyfill } from 'event-source-polyfill';
+import { useUserStore, useBidStepStore } from '@/stores'
+import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenRaw } from '@/util/fetchUtil';
+import { result } from 'lodash';
+const userStore = useUserStore();
 
+const contentVisible = ref(false);
+//result组件
+const resultVisible = ref(false);
 const Route = useRoute();
 const commodity = ref<Commodity>();
+const seller = ref<User>();
 const fetchCommodity = () => {
     fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/commodity/" + Route.params.cid)
         .then(response => response.json())
-        .then((json: CommonResult) => {
-            if (json.data != undefined) {
-                commodity.value = json.data;
+        .then((result: CommonResult) => {
+            if (result.flag) {
+                console.log(result.data.sold);
+                if (result.data.sold) {
+                    //商品已售出
+                    resultVisible.value = true;
+                    console.log("商品已售出");
+                    return;
+                }
+                contentVisible.value = true
+                commodity.value = result.data;
                 //获取卖家信息
                 fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/user/" + commodity.value?.uid)
                     .then(response => response.json())
@@ -287,11 +432,16 @@ const fetchCommodity = () => {
                         }
                     });
 
+            } else {
+                ElMessage({
+                    message: result.message,
+                    type: "error"
+                })
             }
+            emits('loadDone');
         })
 }
-
-const seller = ref<User>();
+fetchCommodity();
 const commodityBids = ref<CommodityBid[]>([]);
 const fetchCommodityBid = () => {
     fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/bid/commodity/" + Route.params.cid)
@@ -318,21 +468,388 @@ const status = {
     }
 
 }
+/**
+ * 直接购买===================
+ */
+const orderFormVisible = ref(false);
+const goPayAlreadyOrder = ref(false);
+const addressDeafult = ref<UserAddress>()
+const goOrder = () => {
+    userStore.checkLogin().then(result => {
+        if (result.flag) {
+            openOrderDialog();
+        } else {
+            userStore.loginFormVisible = true;
+        }
+    });
+}
+const openOrderDialog = () => {
+    FetchGetWithToken("/api/order/" + commodity.value?.cid).then(result => {
+        if (result.flag) {
+            if (!result.data) {
+                FetchGetWithToken("/api/userAddress/u/default/" + userStore.user.uid)
+                    .then((result: CommonResult) => {
+                        if (result.flag) {
+                            addressDeafult.value = result.data;
+                            orderFormVisible.value = true;
+                        } else if (result.code == constant.NOT_LOGIN_CODE) {
+                            userStore.loginFormVisible = true;
+                        }
+                    });
+            } else {
+                ElMessage({
+                    message: "你已经存在一个对本商品的报价，请先取消出价再购买",
+                    type: "error"
+                });
+            }
+        } else if (result.code == constant.NOT_LOGIN_CODE) {
+            ElMessage({
+                message: "登录失效，请重新登录",
+                type: "error"
+            })
+            userStore.loginFormVisible = true;
+        } else {
+            ElMessage({
+                message: result.message,
+                type: "error"
+            });
+        }
+
+    })
 
 
 
-const bidFormVisible = ref(false);
-const step = ref(1);
-const bid = ref(0);
 
-const nextStep = () => {
-    step.value += 1;
+}
+
+const directGoPay = () => {
+    loading = ElLoading.service({
+        lock: true,
+        text: '正在等待支付结果...',
+        background: 'rgba(0, 0, 0, 0.7)',
+    });
+
+    FetchPostWithToken("/api/order", JSON.stringify({
+        "cid": commodity.value?.cid,
+    })).then((result: CommonResult) => {
+        if (result.flag) {
+            FetchGetWithTokenRaw(result.data)
+                .then((response) => response.text())
+                .then((form) => {
+                    let divForm = document.getElementsByTagName('divform')
+                    if (divForm.length) {
+                        document.body.removeChild(divForm[0])
+                    }
+                    const div = document.createElement('divform')
+                    div.innerHTML = form
+                    document.body.appendChild(div)
+                    let alipay_form = document.getElementsByName('punchout_form')[0] as HTMLFormElement;
+                    alipay_form.setAttribute('target', '_blank');
+                    alipay_form.submit();
+                }).catch((err) => {
+                    console.log(err);
+                });
+
+            //开始等待支付结果
+            waitingPayResult("order");
+        } else {
+            orderFormVisible.value = false;
+            loading.close();
+            ElMessage({
+                message: result.message,
+                type: 'error',
+            });
+        }
+    });
+
 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * 出价============================
+ */
+const bidStepStore = useBidStepStore();
+const toBidView = () => {
+    emits("toBidView");
+}
+
+const bidFormVisible = ref(false);
+const step = ref(0);
+// 是否已跳转到支付
+const goPayAlready = ref(false)
+// 下一步按钮显示的文本的样式
+const nextType = ref<EpPropMergeType<StringConstructor, "" | "default" | "info" | "success" | "danger" | "primary" | "text" | "warning", unknown>>('primary');
+const pimaryType = ref<EpPropMergeType<StringConstructor, "" | "default" | "info" | "success" | "danger" | "primary" | "text" | "warning", unknown>>('primary');
+const successType = ref<EpPropMergeType<StringConstructor, "" | "default" | "info" | "success" | "danger" | "primary" | "text" | "warning", unknown>>('success');
+const nextStep = ref("下一步");
+const stepComponents = shallowRef([BidStep1, BidStep2, BidStep3]);;
+
+
+const emits = defineEmits(['toBidView', 'loadDone']);
+
+//步骤组件对象
+const stepComponent = ref();
+//动态组件获取方法
+const setStepComponent = (el: any) => {
+    stepComponent.value = el;
+}
+
+
+
+
+const openBid = () => {
+    bidFormVisible.value = true;
+    bidStepStore.commodity = commodity.value as Commodity;
+    bidStepStore.seller = seller.value as User;
+}
+const stepLast = () => {
+    if (step.value > 0) {
+        step.value -= 1;
+    }
+    nextStep.value = "下一步";
+    nextType.value = "primary"
+}
+const stepNext = () => {
+    switch (step.value) {
+        case 0:
+            if (bidStepStore.commodityBid.price == undefined) {
+                ElMessage({
+                    message: "请填写你要出的价格",
+                    type: 'error'
+                });
+                return;
+            }
+            if (bidStepStore.commodityBid.messageBuyer == undefined) {
+                ElMessage({
+                    message: "请填写你对卖家的留言，以便卖家同意你的报价",
+                    type: 'error'
+                });
+                return;
+            }
+            step.value += 1;
+            break;
+        case 1:
+
+            if (bidStepStore.address == undefined) {
+                ElMessage({
+                    message: "请填写你对卖家的留言，以便卖家同意你的报价",
+                    type: 'error'
+                });
+                return;
+            }
+            step.value += 1;
+            nextType.value = successType.value;
+            nextStep.value = "去支付";
+            break;
+        case 2:
+            goPayAlready.value = true;
+            goPay();
+            break;
+        default:
+            break;
+    }
+}
+let loading: any = null;
+const goBid = () => {
+    loading = ElLoading.service({
+        lock: true,
+        text: '正在加载...',
+        background: 'rgba(0, 0, 0, 0.7)',
+    });
+    FetchGetWithToken("/api/bid/" + commodity.value?.cid).then((result) => {
+        if (result.flag) {
+            if (!result.data) {
+                //如果没有对这个商品的出价，就去弹出Bid Dialog 同时检查是否登录
+                userStore.checkLogin().then(result => {
+                    if (result.flag) {
+                        openBid();
+                    } else {
+                        ElMessage({
+                            message: '请先登录',
+                            type: 'error',
+                        });
+                        userStore.loginFormVisible = true;
+                    }
+                    loading.close();
+                });
+
+            } else {
+                loading.close();
+                ElMessage({
+                    message: '你已经对本商品出了一个价了',
+                    type: 'error',
+                });
+                loading.close();
+
+            }
+        } else if (result.code == constant.NOT_LOGIN_CODE) {
+            ElMessage({
+                message: '请先登录',
+                type: 'error',
+            });
+            userStore.loginFormVisible = true;
+            loading.close();
+
+        }
+    });
+
+
+
+
+}
+const goPay = async () => {
+    loading = ElLoading.service({
+        lock: true,
+        text: '正在等待支付结果...',
+        background: 'rgba(0, 0, 0, 0.7)',
+    });
+
+    FetchPostWithToken("/api/bid", JSON.stringify({
+        "cid": commodity.value?.cid,
+        "messageBuyer": bidStepStore.commodityBid.messageBuyer,
+        "price": bidStepStore.commodityBid.price
+    })).then((result: CommonResult) => {
+        if (result.flag) {
+            FetchGetWithTokenRaw(result.data)
+                .then((response) => response.text())
+                .then((form) => {
+                    let divForm = document.getElementsByTagName('divform')
+                    if (divForm.length) {
+                        document.body.removeChild(divForm[0])
+                    }
+                    const div = document.createElement('divform')
+                    div.innerHTML = form
+                    document.body.appendChild(div)
+                    let alipay_form = document.getElementsByName('punchout_form')[0] as HTMLFormElement;
+                    alipay_form.setAttribute('target', '_blank');
+                    alipay_form.submit();
+                }).catch((err) => {
+                    console.log(err);
+                });
+
+            //开始等待支付结果
+            waitingPayResult("bid");
+        } else {
+            bidFormVisible.value = false;
+            loading.close();
+            ElMessage({
+                message: result.message,
+                type: 'error',
+            });
+        }
+    });
+}
+const waitingPayResult = (type: string) => {
+    const message = {
+        "bid": "支付成功，请耐心等待卖家的回复",
+        "order": "支付成功，请等待卖家发货"
+    }
+
+    const tokenName: string = localStorage.getItem(constant.TOKEN_NAME_KEY) as string;
+    const tokenValue: string = localStorage.getItem(constant.TOKEN_VALUE_KEY) as string;
+    const sse = new EventSourcePolyfill(constant.SPRINGBOOT_SERVER_HOST + '/api/sse/connect', {
+        headers: {
+            [tokenName]: tokenValue
+        }
+    });
+    sse.onopen = function (event: any) {
+        console.log("连接成功", event);
+    };
+    sse.onmessage = function (event: MessageEvent) {
+        if (event.lastEventId == constant.ALIPAY_SUCCESS) {
+            bidFormVisible.value = false;
+            loading.close();
+            ElMessage({
+                message: type == "bid" ? message.bid : message.order,
+                type: 'success',
+            });
+            sse.close();
+            if (type == "bid") {
+                fetchCommodityBid();
+            } else {
+                //跳转到订单详情
+                console.log("跳转到订单详情")
+            }
+        }
+
+    };
+    sse.onerror = function (error: any) {
+        bidFormVisible.value = false;
+        ElMessageBox.confirm(
+            '你是否完成了支付？',
+            '未收到您的支付结果',
+            {
+                confirmButtonText: '已完成支付',
+                cancelButtonText: '未完成支付',
+                type: 'warning',
+                center: true,
+                showClose: false,
+                closeOnPressEscape: false,
+                closeOnClickModal: false,
+            }
+        ).then(() => {
+            //查询支付结果
+            loading = ElLoading.service({
+                lock: true,
+                text: '正在查询支付结果...',
+                background: 'rgba(0, 0, 0, 0.7)',
+            });
+            FetchGetWithToken("/api/" + type + "/" + commodity.value?.cid).then((result) => {
+                if (result.flag) {
+                    if (result.data) {
+                        ElMessage({
+                            message: type == "bid" ? message.bid : message.order,
+                            type: 'success',
+                        });
+                        if (type == "bid") {
+                            fetchCommodityBid();
+                        } else {
+                            //跳转到订单详情
+                            console.log("跳转到订单详情")
+                        }
+                        loading.close();
+                    } else {
+                        ElMessage({
+                            message: '未查询到你的支付记录',
+                            type: 'error',
+                        });
+                    }
+                } else if (result.code == constant.NOT_LOGIN_CODE) {
+                    ElMessage({
+                        message: '登陆失效，请重新登录',
+                        type: 'error',
+                    });
+                    userStore.loginFormVisible = true;
+                }
+                loading.close();
+            });
+
+        }).catch(() => {
+
+        })
+        loading.close();
+        sse.close();
+    }
+}
+
+
+
+
 onMounted(() => {
-    fetchCommodity();
+
     fetchCommodityBid();
 })
 </script>
@@ -539,6 +1056,7 @@ onMounted(() => {
 .bid-dialog-wrapper {
     display: flex;
     align-items: center;
+
 }
 
 .steps {
@@ -564,17 +1082,44 @@ onMounted(() => {
 
 
 
-.step-enter-active {
-    transition: all 0.3s ease-out;
+.order-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
-.step-leave-active {
-    transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+.order-wrapper>div {
+    margin-top: 2rem;
+    width: 90%;
 }
 
-.step-enter-from,
-.step-leave-to {
-    transform: translateY(-20px);
+.order-commodity-name {
+    font-size: x-large;
+    font-weight: 700;
+}
+
+.order-price-seller {
+    font-size: x-large;
+    color: #e4393c;
+    font-weight: 700;
+}
+
+.fade-enter-active {
+    transition: opacity 1s ease
+}
+
+.fade-leave-active {
+    transition: opacity 0s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
     opacity: 0;
+}
+
+.step-content-wrapper {
+    height: 22rem;
+    width: 50rem;
 }
 </style>

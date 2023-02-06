@@ -2,12 +2,12 @@
   <el-container style="height: 100%;">
     <el-header class="header">
       <el-affix :offset="0">
-        <Header @needLogin="needLogin = true" @signOut="signOut" :user="user" />
+        <Header />
       </el-affix>
     </el-header>
     <el-main class="main">
       <el-scrollbar @scroll="mapSearchBar" ref="scrollbar">
-        <el-row>
+        <el-row v-if="store.mode == constant.MODE_RECEPTION">
           <el-col :span="7">
             <div class="grid-content">
             </div>
@@ -25,27 +25,33 @@
             </div>
           </el-col>
         </el-row>
-        <el-row :justify="'center'" class="content">
+        <div v-if="store.mode == constant.MODE_RECEPTION" class="content-head"></div>
+        <el-row :justify="'center'">
           <el-col :span="24">
-            <RouterView></RouterView>
+            <router-view v-slot="{ Component }" v-if="isRouterAlive" @toBidView="toBidView" @loadDone="loadDone">
+              <transition name="bounce">
+                <component :is="Component" />
+              </transition>
+            </router-view>
           </el-col>
         </el-row>
+        <el-backtop :right="100" :bottom="100" target=".el-scrollbar__wrap" />
       </el-scrollbar>
     </el-main>
   </el-container>
 
-  <el-dialog v-model="needLogin" title="登录" width="30%">
+  <el-dialog v-model="userStore.loginFormVisible" title="登录" width="30%">
     <template #footer>
-      <el-form :model="userLogin" label-width="5rem">
+      <el-form :model="userStore.user" label-width="5rem">
         <el-form-item label="账号：" required>
-          <el-input v-model="userLogin.certificate" placeholder="用户名/手机号码/UID" />
+          <el-input v-model="userStore.user.certificate" placeholder="用户名/手机号码/UID" />
         </el-form-item>
         <el-form-item label="密码：" required>
-          <el-input v-model="userLogin.password" placeholder="请输入密码" type="password" show-password />
+          <el-input v-model="userStore.user.password" placeholder="请输入密码" type="password" show-password />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onLogin">登录账号</el-button>
-          <el-button @click="needLogin = false">取消</el-button>
+          <el-button @click="userStore.loginFormVisible = false">取消</el-button>
         </el-form-item>
         <el-link style="font-size: smaller;color: gray;" :underline="true">没有账号？创建一个</el-link>
         <el-form-item>
@@ -53,27 +59,40 @@
       </el-form>
     </template>
   </el-dialog>
+
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, nextTick, provide, watch } from 'vue'
 import constant from './common/constant';
 import Header from "./components/Header.vue";
 import Search from "./components/Search.vue";
-import type User from './entity/User';
-import type CommonResult from './entity/CommonResult';
+import type User from './interface/User';
+import type CommonResult from './interface/CommonResult';
 import router from './router'
 import { ElLoading, ElMessage } from 'element-plus'
-
+import smoothscroll from 'smoothscroll-polyfill'
+import { useStore, useUserStore } from '@/stores'
+import { useRoute } from 'vue-router';
+const store = useStore();
+const isRouterAlive = ref(true);
+const reload = () => {
+  isRouterAlive.value = false;
+  nextTick(() => {
+    isRouterAlive.value = true;
+  })
+}
+provide('reload', reload);
 
 const lockScroll = ref(false);
-
 const SearchBar = ref();
+
 const mapSearchBar = function (scroll: { scrollTop: number, scrollLeft: number }) {
   SearchBar.value.changeSearchBarSize(scroll.scrollTop);
-  if (lockScroll.value && scroll.scrollTop < 400) {
-    scrollbar.value.setScrollTop(400);
-    console.log(scroll.scrollTop);
+
+
+  if (lockScroll.value && scroll.scrollTop < 500) {
+    scrollbar.value.setScrollTop(500);
   }
 }
 
@@ -82,26 +101,31 @@ const search = function (keyword: string) {
   console.log(keyword);
   SearchBar.value.close();
   router.push({ name: "search", params: { keyword } });
-  setTimeout(function () {
+}
+const loadDone = () => {
+  console.log('load Done')
+  setTimeout(() => {
     scrollbar.value.scrollTo({
-      top: 400,
-      behavior: 'smooth'
+      top: 500,
+      behavior: "smooth",
     });
-    // setTimeout(function () {
-    //   lockScroll.value = true;
-    // }, 500);
-  }, 100)
+    setTimeout(() => {
+      lockScroll.value = true;
+    }, 500);
+  }, 200);
 }
 
 
-const user = ref<User>()
-const needLogin = ref(false);
+const toBidView = () => {
+  scrollbar.value.scrollTo({
+    top: 99999,
+    behavior: "smooth",
+  });
 
-const userLogin = reactive({
-  certificate: "foxb",
-  password: "123456"
-})
+}
 
+
+const userStore = useUserStore();
 const onLogin = () => {
   const loading = ElLoading.service({
     lock: true,
@@ -109,108 +133,33 @@ const onLogin = () => {
     background: 'rgba(0, 0, 0, 0.7)',
   });
 
+  userStore.login().then(result => {
+    if (result.flag) {
+      ElMessage({
+        message: "登录成功," + userStore.user.nickname,
+        type: "success"
+      });
+      userStore.loginFormVisible = false;
+    } else {
+      ElMessage({
+        message: "发生错误," + result.message,
+        type: "error"
+      })
+    }
+    loading.close();
+  })
 
-  fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/user/login", {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify(userLogin)
-  }).then(response => response.json())
-    .then((result: CommonResult) => {
-      if (result.flag) {
-        needLogin.value = false;
-        user.value = result.data;
-        localStorage.setItem(constant.TOKEN_NAME_KEY, user.value?.tokenName!);
-        localStorage.setItem(constant.TOKEN_VALUE_KEY, user.value?.tokenValue!);
-        ElMessage({
-          message: '登录成功,' + user.value?.nickname,
-          type: 'success',
-        });
-      } else {
-        needLogin.value = true;
-        ElMessage({
-          message: '登录失败,' + result.message,
-          type: 'error',
-        });
-      }
-      loading.close();
-    });
 }
+//监听路由，随时更改mode
+const rout = useRoute();
+watch(rout, (value) => {
+  store.mode = value.meta.mode as string
+})
 
 
-
-const signOut = () => {
-  const tokenName = localStorage.getItem(constant.TOKEN_NAME_KEY);
-  const tokenValue = localStorage.getItem(constant.TOKEN_VALUE_KEY);
-  const headers = new Headers();
-  headers.append('content-type', 'application/json');
-  headers.append(tokenName!, tokenValue!);
-  fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/user/logout", {
-    method: 'POST',
-    headers
-  }).then(response => response.json())
-    .then((result: CommonResult) => {
-      if (result.flag) {
-        // needLogin.value = true;
-        user.value = undefined;
-        localStorage.removeItem(constant.TOKEN_NAME_KEY);
-        localStorage.removeItem(constant.TOKEN_VALUE_KEY);
-
-        ElMessage({
-          message: '退出成功',
-          type: 'success',
-        });
-      }
-    });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const checkLogin = () => {
-  const tokenName = localStorage.getItem(constant.TOKEN_NAME_KEY);
-  const tokenValue = localStorage.getItem(constant.TOKEN_VALUE_KEY);
-
-  if (tokenName == null || tokenValue == null) {
-    // needLogin.value = true;
-  }
-  const headers = new Headers();
-  headers.append('content-type', 'application/json');
-  headers.append(tokenName!, tokenValue!);
-  fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/user/check", {
-    method: 'POST',
-    headers
-  }).then(response => response.json())
-    .then((result: CommonResult) => {
-      if (result.flag) {
-        needLogin.value = false;
-        user.value = result.data;
-      }
-    });
-}
-
-checkLogin();
-
+userStore.checkLogin();
 onMounted(() => {
-  // loading.close();
+  smoothscroll.polyfill();
 })
 
 
@@ -226,22 +175,9 @@ onMounted(() => {
   margin-top: 20rem;
 }
 
-.content {
+.content-head {
   margin-top: 10rem;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 .demonstration {
@@ -262,5 +198,27 @@ onMounted(() => {
 
 .el-carousel__item:nth-child(2n + 1) {
   background-color: #d3dce6;
+}
+
+.bounce-enter-active {
+  animation: bounce-in 0.5s;
+}
+
+.bounce-leave-active {
+  animation: bounce-in 0.5s reverse;
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 </style>

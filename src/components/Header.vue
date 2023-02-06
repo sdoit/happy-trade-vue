@@ -16,12 +16,13 @@
                     <li><el-link :underline="false" @click="$emit('toOrder')">发布商品</el-link></li>
                     <li><el-link :underline="false" @click="$emit('toOrder')">订单</el-link></li>
                     <li>
-                        <el-link v-if="props.user == null" :underline="false" @click="$emit('needLogin')">登录</el-link>
-                        <div v-if="props.user != null">
+                        <el-link v-if="!userStore.logged" :underline="false"
+                            @click="userStore.loginFormVisible = true">登录</el-link>
+                        <div v-if="userStore.logged">
                             <el-dropdown>
                                 <div class="nickname-wrapper">
-                                    <el-avatar :size="30" :src="constant.NGINX_SERVER_HOST + props.user.avatar" />
-                                    <span class="nickname">{{ props.user.nickname }}</span>
+                                    <el-avatar :size="30" :src="constant.NGINX_SERVER_HOST + userStore.user.avatar" />
+                                    <span class="nickname">{{ userStore.user.nickname }}</span>
                                     <el-icon class="el-icon--right">
                                         <arrow-down />
                                     </el-icon>
@@ -45,7 +46,7 @@
                                         </el-dropdown-item>
 
                                         <el-dropdown-item divided>
-                                            <el-link :underline="false" @click="$emit('signOut')">退出登录</el-link>
+                                            <el-link :underline="false" @click="loginOut">退出登录</el-link>
                                         </el-dropdown-item>
                                     </el-dropdown-menu>
                                 </template>
@@ -60,9 +61,30 @@
 <script setup lang="ts">
 import constant from "@/common/constant";
 import { ArrowDown } from '@element-plus/icons-vue';
-const props = defineProps(['user']);
+import { useUserStore } from '@/stores'
+import { result } from "lodash";
+import { ElMessage } from "element-plus";
+import { inject } from "vue";
+const userStore = useUserStore();
+const reload = inject('reload') as Function
+const loginOut = () => {
+    userStore.logout().then(result => {
+        if (result?.flag) {
+            ElMessage({
+                message: "退出成功",
+                type: "success"
 
+            })
+        } else {
+            ElMessage({
+                message: result?.message,
+                type: "error"
 
+            })
+        }
+        reload();
+    })
+}
 </script>
 <style scoped>
 .header {

@@ -4,5 +4,15 @@ export default {
 
 
     TOKEN_NAME_KEY: "_token_name",
-    TOKEN_VALUE_KEY: "_token_value"
+    TOKEN_VALUE_KEY: "_token_value",
+
+
+    ALIPAY_SUCCESS: "201",
+
+    NOT_LOGIN_CODE: 2005,
+
+    MODE_RECEPTION: 'reception',
+    MODE_BACKSTAGE: 'backstage'
+
+
 }

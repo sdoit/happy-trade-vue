@@ -2,7 +2,7 @@
     <div>
         <div class="wrapper">
             <el-carousel class="imgs" :arrow="'hover'">
-                <el-carousel-item v-for="res in commodity?.resources" :key="res.fileName" class="imgs">
+                <el-carousel-item v-for="res in bidStepStore.commodity.resources" :key="res.fileName" class="imgs">
                     <el-image loading="lazy" :src="
                         constant.NGINX_SERVER_HOST + '/'
                         + res.type + '/'
@@ -32,7 +32,7 @@
                 </el-row>
                 <el-row class="margin-top">
                     <el-col :offset="2">
-                        <span class="name">{{ commodity?.name }}</span>
+                        <span class="name">{{ bidStepStore.commodity.name }}</span>
                     </el-col>
                 </el-row>
 
@@ -43,7 +43,7 @@
                 </el-row>
                 <el-row class="margin-top">
                     <el-col :offset="2">
-                        <span class="price">￥{{ commodity?.price }}</span>
+                        <span class="price">￥{{ bidStepStore.commodity.price }}</span>
                     </el-col>
                 </el-row>
                 <el-row class="margin-top2">
@@ -52,17 +52,18 @@
                             <el-col :span="10">
                                 <el-row class="seller-item">
                                     <el-col :span="6">
-                                        <el-avatar :size="40" :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
+                                        <el-avatar :size="40"
+                                            :src="constant.NGINX_SERVER_HOST + bidStepStore.seller.avatar" />
                                     </el-col>
                                     <el-col :span="18">
                                         <el-row>
                                             <el-col class="seller-item-text-wrapper seller-item"><span
                                                     class="seller-nickname">{{
-                                                        seller?.nickname
+                                                        bidStepStore.seller.nickname
                                                     }}</span></el-col>
                                             <el-col class="seller-item-text-wrapper seller-item"><span
                                                     class="seller-username">@{{
-                                                        seller?.username
+                                                        bidStepStore.seller.username
                                                     }}</span></el-col>
                                         </el-row>
                                     </el-col>
@@ -89,25 +90,24 @@
         <el-row class="bottom">
 
             <el-col :span="6" :offset="2">
-                <el-input-number v-model="bid" :precision="2" :step="0.01" :max="999999999" :controls="false"
-                    placeholder="请输入合理的价格" />
+                <el-input-number v-model="bidStepStore.commodityBid.price" :precision="2" :step="0.01" :max="999999999"
+                    :controls="false" placeholder="请输入合理的价格" />
             </el-col>
             <el-col :span="16">
                 <!-- <span>留言</span> -->
-                <el-input v-model="message" placeholder="请输入你要对卖家的留言" />
+                <el-input v-model="bidStepStore.commodityBid.messageBuyer" placeholder="请输入你要对卖家的留言" />
             </el-col>
         </el-row>
-       
+
     </div>
 </template>
 <script setup lang="ts">
 import constant from "@/common/constant";
 import { ref } from "vue";
-import { Star, ArrowLeft } from '@element-plus/icons-vue'
+import { useBidStepStore } from '@/stores'
 
-const props = defineProps(['commodity', 'seller'])
-const bid = ref();
-const message = ref();
+const bidStepStore = useBidStepStore();
+
 </script>
 
 <style scoped>
