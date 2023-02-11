@@ -29,9 +29,10 @@
                             <div style="padding: 14px">
                                 <div class="priceAndQualityWrapper">
                                     <span class="price">{{ "￥ "+ data[(i - 1) * 4 + index].price }}</span>
-                                    <span class="quality" :class="getQualityClass(data[(i - 1) * 4 + index].quality)">{{
-                                        data[(i - 1) * 4 + index].quality
-                                    }}</span>
+                                    <el-tag class="quality"
+                                        :type="getQualityClass(data[(i - 1) * 4 + index].quality)">{{
+                                            data[(i - 1) * 4 + index].quality
+                                        }}新</el-tag>
                                 </div>
                                 <div class="name-wrapper">
                                     <span class="name">{{ data[(i - 1) * 4 + index].name }}</span>
@@ -74,6 +75,7 @@ import { useRoute } from 'vue-router';
 import constant from "@/common/constant";
 import type Commodity from '@/interface/Commodity';
 import type CommonResult from "@/interface/CommonResult";
+import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 
 
 const props = defineProps(['scrollbar'])
@@ -118,18 +120,20 @@ const fetchcommodities = (PageNum: number) => {
 
 const getQualityClass = (quality: number) => {
     if (quality >= 9.5) {
-        return "quality-perfect";
+        return 'success' as EpPropMergeType<StringConstructor, "success", unknown>;
+
     } else if (quality >= 8) {
-        return "quality-good";
+        return "warning" as EpPropMergeType<StringConstructor, "success", unknown>;
 
     } else if (quality >= 7) {
 
-        return "quality-general";
+        return "info" as EpPropMergeType<StringConstructor, "success", unknown>;
     } else if (quality < 7) {
-        return "quality-poor";
+        return "danger" as EpPropMergeType<StringConstructor, "success", unknown>;
     }
 
 }
+
 
 const isMounted = ref(false);
 onMounted(() => {
@@ -185,7 +189,7 @@ onMounted(() => {
 
 /* 价格 */
 .priceAndQualityWrapper .price {
-    color: red;
+    color: #e1251b;
     font-size: larger;
     display: block;
 }
@@ -194,26 +198,6 @@ onMounted(() => {
     font-size: medium;
     font-weight: 700;
     -webkit-text-stroke: 0.1px black
-}
-
-/* >9.5 */
-.priceAndQualityWrapper .quality-perfect {
-    color: green;
-}
-
-/* >8 */
-.priceAndQualityWrapper .quality-good {
-    color: chartreuse;
-}
-
-/* >7 */
-.priceAndQualityWrapper .quality-general {
-    color: yellow;
-}
-
-/* <7 */
-.priceAndQualityWrapper .quality-poor {
-    color: red;
 }
 
 .name-wrapper {

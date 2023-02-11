@@ -1,0 +1,16 @@
+"filename", "language", "TypeScript", "vue", "comment", "blank", "total"
+"d:\Vue_project\happy-trade-vue\components.d.ts", "TypeScript", 3, 0, 0, 0, 3
+"d:\Vue_project\happy-trade-vue\src\App.vue", "vue", 0, 4, 0, -7, -3
+"d:\Vue_project\happy-trade-vue\src\common\constant.ts", "TypeScript", 2, 0, 0, 3, 5
+"d:\Vue_project\happy-trade-vue\src\components\Header.vue", "vue", 0, 5, 0, 2, 7
+"d:\Vue_project\happy-trade-vue\src\interface\CommodityBid.ts", "TypeScript", 2, 0, 0, -1, 1
+"d:\Vue_project\happy-trade-vue\src\interface\Order.ts", "TypeScript", 27, 0, 0, 1, 28
+"d:\Vue_project\happy-trade-vue\src\router\index.ts", "TypeScript", 32, 0, -2, -2, 28
+"d:\Vue_project\happy-trade-vue\src\stores\index.ts", "TypeScript", 13, 0, 1, 5, 19
+"d:\Vue_project\happy-trade-vue\src\views\Commodity.vue", "vue", 0, 12, 0, -1, 11
+"d:\Vue_project\happy-trade-vue\src\views\Search.vue", "vue", 0, -14, 0, -2, -16
+"d:\Vue_project\happy-trade-vue\src\views\backstage\buyer\Bid.vue", "vue", 0, 86, 0, 2, 88
+"d:\Vue_project\happy-trade-vue\src\views\backstage\buyer\Index.vue", "vue", 0, 107, 0, 10, 117
+"d:\Vue_project\happy-trade-vue\src\views\backstage\buyer\Order.vue", "vue", 0, 155, 0, 27, 182
+"d:\Vue_project\happy-trade-vue\src\views\backstage\buyer\OrderDetail.vue", "vue", 0, 285, 0, 42, 327
+"Total", "-", 79, 640, -1, 79, 797

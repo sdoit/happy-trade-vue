@@ -162,7 +162,7 @@
                             <el-timeline-item v-for="bid in commodityBids"
                                 :type="bid.replySeller ? (bid.agree ? status.agree.type : status.reject.type) : status.unanswered.type"
                                 :hollow="bid.replySeller ? (bid.agree ? status.agree.hollow : status.reject.hollow) : status.unanswered.hollow"
-                                :size="'large'" :timestamp="bid.time" placement="top">
+                                :size="'large'" :timestamp="bid.timeCreated" placement="top">
                                 <el-card>
                                     <div class="bid-wrapper">
                                         <div :span="4" style="display: flex; align-items: center;">
@@ -334,7 +334,7 @@
                                 <div>
                                     <span>{{
                                         addressDeafult?.province + ' ' + addressDeafult?.city + ' ' +
-                                        addressDeafult?.district + ' ' +
+                                        addressDeafult?.area + ' ' +
                                         addressDeafult?.street
                                         + ' ' + addressDeafult?.address
                                     }} </span>
@@ -487,7 +487,7 @@ const openOrderDialog = () => {
     FetchGetWithToken("/api/order/" + commodity.value?.cid).then(result => {
         if (result.flag) {
             if (!result.data) {
-                FetchGetWithToken("/api/userAddress/u/default/" + userStore.user.uid)
+                FetchGetWithToken("/api/userAddress/u/default/"  )
                     .then((result: CommonResult) => {
                         if (result.flag) {
                             addressDeafult.value = result.data;
@@ -531,6 +531,7 @@ const directGoPay = () => {
 
     FetchPostWithToken("/api/order", JSON.stringify({
         "cid": commodity.value?.cid,
+        "aid": addressDeafult.value?.aid,
     })).then((result: CommonResult) => {
         if (result.flag) {
             FetchGetWithTokenRaw(result.data)
@@ -642,10 +643,9 @@ const stepNext = () => {
             step.value += 1;
             break;
         case 1:
-
             if (bidStepStore.address == undefined) {
                 ElMessage({
-                    message: "请填写你对卖家的留言，以便卖家同意你的报价",
+                    message: "没有收货地址，请选择或创建一个",
                     type: 'error'
                 });
                 return;
@@ -720,7 +720,8 @@ const goPay = async () => {
     FetchPostWithToken("/api/bid", JSON.stringify({
         "cid": commodity.value?.cid,
         "messageBuyer": bidStepStore.commodityBid.messageBuyer,
-        "price": bidStepStore.commodityBid.price
+        "price": bidStepStore.commodityBid.price,
+        "aid": bidStepStore.address.aid
     })).then((result: CommonResult) => {
         if (result.flag) {
             FetchGetWithTokenRaw(result.data)
@@ -1020,7 +1021,7 @@ onMounted(() => {
 
 .seller-responese-reject {
     font-size: small;
-    color: red;
+    color: #e1251b;
     font-weight: 700;
 }
 
@@ -1122,4 +1123,6 @@ onMounted(() => {
     height: 22rem;
     width: 50rem;
 }
+
+
 </style>

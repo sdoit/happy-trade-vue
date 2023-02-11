@@ -5,9 +5,12 @@ export default interface UserAddress {
     phone: string,
     province: string,
     city: string,
-    district: string,
+    area: string,
     street: string,
     address: string,
+    streetCode: string;
     tag: string,
     defaultAddress: boolean
+
+
 }

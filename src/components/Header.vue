@@ -30,7 +30,8 @@
                                 <template #dropdown>
                                     <el-dropdown-menu>
                                         <el-dropdown-item>
-                                            <el-link :underline="false" @click="$emit('toOrder')">个人中心</el-link>
+                                            <router-link :to="{ name: 'buyer-order' }"><el-link :underline="false">
+                                                    个人中心</el-link></router-link>
                                         </el-dropdown-item>
                                         <el-dropdown-item>
                                             <el-link :underline="false" @click="$emit('toOrder')">我的订单</el-link>
@@ -65,6 +66,8 @@ import { useUserStore } from '@/stores'
 import { result } from "lodash";
 import { ElMessage } from "element-plus";
 import { inject } from "vue";
+import router from '@/router';
+
 const userStore = useUserStore();
 const reload = inject('reload') as Function
 const loginOut = () => {
@@ -115,5 +118,9 @@ const loginOut = () => {
     padding-left: .5rem;
     font-size: smaller;
     cursor: default;
+}
+
+a {
+    text-decoration: none;
 }
 </style>

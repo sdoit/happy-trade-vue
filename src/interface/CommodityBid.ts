@@ -1,3 +1,5 @@
+import type Commodity from "./Commodity";
+import type Resource from "./Resource";
 export default interface CommodityBid {
     bid: number,
     cid: number,
@@ -7,9 +9,11 @@ export default interface CommodityBid {
     messageBuyer: string,
     replySeller: string,
     agree: boolean,
-    time: string,
+    timeCreated: string,
     timeReply: string,
-
     nickname: string,
-    avatar: string
+    username:string,
+    avatar: string,
+    commodity: Commodity,
+    cover: Resource
 };

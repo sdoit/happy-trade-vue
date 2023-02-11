@@ -6,6 +6,7 @@ import { FetchGetWithToken, FetchPostWithToken } from '@/util/fetchUtil';
 import constant from '@/common/constant';
 import type Commodity from '@/interface/Commodity';
 import type UserAddress from '@/interface/UserAddress';
+import type Order from '@/interface/Order';
 // 定义Store实例并导出，useStore可以是任何东西，比如useUser, useCart
 // 第一个参数，唯一不可重复，字符串类型，作为仓库ID 以区分仓库
 // 第二个参数，以对象形式配置仓库的state,getters,actions
@@ -14,7 +15,7 @@ export const useStore = defineStore('main', {
   state: () => {
     return {
       //backstage:后台模式，reception:前台模式
-      mode: "" ,
+      mode: "",
     }
   },
   getters: {},
@@ -91,6 +92,22 @@ export const useBidStepStore = defineStore('bid', {
       address: {} as UserAddress,
       commodityBid: {} as CommodityBid,
       seller: {} as User
+    }
+  },
+  getters: {},
+  actions: {
+
+
+  }
+});
+
+export const usePathStore = defineStore('path', {
+
+  state: () => {
+    return {
+      path: [
+        { name: "个人中心", path: '/buyer/order' },
+      ]
     }
   },
   getters: {},

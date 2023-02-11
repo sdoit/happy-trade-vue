@@ -137,7 +137,7 @@ const bidStepStore = useBidStepStore();
 
 .price {
     font-size: large;
-    color: red;
+    color:#e1251b;
 }
 
 .margin-top {

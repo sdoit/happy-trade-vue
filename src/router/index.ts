@@ -29,18 +29,75 @@ const router = createRouter({
     //买家后台
     {
       path: '/buyer',
+      name: 'buyer',
       meta: { mode: 'backstage' },
-      component: () => import('../views/backstage/buyer/index.vue'),
+      component: () => import('../views/backstage/Index.vue'),
       children: [
         {
           path: 'order',
           name: 'buyer-order',
-          component: () => import('../views/backstage/buyer/order.vue')
+          component: () => import('../views/backstage/buyer/Order.vue')
+        },
+        {
+          path: '',
+          name: 'buyer-index',
+          component: () => import('../views/backstage/buyer/Order.vue')
+        },
+        {
+          path: 'order/:oid',
+          name: 'buyer-order-detail',
+          component: () => import('../views/backstage/buyer/OrderDetail.vue')
+        },
+        {
+          path: 'bid',
+          name: 'buyer-bid',
+          component: () => import('../views/backstage/buyer/Bid.vue')
         }
-      ],
-
-    }
-
+      ]
+    },
+    //卖家后台
+    {
+      path: '/seller',
+      name: 'seller',
+      meta: { mode: 'backstage' },
+      component: () => import('../views/backstage/Index.vue'),
+      children: [
+        {
+          path: 'order',
+          name: 'seller-order',
+          component: () => import('../views/backstage/seller/Order.vue')
+        },
+        {
+          path: '',
+          name: 'seller-index',
+          component: () => import('../views/backstage/seller/Order.vue')
+        },
+        {
+          path: 'order/:oid',
+          name: 'seller-order-detail',
+          component: () => import('../views/backstage/seller/OrderDetail.vue')
+        },
+        {
+          path: 'bid',
+          name: 'seller-bid',
+          component: () => import('../views/backstage/seller/Bid.vue')
+        }
+      ]
+    },
+     //用户其他设置
+     {
+      path: '/home',
+      name: 'home',
+      meta: { mode: 'backstage' },
+      component: () => import('@/views/backstage/Index.vue'),
+      children: [
+        {
+          path: 'address',
+          name: 'home-address',
+          component: () => import('@/views/backstage/Address.vue')
+        },
+      ]
+    },
   ]
 })
 
