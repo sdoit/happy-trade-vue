@@ -11,6 +11,4 @@ export default interface UserAddress {
     streetCode: string;
     tag: string,
     defaultAddress: boolean
-
-
 }

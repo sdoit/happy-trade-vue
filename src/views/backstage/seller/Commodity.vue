@@ -1,7 +1,7 @@
 <template>
     <div>
 
-        <el-result title="没有订单" sub-title="你还没有卖出过商品">
+        <el-result title="没有商品" sub-title="你还没发布过任何商品">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
                     <path fill="#888888"

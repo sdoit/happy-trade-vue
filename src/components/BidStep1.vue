@@ -88,15 +88,16 @@
             </div>
         </div>
         <el-row class="bottom">
-
-            <el-col :span="6" :offset="2">
-                <el-input-number v-model="bidStepStore.commodityBid.price" :precision="2" :step="0.01" :max="999999999"
-                    :controls="false" placeholder="请输入合理的价格" />
-            </el-col>
-            <el-col :span="16">
-                <!-- <span>留言</span> -->
-                <el-input v-model="bidStepStore.commodityBid.messageBuyer" placeholder="请输入你要对卖家的留言" />
-            </el-col>
+            <el-form :inline="true">
+                    <el-form-item label="你的出价">
+                        <el-input-number v-model="bidStepStore.commodityBid.price" :precision="2" :step="0.01"
+                            :max="999999999" :controls="false" placeholder="请输入合理的价格" />
+                    </el-form-item>
+                    <el-form-item label="对卖家的留言">
+                        <!-- <span>留言</span> -->
+                        <el-input v-model="bidStepStore.commodityBid.messageBuyer" placeholder="请输入你要对卖家的留言" />
+                    </el-form-item>
+            </el-form>
         </el-row>
 
     </div>
@@ -137,7 +138,7 @@ const bidStepStore = useBidStepStore();
 
 .price {
     font-size: large;
-    color:#e1251b;
+    color: #e1251b;
 }
 
 .margin-top {
@@ -173,6 +174,7 @@ const bidStepStore = useBidStepStore();
 
 .bottom {
     display: flex;
+    justify-content: flex-end;
 }
 
 .right-wrapper {

@@ -1,383 +1,404 @@
 <template>
-    <el-result v-if="resultVisible" title="商品已售出" sub-title="来晚了，去看看其他商品把">
-        <template #icon>
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
-                <path fill="#888888"
-                    d="M704 288h131.072a32 32 0 0 1 31.808 28.8L886.4 512h-64.384l-16-160H704v96a32 32 0 1 1-64 0v-96H384v96a32 32 0 0 1-64 0v-96H217.92l-51.2 512H512v64H131.328a32 32 0 0 1-31.808-35.2l57.6-576a32 32 0 0 1 31.808-28.8H320v-22.336C320 154.688 405.504 64 512 64s192 90.688 192 201.664v22.4zm-64 0v-22.336C640 189.248 582.272 128 512 128c-70.272 0-128 61.248-128 137.664v22.4h256zm201.408 476.16a32 32 0 1 1 45.248 45.184l-128 128a32 32 0 0 1-45.248 0l-128-128a32 32 0 1 1 45.248-45.248L704 837.504V608a32 32 0 1 1 64 0v229.504l73.408-73.408z" />
-            </svg>
-        </template>
-        <template #extra>
-            <el-button type="primary">回到首页</el-button>
-        </template>
-    </el-result>
-    <div v-if="contentVisible">
-        <el-row justify="center">
-            <el-col :span="16">
-                <el-row>
-                    <el-col :span="7">
-                        <el-carousel class="imgs" :arrow="'hover'">
-                            <el-carousel-item v-for="res in commodity?.resources" :key="res.fileName" class="imgs">
-                                <el-image loading="lazy" :src="
-                                    constant.NGINX_SERVER_HOST + '/'
-                                    + res.type + '/'
-                                    + res.uid + '/'
-                                    + res.date + '/'
-                                    + res.fileName
-                                " :fit="'fill'" class="res-img">
-                                    <template #placeholder>
-                                        <div class="img-slot-wrapper">
-                                            <img src="/img/loading.svg" alt="正在加载" />
-                                        </div>
-                                    </template>
-                                    <template #error>
-                                        <div class="img-slot-wrapper">
-                                            <img src="/img/error.svg" alt="图片加载失败" />
-                                        </div>
-                                    </template>
-                                </el-image>
+    <div>
+        <el-result v-if="resultVisible" title="商品已售出" sub-title="来晚了，去看看其他商品把">
+            <template #icon>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
+                    <path fill="#888888"
+                        d="M704 288h131.072a32 32 0 0 1 31.808 28.8L886.4 512h-64.384l-16-160H704v96a32 32 0 1 1-64 0v-96H384v96a32 32 0 0 1-64 0v-96H217.92l-51.2 512H512v64H131.328a32 32 0 0 1-31.808-35.2l57.6-576a32 32 0 0 1 31.808-28.8H320v-22.336C320 154.688 405.504 64 512 64s192 90.688 192 201.664v22.4zm-64 0v-22.336C640 189.248 582.272 128 512 128c-70.272 0-128 61.248-128 137.664v22.4h256zm201.408 476.16a32 32 0 1 1 45.248 45.184l-128 128a32 32 0 0 1-45.248 0l-128-128a32 32 0 1 1 45.248-45.248L704 837.504V608a32 32 0 1 1 64 0v229.504l73.408-73.408z" />
+                </svg>
+            </template>
+            <template #extra>
+                <el-button type="primary">回到首页</el-button>
+            </template>
+        </el-result>
+        <div v-if="contentVisible">
+            <el-row justify="center">
+                <el-col :span="16">
+                    <el-row>
+                        <el-col :span="7">
+                            <el-carousel class="imgs" :arrow="'hover'">
+                                <el-carousel-item v-for="res in commodity?.resources" :key="res.fileName" class="imgs">
+                                    <el-image loading="lazy" :src="
+                                        constant.NGINX_SERVER_HOST + '/'
+                                        + res.type + '/'
+                                        + res.uid + '/'
+                                        + res.date + '/'
+                                        + res.fileName
+                                    " :fit="'fill'" class="res-img">
+                                        <template #placeholder>
+                                            <div class="img-slot-wrapper">
+                                                <img src="/img/loading.svg" alt="正在加载" />
+                                            </div>
+                                        </template>
+                                        <template #error>
+                                            <div class="img-slot-wrapper">
+                                                <img src="/img/error.svg" alt="图片加载失败" />
+                                            </div>
+                                        </template>
+                                    </el-image>
 
-                            </el-carousel-item>
-                        </el-carousel>
-                    </el-col>
-                    <el-col :span="15" :offset="2">
+                                </el-carousel-item>
+                            </el-carousel>
+                        </el-col>
+                        <el-col :span="15" :offset="2">
 
-                        <el-row>
-                            <el-col>
-                                <span class="name">{{ commodity?.name }}</span>
-                            </el-col>
-                        </el-row>
-                        <el-row justify="space-between" class="tips">
-                            <el-col :span="12">
-                                <el-row justify="start">
-                                    <el-col :span="3"><span class="quality">{{
-                                        Math.round(
-                                            commodity?.quality! * 10)
-                                    }}新</span></el-col>
-                                    <el-col :span="3"><span class="free-shipping">包邮</span></el-col>
-                                </el-row>
-                            </el-col>
-                            <el-col :span="5" class="right-wrapper"><span class="view-count">{{ commodity?.viewCount ==
-                            0 ?
-                            '您是本商品的第1个看客' : commodity?.viewCount + '人浏览过'}}</span></el-col>
-                        </el-row>
+                            <el-row>
+                                <el-col>
+                                    <span class="name">{{ commodity?.name }}</span>
+                                </el-col>
+                            </el-row>
+                            <el-row justify="space-between" class="tips">
+                                <el-col :span="12">
+                                    <el-row justify="start">
+                                        <el-col :span="3"><span class="quality">{{
+                                            Math.round(
+                                                commodity?.quality! * 10)
+                                        }}新</span></el-col>
+                                        <el-col :span="3"><span class="free-shipping">包邮</span></el-col>
+                                    </el-row>
+                                </el-col>
+                                <el-col :span="5" class="right-wrapper"><span class="view-count">{{
+                                commodity?.viewCount == 0 ?
+                                '您是本商品的第1个看客' : commodity?.viewCount + '人浏览过'}}</span></el-col>
+                            </el-row>
 
-                        <el-row class="price-wrapper" justify="space-between">
-                            <el-col :span="5">
-                                <span style="color: #e4393c;">￥</span><span class="price">{{ commodity?.price }}</span>
-                            </el-col>
-                            <el-col :span="5" class="right-wrapper">
-                                <el-button type="warning" :icon="Star" circle />
-                            </el-col>
-                        </el-row>
-                        <el-row class="seller-wrapper">
-                            <el-col>
-                                <el-card class="box-card">
-                                    <el-row justify="space-between" class="seller-item">
-                                        <el-col :span="17">
-                                            <el-row class="seller-item">
-                                                <el-col :span="4">
-                                                    <el-avatar :size="70"
-                                                        :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
-                                                </el-col>
-                                                <el-col :span="20">
-                                                    <el-row>
-                                                        <el-col class="seller-item-text-wrapper seller-item"><span
-                                                                class="seller-nickname">{{
-                                                                    seller?.nickname
+                            <el-row class="price-wrapper" justify="space-between">
+                                <el-col :span="5">
+                                    <span style="color: #e4393c;">￥</span><span class="price">{{
+                                        commodity?.price
+                                    }}</span>
+                                </el-col>
+                                <el-col :span="5" class="right-wrapper">
+                                    <el-button type="warning" :icon="Star" @click="collect" circle />
+                                </el-col>
+                            </el-row>
+                            <el-row class="seller-wrapper">
+                                <el-col>
+                                    <el-card class="box-card">
+                                        <el-row justify="space-between" class="seller-item">
+                                            <el-col :span="17">
+                                                <el-row class="seller-item">
+                                                    <el-col :span="4">
+                                                        <el-avatar :size="70"
+                                                            :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
+                                                    </el-col>
+                                                    <el-col :span="20">
+                                                        <el-row>
+                                                            <el-col class="seller-item-text-wrapper seller-item"><span
+                                                                    class="seller-nickname">{{
+                                                                        seller?.nickname
+                                                                    }}</span></el-col>
+                                                            <el-col class="seller-item-text-wrapper seller-item"><span
+                                                                    class="seller-username">@{{
+                                                                        seller?.username
+                                                                    }}</span></el-col>
+                                                        </el-row>
+                                                        <el-row class="introduction-wrapper">
+                                                            <el-col
+                                                                class="seller-item-text-wrapper seller-item introduction"><span>{{
+                                                                    seller?.introduction
                                                                 }}</span></el-col>
-                                                        <el-col class="seller-item-text-wrapper seller-item"><span
-                                                                class="seller-username">@{{
-                                                                    seller?.username
-                                                                }}</span></el-col>
-                                                    </el-row>
-                                                    <el-row class="introduction-wrapper">
-                                                        <el-col
-                                                            class="seller-item-text-wrapper seller-item introduction"><span>{{
-                                                                seller?.introduction
-                                                            }}</span></el-col>
-                                                    </el-row>
-                                                </el-col>
-                                            </el-row>
+                                                        </el-row>
+                                                    </el-col>
+                                                </el-row>
+                                            </el-col>
+                                            <el-col :span="7">
+                                                <el-row class="seller-item">
+                                                    <el-col class="right-wrapper seller-item-text-wrapper seller-item">
+                                                        <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
+                                                    </el-col>
+                                                </el-row>
+                                                <el-row class="seller-item">
+                                                    <el-col class="right-wrapper seller-item-text-wrapper seller-item">
+                                                        <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
+                                                    </el-col>
+                                                </el-row>
+                                            </el-col>
+                                        </el-row>
+                                    </el-card>
+                                </el-col>
+                            </el-row>
+                            <el-row class="button-wrapper" justify="end">
+                                <el-col :span="3">
+                                    <el-popconfirm title="你确定不通过出价购买，而用卖家标价直接购买本商品吗?" confirm-button-text="继续购买"
+                                        cancel-button-text="我要出价" confirm-button-type="danger"
+                                        cancel-button-type="primary" @confirm="goOrder" @cancel="toBidView"
+                                        width="20rem">
+                                        <template #reference>
+                                            <el-button type="danger">直接购买</el-button>
+                                        </template>
+                                    </el-popconfirm>
+
+                                </el-col>
+                                <el-col :span="3">
+                                    <el-button type="success">联系卖家</el-button>
+                                </el-col>
+                                <el-col :span="2">
+                                    <el-button type="primary" @click="toBidView">出价</el-button>
+                                </el-col>
+
+                            </el-row>
+                        </el-col>
+
+
+
+                    </el-row>
+                    <el-divider class="divider">商品详情</el-divider>
+                    <el-row v-for="res in commodity?.resources">
+                        <el-col class="image-wrapper">
+                            <el-image :src="constant.NGINX_SERVER_HOST + '/'
+                            + res.type + '/'
+                            + res.uid + '/'
+                            + res.date + '/'
+                            + res.fileName" :fit="'contain'" />
+                        </el-col>
+                    </el-row>
+                    <el-divider content-position="left" class="divider">商品描述</el-divider>
+                    <el-row>
+                        <el-col>
+                            <p class="description-text"> {{ commodity?.description }}</p>
+                        </el-col>
+                    </el-row>
+                    <el-divider content-position="left" class="divider">出价历史</el-divider>
+                    <el-row>
+                        <el-col>
+                            <el-timeline>
+                                <el-timeline-item v-for="bid in commodityBids"
+                                    :type="bid.replySeller ? (bid.agree ? status.agree.type : status.reject.type) : status.unanswered.type"
+                                    :hollow="bid.replySeller ? (bid.agree ? status.agree.hollow : status.reject.hollow) : status.unanswered.hollow"
+                                    :size="'large'" :timestamp="bid.timeCreated" placement="top">
+                                    <el-card>
+                                        <div class="bid-wrapper">
+                                            <div :span="4" style="display: flex; align-items: center;">
+                                                <el-avatar :size="50" :src="constant.NGINX_SERVER_HOST + bid.avatar" />
+                                                <div style="margin-left:.5rem;">
+                                                    <div class="quotation-swapper">
+                                                        <div><span class="quotation-username"> {{
+                                                            bid.nickname
+                                                        }}</span>
+                                                            <el-tag style="margin-left: .2rem;"
+                                                                v-if="userStore.logged && bid.uidBuyer == userStore.user.uid">我</el-tag>
+                                                        </div>
+                                                    </div>
+                                                    <div class="quotation-swapper">
+                                                        <div><span style="color: #e4393c;">￥</span><span
+                                                                class="quotation-price">{{ bid.price }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="message-wrapper">
+                                                <el-alert class="quotation-message" :title="bid.messageBuyer"
+                                                    type="success" :closable="false" />
+                                            </div>
+                                        </div>
+                                        <div v-if="bid.agree != undefined" class="reply-wrapper">
+                                            <div class="diversio-wire-wrapper">
+                                                <div class="diversio-wire"></div>
+                                            </div>
+                                            <div class="quotation-padding"><el-avatar :size="50"
+                                                    :src="constant.NGINX_SERVER_HOST + seller?.avatar" /></div>
+                                            <div class="quotation-padding seller-nickname-wrapper">
+                                                <div class="nickname-wrapper">
+                                                    <div>
+                                                        <span class="quotation-username">{{
+                                                            seller?.nickname
+                                                        }}</span><el-tag class="seller-tag">卖家</el-tag>
+                                                    </div>
+                                                </div>
+                                                <div class="nickname-wrapper">
+                                                    <div><span
+                                                            :class="bid.agree ? 'seller-responese-agree' : 'seller-responese-reject'">{{
+                                                                bid.agree ? "卖家同意了此报价" : "卖家拒绝了此报价"
+                                                            }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="message-wrapper quotation-padding">
+                                                <el-alert class="quotation-message" :title="bid.replySeller"
+                                                    :type="bid.agree ? 'success' : 'error'" :closable="false" />
+                                            </div>
+                                        </div>
+                                    </el-card>
+                                </el-timeline-item>
+                            </el-timeline>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col class="right-wrapper">
+                            <el-button type="primary" size="large" @click="goBid">我要出价</el-button>
+                        </el-col>
+                    </el-row>
+                </el-col>
+            </el-row>
+
+
+
+            <el-dialog v-model="bidFormVisible" title="出价" :width="'60%'" :close-on-click-modal="false"
+                :close-on-press-escape="false">
+                <div class="bid-dialog-wrapper">
+                    <el-steps direction="vertical" :active="step" class="steps" finish-status="success">
+                        <el-step class="step" title="基本信息" description="填写报价和留言" />
+                        <el-step class="step" title="选择收货地址" description="选择正确的收货地址，一旦报价被卖家接受，则会按照此收货地址自动创建订单" />
+                        <el-step class="step" title="付款" description="付款后24小时内不可撤销" />
+                    </el-steps>
+                    <div>
+                        <div class="step-content-wrapper">
+                            <Transition enter-from-class="fade-enter-from" enter-active-class="fade-enter-active"
+                                leave-active-class="fade-leave-active" leave-to-class="fade-leave-to">
+                                <component :is="stepComponents[step]" :ref="setStepComponent"></component>
+                            </Transition>
+                        </div>
+                        <el-button-group class="margin-top2 right-wrapper">
+                            <el-button type="primary" :icon="ArrowLeft" :disabled="step == 0"
+                                @click="stepLast">上一步</el-button>
+
+
+                            <el-button :type="nextType" @click="stepNext" :disabled="goPayAlready">
+                                {{ nextStep }}
+                                <el-icon class="el-icon--right">
+                                    <ArrowRight />
+                                </el-icon>
+                            </el-button>
+                        </el-button-group>
+                    </div>
+
+                </div>
+            </el-dialog>
+            <!-- 订单dialog -->
+            <el-dialog v-model="orderFormVisible" title="直接购买" width="50rem" :close-on-click-modal="false"
+                :close-on-press-escape="false">
+                <div class="order-wrapper">
+                    <div>
+                        <el-space wrap>
+                            <el-image :src="constant.NGINX_SERVER_HOST + '/'
+                                + commodity?.resources[0].type + '/'
+                                + commodity?.resources[0].uid + '/'
+                                + commodity?.resources[0].date + '/'
+                                + commodity?.resources[0].fileName
+                            " style="width: 2rem; height: 2rem"></el-image>
+                            <span class="order-commodity-name">{{ commodity?.name }}</span>
+                        </el-space>
+                    </div>
+
+                    <div>
+                        <el-card>
+                            <el-row justify="space-between" class="seller-item">
+                                <el-col :span="10">
+                                    <el-row class="seller-item">
+                                        <el-col :span="6">
+                                            <el-avatar :size="40" :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
                                         </el-col>
-                                        <el-col :span="7">
-                                            <el-row class="seller-item">
-                                                <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                                    <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
-                                                </el-col>
-                                            </el-row>
-                                            <el-row class="seller-item">
-                                                <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                                    <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
-                                                </el-col>
+                                        <el-col :span="18">
+                                            <el-row>
+                                                <el-col class="seller-item-text-wrapper seller-item"><span
+                                                        class="seller-nickname">{{
+                                                            seller?.nickname
+                                                        }}</span></el-col>
+                                                <el-col class="seller-item-text-wrapper seller-item"><span
+                                                        class="seller-username">@{{
+                                                            seller?.username
+                                                        }}</span></el-col>
                                             </el-row>
                                         </el-col>
                                     </el-row>
-                                </el-card>
-                            </el-col>
-                        </el-row>
-                        <el-row class="button-wrapper" justify="end">
-                            <el-col :span="3">
-                                <el-popconfirm title="你确定不通过出价购买，而用卖家标价直接购买本商品吗?" confirm-button-text="继续购买"
-                                    cancel-button-text="我要出价" confirm-button-type="danger" cancel-button-type="primary"
-                                    @confirm="goOrder" @cancel="toBidView" width="20rem">
-                                    <template #reference>
-                                        <el-button type="danger">直接购买</el-button>
-                                    </template>
-                                </el-popconfirm>
-
-                            </el-col>
-                            <el-col :span="3">
-                                <el-button type="success">联系卖家</el-button>
-                            </el-col>
-                            <el-col :span="2">
-                                <el-button type="primary" @click="toBidView">出价</el-button>
-                            </el-col>
-
-                        </el-row>
-                    </el-col>
-
-
-
-                </el-row>
-                <el-divider class="divider">商品详情</el-divider>
-                <el-row v-for="res in commodity?.resources">
-                    <el-col class="image-wrapper">
-                        <el-image :src="constant.NGINX_SERVER_HOST + '/'
-                        + res.type + '/'
-                        + res.uid + '/'
-                        + res.date + '/'
-                        + res.fileName" :fit="'contain'" />
-                    </el-col>
-                </el-row>
-                <el-divider content-position="left" class="divider">商品描述</el-divider>
-                <el-row>
-                    <el-col>
-                        <p class="description-text"> {{ commodity?.description }}</p>
-                    </el-col>
-                </el-row>
-                <el-divider content-position="left" class="divider">出价历史</el-divider>
-                <el-row>
-                    <el-col>
-                        <el-timeline>
-                            <el-timeline-item v-for="bid in commodityBids"
-                                :type="bid.replySeller ? (bid.agree ? status.agree.type : status.reject.type) : status.unanswered.type"
-                                :hollow="bid.replySeller ? (bid.agree ? status.agree.hollow : status.reject.hollow) : status.unanswered.hollow"
-                                :size="'large'" :timestamp="bid.timeCreated" placement="top">
-                                <el-card>
-                                    <div class="bid-wrapper">
-                                        <div :span="4" style="display: flex; align-items: center;">
-                                            <el-avatar :size="50" :src="constant.NGINX_SERVER_HOST + bid.avatar" />
-                                            <div style="margin-left:.5rem;">
-                                                <div class="quotation-swapper">
-                                                    <div><span class="quotation-username"> {{
-                                                        bid.nickname
-                                                    }}</span>
-                                                        <el-tag style="margin-left: .2rem;"
-                                                            v-if="userStore.logged && bid.uidBuyer == userStore.user.uid">我</el-tag>
-                                                    </div>
-                                                </div>
-                                                <div class="quotation-swapper">
-                                                    <div><span style="color: #e4393c;">￥</span><span
-                                                            class="quotation-price">{{ bid.price }}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="message-wrapper">
-                                            <el-alert class="quotation-message" :title="bid.messageBuyer" type="success"
-                                                :closable="false" />
-                                        </div>
-                                    </div>
-                                    <div v-if="bid.agree != undefined" class="reply-wrapper">
-                                        <div class="diversio-wire-wrapper">
-                                            <div class="diversio-wire"></div>
-                                        </div>
-                                        <div class="quotation-padding"><el-avatar :size="50"
-                                                :src="constant.NGINX_SERVER_HOST + seller?.avatar" /></div>
-                                        <div class="quotation-padding seller-nickname-wrapper">
-                                            <div class="nickname-wrapper">
-                                                <div>
-                                                    <span class="quotation-username">{{
-                                                        seller?.nickname
-                                                    }}</span><el-tag class="seller-tag">卖家</el-tag>
-                                                </div>
-                                            </div>
-                                            <div class="nickname-wrapper">
-                                                <div><span
-                                                        :class="bid.agree ? 'seller-responese-agree' : 'seller-responese-reject'">{{
-                                                            bid.agree ? "卖家同意了此报价" : "卖家拒绝了此报价"
-                                                        }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="message-wrapper quotation-padding">
-                                            <el-alert class="quotation-message" :title="bid.replySeller"
-                                                :type="bid.agree ? 'success' : 'error'" :closable="false" />
-                                        </div>
-                                    </div>
-                                </el-card>
-                            </el-timeline-item>
-                        </el-timeline>
-                    </el-col>
-                </el-row>
-                <el-row>
-                    <el-col class="right-wrapper">
-                        <el-button type="primary" size="large" @click="goBid">我要出价</el-button>
-                    </el-col>
-                </el-row>
-            </el-col>
-        </el-row>
-
-
-
-        <el-dialog v-model="bidFormVisible" title="出价" :width="'60%'" :close-on-click-modal="false"
-            :close-on-press-escape="false">
-            <div class="bid-dialog-wrapper">
-                <el-steps direction="vertical" :active="step" class="steps" finish-status="success">
-                    <el-step class="step" title="基本信息" description="填写报价和留言" />
-                    <el-step class="step" title="选择收货地址" description="选择正确的收货地址，一旦报价被卖家接受，则会按照此收货地址自动创建订单" />
-                    <el-step class="step" title="付款" description="付款后24小时内不可撤销" />
-                </el-steps>
-                <div>
-                    <div class="step-content-wrapper">
-                        <Transition enter-from-class="fade-enter-from" enter-active-class="fade-enter-active"
-                            leave-active-class="fade-leave-active" leave-to-class="fade-leave-to">
-                            <component :is="stepComponents[step]" :ref="setStepComponent"></component>
-                        </Transition>
+                                </el-col>
+                                <el-col :span="12">
+                                    <el-row class="seller-item">
+                                        <el-col class="right-wrapper seller-item-text-wrapper seller-item">
+                                            <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row class="seller-item">
+                                        <el-col class="right-wrapper seller-item-text-wrapper seller-item">
+                                            <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
+                                        </el-col>
+                                    </el-row>
+                                </el-col>
+                            </el-row>
+                        </el-card>
                     </div>
-                    <el-button-group class="margin-top2 right-wrapper">
-                        <el-button type="primary" :icon="ArrowLeft" :disabled="step == 0"
-                            @click="stepLast">上一步</el-button>
-
-
-                        <el-button :type="nextType" @click="stepNext" :disabled="goPayAlready">
-                            {{ nextStep }}
-                            <el-icon class="el-icon--right">
-                                <ArrowRight />
-                            </el-icon>
-                        </el-button>
-                    </el-button-group>
-                </div>
-
-            </div>
-        </el-dialog>
-        <!-- 订单dialog -->
-        <el-dialog v-model="orderFormVisible" title="直接购买" width="50rem" :close-on-click-modal="false"
-            :close-on-press-escape="false">
-            <div class="order-wrapper">
-                <div>
-                    <el-space wrap>
-                        <el-image :src="constant.NGINX_SERVER_HOST + '/'
-                            + commodity?.resources[0].type + '/'
-                            + commodity?.resources[0].uid + '/'
-                            + commodity?.resources[0].date + '/'
-                            + commodity?.resources[0].fileName
-                        " style="width: 2rem; height: 2rem"></el-image>
-                        <span class="order-commodity-name">{{ commodity?.name }}</span>
-                    </el-space>
-                </div>
-
-                <div>
-                    <el-card>
-                        <el-row justify="space-between" class="seller-item">
-                            <el-col :span="10">
-                                <el-row class="seller-item">
-                                    <el-col :span="6">
-                                        <el-avatar :size="40" :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
-                                    </el-col>
-                                    <el-col :span="18">
-                                        <el-row>
-                                            <el-col class="seller-item-text-wrapper seller-item"><span
-                                                    class="seller-nickname">{{
-                                                        seller?.nickname
-                                                    }}</span></el-col>
-                                            <el-col class="seller-item-text-wrapper seller-item"><span
-                                                    class="seller-username">@{{
-                                                        seller?.username
-                                                    }}</span></el-col>
-                                        </el-row>
-                                    </el-col>
-                                </el-row>
-                            </el-col>
-                            <el-col :span="12">
-                                <el-row class="seller-item">
-                                    <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                        <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
-                                    </el-col>
-                                </el-row>
-                                <el-row class="seller-item">
-                                    <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                        <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
-                                    </el-col>
-                                </el-row>
-                            </el-col>
-                        </el-row>
-                    </el-card>
-                </div>
-                <div>
-                    <el-card class="addr-view">
-                        <el-space direction="vertical" :fill="true">
-                            <div>
-                                <el-space wrap>
-                                    <div>
-                                        <el-tag>默认</el-tag>
-                                    </div>
-                                    <div>
-                                        <span class="addr-name">{{ addressDeafult?.name }}</span>
-                                    </div>
-                                    <div :span="20">
-                                        <span class="addr-phone">{{ addressDeafult?.phone }}</span>
-                                    </div>
-                                </el-space>
-                            </div>
-                            <div>
+                    <div>
+                        <el-result v-if="addressDeafult == undefined" title="没有收货地址"
+                            sub-title="你还有没设置收货地址，请先设置收货地址后再下单">
+                            <template #icon>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+                                    <g fill="none" stroke="#888888" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2">
+                                        <path
+                                            d="M8 4h10a2 2 0 0 1 2 2v10m-.57 3.399c-.363.37-.87.601-1.43.601H8a2 2 0 0 1-2-2V6m4 10h6" />
+                                        <path
+                                            d="M11 11a2 2 0 0 0 2 2m2-2a2 2 0 0 0-2-2M4 8h3m-3 4h3m-3 4h3M3 3l18 18" />
+                                    </g>
+                                </svg>
+                            </template>
+                            <template #extra>
+                                <el-button type="primary" @click="toAddressSetting">去设置</el-button>
+                            </template>
+                        </el-result>
+                        <el-card class="addr-view" v-if="addressDeafult != undefined">
+                            <el-space direction="vertical" :fill="true">
                                 <div>
-                                    <span>{{
-                                        addressDeafult?.province + ' ' + addressDeafult?.city + ' ' +
-                                        addressDeafult?.area + ' ' +
-                                        addressDeafult?.street
-                                        + ' ' + addressDeafult?.address
-                                    }} </span>
+                                    <el-space wrap>
+                                        <div>
+                                            <el-tag>默认</el-tag>
+                                        </div>
+                                        <div>
+                                            <span class="addr-name">{{ addressDeafult?.name }}</span>
+                                        </div>
+                                        <div :span="20">
+                                            <span class="addr-phone">{{ addressDeafult?.phone }}</span>
+                                        </div>
+                                    </el-space>
                                 </div>
+                                <div>
+                                    <div>
+                                        <span>{{
+                                            addressDeafult?.province + ' ' + addressDeafult?.city + ' ' +
+                                            addressDeafult?.area + ' ' +
+                                            addressDeafult?.street
+                                            + ' ' + addressDeafult?.address
+                                        }} </span>
+                                    </div>
+                                </div>
+
+                            </el-space>
+                            <div class="right-wrapper">
+                                <el-button type="info" :size="'small'" link>更改收货地址</el-button>
                             </div>
-
-                        </el-space>
-                        <div class="right-wrapper">
-                            <el-button type="info" :size="'small'" link>更改收货地址</el-button>
-                        </div>
-                    </el-card>
+                        </el-card>
+                    </div>
+                    <div class="right-wrapper">
+                        <span class="order-price-seller">￥{{ commodity?.price }}</span>
+                    </div>
+                    <div class="right-wrapper">
+                        <el-button :type="nextType" @click="directGoPay" :disabled="goPayAlreadyOrder">
+                            立即支付
+                        </el-button>
+                    </div>
                 </div>
-                <div class="right-wrapper">
-                    <span class="order-price-seller">￥{{ commodity?.price }}</span>
-                </div>
-                <div class="right-wrapper">
-                    <el-button :type="nextType" @click="directGoPay" :disabled="goPayAlreadyOrder">
-                        立即支付
-                    </el-button>
-                </div>
-            </div>
 
-        </el-dialog>
+            </el-dialog>
 
 
 
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
 
+
+        </div>
 
     </div>
-
-
 
 </template>
 <script setup lang="ts">
@@ -401,6 +422,7 @@ import { EventSourcePolyfill } from 'event-source-polyfill';
 import { useUserStore, useBidStepStore } from '@/stores'
 import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenRaw } from '@/util/fetchUtil';
 import { result } from 'lodash';
+import router from '@/router';
 const userStore = useUserStore();
 
 const contentVisible = ref(false);
@@ -410,9 +432,8 @@ const Route = useRoute();
 const commodity = ref<Commodity>();
 const seller = ref<User>();
 const fetchCommodity = () => {
-    fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/commodity/" + Route.params.cid)
-        .then(response => response.json())
-        .then((result: CommonResult) => {
+    FetchGetWithToken("/api/commodity/" + Route.params.cid)
+        .then(result => {
             if (result.flag) {
                 console.log(result.data.sold);
                 if (result.data.sold) {
@@ -436,22 +457,50 @@ const fetchCommodity = () => {
                 ElMessage({
                     message: result.message,
                     type: "error"
-                })
+                });
             }
             emits('loadDone');
-        })
+        });
 }
 fetchCommodity();
 const commodityBids = ref<CommodityBid[]>([]);
 const fetchCommodityBid = () => {
-    fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/bid/commodity/" + Route.params.cid)
-        .then(response => response.json())
-        .then((json: CommonResult) => {
-            if (json.data != undefined) {
-                commodityBids.value = json.data;
+    FetchGetWithToken("/api/bid/commodity/" + Route.params.cid)
+        .then(result => {
+            if (result.flag) {
+                commodityBids.value = result.data;
+            } else {
+                ElMessage({
+                    message: result.message,
+                    type: 'error'
+                })
             }
         });
 }
+
+
+const collect = () => {
+    FetchPostWithToken("/api/favorites", JSON.stringify({
+        cid: commodity.value?.cid
+    })).then(result => {
+        if (result.flag) {
+            ElMessage({
+                message: "收藏成功",
+                type: 'success'
+            });
+            //点亮图标
+            //
+        } else if (result.code == constant.NOT_LOGIN_CODE) {
+            userStore.loginFormVisible = true;
+        } else {
+            ElMessage({
+                message: result.message,
+                type: 'error'
+            })
+        }
+    });
+}
+
 
 const status = {
     unanswered: {
@@ -487,7 +536,7 @@ const openOrderDialog = () => {
     FetchGetWithToken("/api/order/" + commodity.value?.cid).then(result => {
         if (result.flag) {
             if (!result.data) {
-                FetchGetWithToken("/api/userAddress/u/default/"  )
+                FetchGetWithToken("/api/userAddress/u/default/")
                     .then((result: CommonResult) => {
                         if (result.flag) {
                             addressDeafult.value = result.data;
@@ -523,6 +572,14 @@ const openOrderDialog = () => {
 }
 
 const directGoPay = () => {
+    if (addressDeafult.value == undefined) {
+        ElMessage({
+            message: "没有收货地址，请先设置一个",
+            type: 'error',
+        });
+        return;
+    }
+
     loading = ElLoading.service({
         lock: true,
         text: '正在等待支付结果...',
@@ -846,7 +903,9 @@ const waitingPayResult = (type: string) => {
     }
 }
 
-
+const toAddressSetting = () => {
+    router.push({ name: 'home-address' });
+}
 
 
 onMounted(() => {
@@ -1123,6 +1182,4 @@ onMounted(() => {
     height: 22rem;
     width: 50rem;
 }
-
-
 </style>

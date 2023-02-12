@@ -14,6 +14,7 @@ export default interface CommodityBid {
     nickname: string,
     username:string,
     avatar: string,
+    cancel: boolean,
     commodity: Commodity,
     cover: Resource
 };

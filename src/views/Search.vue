@@ -2,17 +2,17 @@
     <div class="infinite-list-wrapper" v-if="isMounted">
         <div v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled"
             infinite-scroll-immediate="false">
-            <el-row v-for="i in rawCount" class="list-item" :gutter="5">
-                <el-col v-for="(o, index) in 4" :key="(i - 1) * 4 + index" :span="4">
-                    <router-link :to="{ name: 'commodity', params: { cid: data[(i - 1) * 4 + index].cid } }" class="a">
+            <el-row v-for="i in rowCount" class="list-item" :gutter="5">
+                <el-col v-for="commodity in data.slice((i - 1) * 4, i * 4)" :key="commodity.cid" :span="4">
+                    <router-link :to="{ name: 'commodity', params: { cid: commodity.cid } }" class="a">
                         <el-card :body-style="{ padding: '.3rem' }" shadow="hover">
                             <div class="img-wrapper">
                                 <el-image loading="lazy" :src="
                                     constant.NGINX_SERVER_HOST + '/'
-                                    + data[(i - 1) * 4 + index].cover.type + '/'
-                                    + data[(i - 1) * 4 + index].cover.uid + '/'
-                                    + data[(i - 1) * 4 + index].cover.date + '/'
-                                    + data[(i - 1) * 4 + index].cover.fileName
+                                    + commodity.cover.type + '/'
+                                    + commodity.cover.uid + '/'
+                                    + commodity.cover.date + '/'
+                                    + commodity.cover.fileName
                                 " :fit="'fill'" class="cover">
                                     <template #placeholder>
                                         <div class="img-slot-wrapper">
@@ -28,33 +28,31 @@
                             </div>
                             <div style="padding: 14px">
                                 <div class="priceAndQualityWrapper">
-                                    <span class="price">{{ "￥ "+ data[(i - 1) * 4 + index].price }}</span>
-                                    <el-tag class="quality"
-                                        :type="getQualityClass(data[(i - 1) * 4 + index].quality)">{{
-                                            data[(i - 1) * 4 + index].quality
-                                        }}新</el-tag>
+                                    <span class="price">{{ "￥ "+ commodity.price }}</span>
+                                    <el-tag class="quality" :type="getQualityClass(commodity.quality)">{{
+                                        commodity.quality
+                                    }}新</el-tag>
                                 </div>
                                 <div class="name-wrapper">
-                                    <span class="name">{{ data[(i - 1) * 4 + index].name }}</span>
+                                    <span class="name">{{ commodity.name }}</span>
                                 </div>
 
                                 <el-row class="seller-wrapper">
                                     <el-col :span="4">
                                         <el-avatar :size="40"
-                                            :src="constant.NGINX_SERVER_HOST + data[(i - 1) * 4 + index].user.avatar" />
+                                            :src="constant.NGINX_SERVER_HOST + commodity.user.avatar" />
                                     </el-col>
                                     <el-col :span="20" class="username-wrapper">
                                         <span class="nickname">{{
-                                            data[(i - 1) * 4 + index].user.nickname
+                                            commodity.user.nickname
                                         }}</span>
-                                        <span class="username">@{{ data[(i - 1) * 4 + index].user.username }}</span>
+                                        <span class="username">@{{ commodity.user.username }}</span>
                                     </el-col>
                                 </el-row>
                                 <div class="bottom">
-                                    <time class="launch-time">{{ data[(i - 1) * 4 + index].time }}</time>
-                                    <span class="view-count" v-show="data[(i - 1) * 4 + index].viewCount > 0">{{
-                                        data[(i -
-                                            1) * 4 + index].viewCount
+                                    <time class="launch-time">{{ commodity.time }}</time>
+                                    <span class="view-count" v-show="commodity.viewCount > 0">{{
+                                        commodity.viewCount
                                     }}人看过</span>
                                 </div>
 
@@ -77,12 +75,9 @@ import type Commodity from '@/interface/Commodity';
 import type CommonResult from "@/interface/CommonResult";
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 
-
-const props = defineProps(['scrollbar'])
-
 const emits = defineEmits(['loadDone'])
 
-const rawCount = ref(0);
+const rowCount = ref(0);
 const page = ref(0);
 const loading = ref(false);
 const noMore = ref(false);
@@ -105,7 +100,7 @@ const fetchcommodities = (PageNum: number) => {
                 return;
             }
             data.value = data.value.concat(json.data);
-            rawCount.value += json.data.length / 4;
+            rowCount.value += Math.ceil(json.data.length / 4);
             loading.value = false;
             if (PageNum == 1) {
                 //首次加载完成

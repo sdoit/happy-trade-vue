@@ -33,14 +33,30 @@ const router = createRouter({
       meta: { mode: 'backstage' },
       component: () => import('../views/backstage/Index.vue'),
       children: [
-        {
-          path: 'order',
-          name: 'buyer-order',
-          component: () => import('../views/backstage/buyer/Order.vue')
-        },
+
         {
           path: '',
           name: 'buyer-index',
+          component: () => import('../views/backstage/buyer/Order.vue')
+        },
+        {
+          path: 'bid',
+          name: 'buyer-bid',
+          component: () => import('../views/backstage/buyer/Bid.vue')
+        },
+        {
+          path: 'favorites',
+          name: 'buyer-favorites',
+          component: () => import('../views/backstage/buyer/Favorites.vue')
+        },
+        {
+          path: 'history',
+          name: 'buyer-history',
+          component: () => import('../views/backstage/buyer/History.vue')
+        },
+        {
+          path: 'order',
+          name: 'buyer-order',
           component: () => import('../views/backstage/buyer/Order.vue')
         },
         {
@@ -48,11 +64,7 @@ const router = createRouter({
           name: 'buyer-order-detail',
           component: () => import('../views/backstage/buyer/OrderDetail.vue')
         },
-        {
-          path: 'bid',
-          name: 'buyer-bid',
-          component: () => import('../views/backstage/buyer/Bid.vue')
-        }
+
       ]
     },
     //卖家后台
@@ -63,13 +75,23 @@ const router = createRouter({
       component: () => import('../views/backstage/Index.vue'),
       children: [
         {
-          path: 'order',
-          name: 'seller-order',
+          path: '',
+          name: 'seller-index',
           component: () => import('../views/backstage/seller/Order.vue')
         },
         {
-          path: '',
-          name: 'seller-index',
+          path: 'bid',
+          name: 'seller-bid',
+          component: () => import('../views/backstage/seller/Bid.vue')
+        },
+        {
+          path: 'commodity',
+          name: 'seller-commodity',
+          component: () => import('../views/backstage/seller/Commodity.vue')
+        },
+        {
+          path: 'order',
+          name: 'seller-order',
           component: () => import('../views/backstage/seller/Order.vue')
         },
         {
@@ -77,15 +99,11 @@ const router = createRouter({
           name: 'seller-order-detail',
           component: () => import('../views/backstage/seller/OrderDetail.vue')
         },
-        {
-          path: 'bid',
-          name: 'seller-bid',
-          component: () => import('../views/backstage/seller/Bid.vue')
-        }
+
       ]
     },
-     //用户其他设置
-     {
+    //用户其他设置
+    {
       path: '/home',
       name: 'home',
       meta: { mode: 'backstage' },
