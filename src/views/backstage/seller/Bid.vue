@@ -1,7 +1,8 @@
 <template>
     <div>
 
-        <el-result v-if="bids == undefined || bids.length == 0" title="没有出价" sub-title="还没有买家对你的商品出价">
+        <el-result v-if="bids == undefined || bids.length == 0 && filter == 'all'" title="没有出价"
+            sub-title="还没有买家对你的商品出价">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
                     <path fill="#888888"
@@ -21,7 +22,8 @@
                 <el-option label="已拒绝" value="rejected" />
             </el-select>
         </div>
-        <div class="bid-card-wrapper">
+        <div class="bid-card-wrapper" v-if="bids != undefined && bids.length != 0">
+
             <el-card v-for="bid in bids" :key="bid.bid">
                 <div class="wrapper">
                     <div>
@@ -115,7 +117,6 @@ import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenPage } from '@/
 import { useUserStore, usePathStore } from '@/stores';
 import constant from '@/common/constant';
 import { ElLoading, ElMessage } from 'element-plus';
-import { reject } from 'lodash';
 const userStore = useUserStore();
 const pathStore = usePathStore();
 const bids = ref<CommodityBid[]>();

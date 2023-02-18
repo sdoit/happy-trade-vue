@@ -1,7 +1,6 @@
 <template>
     <div>
-
-        <el-result title="没有商品" sub-title="你还没发布过任何商品">
+        <el-result v-if="commodities == undefined || commodities.length == 0" title="没有商品" sub-title="你还没发布过任何商品">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
                     <path fill="#888888"
@@ -9,9 +8,269 @@
                 </svg>
             </template>
             <template #extra>
-                <el-button type="primary">回到首页</el-button>
+                <el-button type="primary">发布商品</el-button>
             </template>
         </el-result>
+        <div v-if="commodities != undefined && commodities.length != 0" class="push-button-wrapper">
+            <el-button type="primary">发布新商品</el-button>
+        </div>
+        <div class="infinite-list-wrapper" v-if="isMounted">
+            <div v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled"
+                infinite-scroll-immediate="false">
+                <el-card :body-style="{ padding: '.3rem' }" v-for="commodity in commodities" :key="commodity.cid"
+                    shadow="hover" class="card">
+                    <el-row class="commodity-card">
+                        <el-col :span="5" class="img-wrapper">
+                            <el-image loading="lazy" :src="
+                                constant.NGINX_SERVER_HOST + '/'
+                                + commodity.cover.type + '/'
+                                + commodity.cover.uid + '/'
+                                + commodity.cover.date + '/'
+                                + commodity.cover.fileName
+                            " :fit="'fill'" class="cover">
+                                <template #placeholder>
+                                    <div class="img-slot-wrapper">
+                                        <img src="/img/loading.svg" alt="正在加载" />
+                                    </div>
+                                </template>
+                                <template #error>
+                                    <div class="img-slot-wrapper">
+                                        <img src="/img/error.svg" alt="图片加载失败" />
+                                    </div>
+                                </template>
+                            </el-image>
+                        </el-col>
+                        <el-col :span="17" class="commodity-info-wrapper">
+                            <div class="name-wrapper">
+                                <span class="name">{{ commodity.name }}</span><el-tag class="status"
+                                    :type="commodity.sold ? 'danger' : commodity.launched ? 'success' : 'warning'">{{
+                                        commodity.sold ? '已售出' : commodity.launched ? '上架中' : '已下架'
+                                    }}</el-tag>
+                            </div>
+                            <div class="priceAndQualityWrapper">
+                                <span class="price">{{ "￥ "+ commodity.price }}</span>
+                                <el-tag class="quality" :type="getQualityClass(commodity.quality)">{{
+                                    commodity.quality
+                                }}新</el-tag>
+
+                            </div>
+                            <div class="info">
+                                <span>类型：{{ commodity.typeName }}</span>
+                                <span>4人已出价</span>
+                            </div>
+                            <div class="bottom-wrapper">
+                                <span class="view-count" v-show="commodity.viewCount > 0">{{
+                                    commodity.viewCount
+                                }}人看过</span>
+                                <div class="bottom">
+                                    <time class="launch-time">{{ commodity.time }}</time>
+                                    <div class="commodity-button">
+                                        <el-button type="primary" size="small" v-if="!commodity.sold">查看出价</el-button>
+                                        <el-button type="primary" size="small" v-if="!commodity.sold">编辑</el-button>
+                                        <el-button type="warning" size="small" v-if="!commodity.sold">下架</el-button>
+                                        <el-button type="danger" size="small" v-if="!commodity.sold">删除</el-button>
+                                        <el-button type="primary" size="small" v-if="commodity.sold"
+                                            @click="toOrderDetail(commodity)">查看订单</el-button>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+
+                </el-card>
+            </div>
+            <div class="loading-tips">
+                <p v-if="loading" class="bottomTips">正在获取更多 请稍等...</p>
+                <p v-if="noMore" class="bottomTips">没有更多了...</p>
+            </div>
+
+        </div>
     </div>
 
 </template>
+<script lang="ts" setup>
+import { computed, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router';
+import constant from "@/common/constant";
+import type Commodity from '@/interface/Commodity';
+import type CommonResult from "@/interface/CommonResult";
+import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
+import { FetchGetWithToken } from '@/util/fetchUtil';
+import { useUserStore, usePathStore } from '@/stores';
+import { ElLoading, ElMessage } from 'element-plus';
+import { result } from 'lodash';
+import router from '@/router';
+const pathStore = usePathStore();
+const userStore = useUserStore();
+const page = ref(0);
+const loading = ref(false);
+const noMore = ref(false);
+const disabled = computed(() => loading.value || noMore.value)
+const commodities = ref<Commodity[]>([])
+const load = function () {
+    loading.value = true
+    page.value += 1;
+    fetchcommodities(page.value);
+}
+const fetchcommodities = (PageNum: number) => {
+    FetchGetWithToken("/api/commodity/u?page=" + PageNum)
+        .then((result) => {
+            if (result.flag) {
+                if (result.data.length < 28) {
+                    noMore.value = true;
+                    loading.value = false;
+                }
+                commodities.value = commodities.value.concat(result.data);
+                console.log(commodities.value);
+                loading.value = false;
+            } else if (result.code == constant.NOT_LOGIN_CODE) {
+                userStore.loginFormVisible = true;
+            } else {
+                ElMessage({
+                    message: result.message,
+                    type: 'error'
+                })
+            }
+
+        })
+}
+const toOrderDetail = (commodity: Commodity) => {
+    FetchGetWithToken("/api/order/c/" + commodity.cid).then(result => {
+        if (result.flag) {
+            router.push({ name: "seller-order-detail", params: { oid: result.data.oid } })
+        } else if (result.code == constant.NOT_LOGIN_CODE) {
+            userStore.loginFormVisible = true;
+        } else {
+            ElMessage({
+                message: result.message,
+                type: 'error'
+            })
+        }
+    })
+}
+
+
+const getQualityClass = (quality: number) => {
+    if (quality >= 9.5) {
+        return 'success' as EpPropMergeType<StringConstructor, "success", unknown>;
+
+    } else if (quality >= 8) {
+        return "warning" as EpPropMergeType<StringConstructor, "warning", unknown>;
+
+    } else if (quality >= 7) {
+
+        return "info" as EpPropMergeType<StringConstructor, "info", unknown>;
+    } else if (quality < 7) {
+        return "danger" as EpPropMergeType<StringConstructor, "danger", unknown>;
+    }
+
+}
+
+const isMounted = ref(false);
+onMounted(() => {
+    isMounted.value = true;
+    load();
+    pathStore.path = [
+        { name: "个人中心", path: '/buyer/order' },
+        { name: "我的出价", path: '/buyer/bid' },
+    ]
+})
+</script>
+<style scoped>
+.push-button-wrapper {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.card {
+    margin-top: .5rem;
+}
+
+.commodity-card {
+    justify-content: space-around;
+}
+
+.loading-tips {
+    text-align: center;
+    font-size: small;
+    color: gray;
+    margin-top: .3rem;
+}
+
+.name-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.name-wrapper .status {
+    margin-left: .5rem;
+}
+
+.name {
+    font-size: large;
+    font-weight: 700;
+}
+
+.commodity-info-wrapper {
+    font-size: small;
+}
+
+.commodity-info-wrapper>div {
+    margin-top: .5rem;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+}
+
+.info>span {
+    margin-top: .5rem;
+}
+
+.priceAndQualityWrapper {
+    margin-top: 1rem !important;
+}
+
+.quality {
+    margin-left: .3rem;
+}
+
+.price {
+    font-size: larger;
+    color: red;
+}
+
+.bottom-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.bottom {
+    display: flex;
+    justify-content: space-between;
+}
+
+.view-count {
+    font-size: small;
+    color: gray;
+}
+
+.launch-time {
+    margin-top: .3rem;
+    font-size: small;
+    color: gray;
+}
+
+
+
+.commodity-button {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.commodity-button>button {
+    margin-top: .3rem;
+}
+</style>

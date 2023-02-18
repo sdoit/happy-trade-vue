@@ -116,6 +116,13 @@ const router = createRouter({
         },
       ]
     },
+    //商品发布
+    {
+      path: '/launch',
+      name: 'launch',
+      meta: { mode: 'backstage' },
+      component: () => import('../views/backstage/Launch.vue')
+    }
   ]
 })
 

@@ -7,11 +7,7 @@ import constant from '@/common/constant';
 import type Commodity from '@/interface/Commodity';
 import type UserAddress from '@/interface/UserAddress';
 import type Order from '@/interface/Order';
-// 定义Store实例并导出，useStore可以是任何东西，比如useUser, useCart
-// 第一个参数，唯一不可重复，字符串类型，作为仓库ID 以区分仓库
-// 第二个参数，以对象形式配置仓库的state,getters,actions
 export const useStore = defineStore('main', {
-  // state 推荐箭头函数，为了TS类型推断
   state: () => {
     return {
       //backstage:后台模式，reception:前台模式
@@ -34,7 +30,15 @@ export const useUserStore = defineStore('user', {
       addressList: {} as UserAddress[]
     }
   },
-  getters: {},
+  getters: {
+    tokenName: () => {
+      return localStorage.getItem(constant.TOKEN_NAME_KEY);
+    },
+    tokenValue: () => {
+      return localStorage.getItem(constant.TOKEN_VALUE_KEY);
+    }
+
+  },
   actions: {
     async login() {
       return await fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/user/login", {

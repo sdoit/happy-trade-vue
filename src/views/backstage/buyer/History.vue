@@ -15,7 +15,7 @@
             <div v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled"
                 infinite-scroll-immediate="false">
                 <el-row v-for="i in rowCount" class="list-item" :gutter="5">
-                    <el-col v-for="viewHistory in viewHistoryList.slice((i - 1) * 4, i * 4)" :key="viewHistory.hid"
+                    <el-col v-for="viewHistory, index in viewHistoryList.slice((i - 1) * 4, i * 4)" :key="index"
                         :span="6">
                         <router-link :to="{ name: 'commodity', params: { cid: viewHistory.commodity.cid } }" class="a">
                             <el-card :body-style="{ padding: '.3rem' }" shadow="hover">
@@ -144,8 +144,6 @@ onMounted(() => {
 })
 </script>
 <style scoped>
-
-
 .price {
     font-size: smaller;
     color: red;

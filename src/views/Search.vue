@@ -97,7 +97,6 @@ const fetchcommodities = (PageNum: number) => {
             if (json.data.length < 28) {
                 noMore.value = true;
                 loading.value = false;
-                return;
             }
             data.value = data.value.concat(json.data);
             rowCount.value += Math.ceil(json.data.length / 4);

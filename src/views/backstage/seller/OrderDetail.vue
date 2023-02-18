@@ -16,7 +16,7 @@
                         <span class="time">发布时间：{{ order.commodity.time }}</span>
                         <div class="info-bottom">
                             <span class="view-count">浏览量：{{ order.commodity.viewCount }}</span>
-                            <span class="seller-price">卖家标价：{{ order.commodity.price }}</span>
+                            <span class="buyer-price">卖家标价：{{ order.commodity.price }}</span>
 
                         </div>
                     </div>
@@ -24,18 +24,18 @@
 
             </el-card>
             <el-card>
-                <div class="seller-wrapper">
-                    <div class="seller-head">
+                <div class="buyer-wrapper">
+                    <div class="buyer-head">
                         <div>
                             <el-avatar :src="constant.NGINX_SERVER_HOST + order.user.avatar"></el-avatar>
                         </div>
-                        <div class="seller-name-wrapper">
-                            <span class="seller-name">{{ order.user.nickname }}</span>
-                            <span class="seller-username">@{{ order.user.username }}</span>
+                        <div class="buyer-name-wrapper">
+                            <span class="buyer-name">{{ order.user.nickname }}</span>
+                            <span class="buyer-username">@{{ order.user.username }}</span>
                         </div>
                     </div>
                     <div>
-                        <div class="seller-appraisal">
+                        <div class="buyer-appraisal">
                             <span>作为卖家卖出432件商品，好评率67%</span>
                             <span>作为买家买到64件商品，好评率98%</span>
                         </div>
@@ -130,8 +130,9 @@
                     </el-row>
 
                     <div class="order-bottom">
-                        <el-button size="small">联系卖家</el-button>
-                        <el-button size="small">退货申请</el-button>
+                        <el-button size="small">联系买家</el-button>
+                        <el-button size="small">关闭交易</el-button>
+                        <el-button size="small">发货</el-button>
                         <el-button size="small">交易快照</el-button>
                     </div>
                 </div>
@@ -171,8 +172,8 @@ FetchGetWithToken("/api/order/oid/" + route.params.oid).then(result => {
 onMounted(() => {
     pathStore.path = [
         { name: "个人中心", path: '/buyer/order' },
-        { name: "我的订单", path: '/buyer/order' },
-        { name: "订单详情", path: '/buyer/order/' + order.value?.oid },
+        { name: "我的订单", path: '/seller/order' },
+        { name: "订单详情", path: '/seller/order/' + order.value?.oid },
     ]
 });
 </script>
@@ -207,7 +208,7 @@ onMounted(() => {
 
 }
 
-.commodity-info-wrapper .seller-price {
+.commodity-info-wrapper .buyer-price {
     font-size: small;
     color: rgb(255, 136, 136);
     font-weight: 700;
@@ -219,53 +220,53 @@ onMounted(() => {
     align-items: center;
 }
 
-.seller-wrapper {
+.buyer-wrapper {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.seller-head {
+.buyer-head {
     margin-left: 4rem;
     display: flex;
     align-items: center;
 }
 
-.seller-wrapper .seller-name-wrapper {
+.buyer-wrapper .buyer-name-wrapper {
     display: flex;
     flex-direction: column;
     margin-left: .5rem;
 
 }
 
-.seller-name {
+.buyer-name {
     font-size: medium;
     font-weight: 700;
 }
 
-.seller-username {
+.buyer-username {
     font-size: small;
     color: gray;
 }
 
-.seller-appraisal {
+.buyer-appraisal {
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-.seller-bottom {
+.buyer-bottom {
     display: flex;
     margin-top: .3rem;
     justify-content: end;
 }
 
-.seller-appraisal {
+.buyer-appraisal {
     font-size: small;
     color: gray;
 }
 
-.seller-appraisal>span {
+.buyer-appraisal>span {
     margin-bottom: .1rem;
 }
 
