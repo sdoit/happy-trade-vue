@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-result v-if="rowCount == 0" title="没有浏览历史" sub-title="你还没浏览过过任何商品">
+        <el-result v-if="show" title="没有浏览历史" sub-title="你还没浏览过过任何商品">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
                     <path fill="#888888"
@@ -15,18 +15,13 @@
             <div v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled"
                 infinite-scroll-immediate="false">
                 <el-row v-for="i in rowCount" class="list-item" :gutter="5">
-                    <el-col v-for="viewHistory, index in viewHistoryList.slice((i - 1) * 4, i * 4)" :key="index"
-                        :span="6">
+                    <el-col v-for="viewHistory, index in viewHistoryList.slice((i - 1) * 4, i * 4)" :key="index" :span="6">
                         <router-link :to="{ name: 'commodity', params: { cid: viewHistory.commodity.cid } }" class="a">
                             <el-card :body-style="{ padding: '.3rem' }" shadow="hover">
                                 <div class="img-wrapper">
                                     <el-image loading="lazy" :src="
-                                        constant.NGINX_SERVER_HOST + '/'
-                                        + viewHistory.cover.type + '/'
-                                        + viewHistory.cover.uid + '/'
-                                        + viewHistory.cover.date + '/'
-                                        + viewHistory.cover.fileName
-                                    " :fit="'fill'" class="cover">
+                                        constant.NGINX_SERVER_HOST + '/' + viewHistory.commodity.cover" :fit="'fill'"
+                                        class="cover">
                                         <template #placeholder>
                                             <div class="img-slot-wrapper">
                                                 <img src="/img/loading.svg" alt="正在加载" />
@@ -41,11 +36,10 @@
                                 </div>
                                 <div style="padding: 14px">
                                     <div class="priceAndQualityWrapper">
-                                        <span class="price">{{ "￥ "+ viewHistory.commodity.price }}</span>
-                                        <el-tag class="quality"
-                                            :type="getQualityClass(viewHistory.commodity.quality)">{{
-                                                viewHistory.commodity.quality
-                                            }}新</el-tag>
+                                        <span class="price">{{ "￥ " + viewHistory.commodity.price }}</span>
+                                        <el-tag class="quality" :type="getQualityClass(viewHistory.commodity.quality)">{{
+                                            viewHistory.commodity.quality
+                                        }}新</el-tag>
                                     </div>
                                     <div class="name-wrapper">
                                         <span class="name">{{ viewHistory.commodity.name }}</span>
@@ -68,7 +62,6 @@
             <p v-if="noMore" class="bottomTips">没有更多了...</p>
         </div>
     </div>
-
 </template>
 
 <script setup lang="ts">
@@ -79,10 +72,11 @@ import type Commodity from '@/interface/Commodity';
 import type CommonResult from "@/interface/CommonResult";
 import type ViewHistory from "@/interface/ViewHistory";
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
-import { FetchGetWithToken } from '@/util/fetchUtil';
-import { useUserStore, usePathStore } from '@/stores'
+import { FetchGetWithToken } from '@/util/FetchUtil';
+import { useUserStore, usePathStore, useLoadingStore } from '@/stores'
 import { ElLoading, ElMessage } from 'element-plus';
-
+const loadingStore = useLoadingStore();
+const show = ref();
 const userStore = useUserStore();
 const rowCount = ref(0);
 const page = ref(0);
@@ -98,23 +92,17 @@ const load = function () {
 }
 const fetchHistory = (PageNum: number) => {
     FetchGetWithToken("/api/history?" + "page=" + PageNum)
-        .then(result => {
-            if (result.flag) {
-                if (result.data.length < 28) {
-                    noMore.value = true;
-                    loading.value = false;
-                }
-                viewHistoryList.value = viewHistoryList.value.concat(result.data);
-                rowCount.value += Math.ceil(result.data.length / 4);
+        .then(data => {
+            if (data.length < 28) {
+                noMore.value = true;
                 loading.value = false;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            } else {
-                ElMessage({
-                    message: result.message,
-                    type: 'error'
-                })
             }
+            viewHistoryList.value = viewHistoryList.value.concat(data);
+            rowCount.value += Math.ceil(data.length / 4);
+            loading.value = false;
+            show.value = rowCount.value == 0;
+
+            loadingStore.clodeLoading();
         })
 }
 
@@ -146,7 +134,7 @@ onMounted(() => {
 <style scoped>
 .price {
     font-size: smaller;
-    color: red;
+    color: #e4393c;
 }
 
 .time {
@@ -155,6 +143,23 @@ onMounted(() => {
 
 a {
     text-decoration: none;
+}
+
+.img-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.cover {
+    height: 10rem;
+}
+
+.img-slot-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 .name {

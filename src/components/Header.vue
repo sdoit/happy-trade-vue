@@ -11,15 +11,31 @@
         <el-col :span="8">
             <div class="grid-content option">
                 <ul>
-                    <li><el-link :underline="false" @click="$emit('toHistory')">足迹</el-link></li>
-                    <li><el-link :underline="false" @click="$emit('toOrder')">信息</el-link></li>
-                    <li><el-link :underline="false" @click="$emit('toOrder')">发布商品</el-link></li>
-                    <li><el-link :underline="false" @click="$emit('toOrder')">订单</el-link></li>
                     <li>
-                        <el-link v-if="!userStore.logged" :underline="false"
+                        <router-link :to="{ name: 'launch' }">
+                            <el-link :underline="false">发布商品</el-link>
+                        </router-link>
+                    </li>
+                    <li>
+                        <router-link :to="{ name: 'buyer-order' }">
+                            <el-link :underline="false">订单</el-link>
+                        </router-link>
+                    </li>
+                    <li>
+                        <router-link :to="{ name: 'buyer-bid' }">
+                            <el-link :underline="false">出价</el-link>
+                        </router-link>
+                    </li>
+                    <li>
+                        <router-link :to="{ name: 'home-wallet' }">
+                            <el-link :underline="false">钱包</el-link>
+                        </router-link>
+                    </li>
+                    <li>
+                        <el-link v-show="!userStore.logged" :underline="false"
                             @click="userStore.loginFormVisible = true">登录</el-link>
-                        <div v-if="userStore.logged">
-                            <el-dropdown>
+                        <div v-show="userStore.logged">
+                            <el-dropdown v-show="userStore.logged">
                                 <div class="nickname-wrapper">
                                     <el-avatar :size="30" :src="constant.NGINX_SERVER_HOST + userStore.user.avatar" />
                                     <span class="nickname">{{ userStore.user.nickname }}</span>
@@ -71,20 +87,12 @@ import router from '@/router';
 const userStore = useUserStore();
 const reload = inject('reload') as Function
 const loginOut = () => {
-    userStore.logout().then(result => {
-        if (result?.flag) {
-            ElMessage({
-                message: "退出成功",
-                type: "success"
+    userStore.logout().then(data => {
+        ElMessage({
+            message: "退出成功",
+            type: "success"
 
-            })
-        } else {
-            ElMessage({
-                message: result?.message,
-                type: "error"
-
-            })
-        }
+        })
         reload();
     })
 }
@@ -107,6 +115,7 @@ const loginOut = () => {
     height: 3rem;
     display: flex;
     align-items: center;
+    z-index: 999;
 }
 
 .nickname-wrapper {

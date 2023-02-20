@@ -8,11 +8,11 @@
                 </svg>
             </template>
             <template #extra>
-                <el-button type="primary">发布商品</el-button>
+                <el-button type="primary" @click="toLaunch">发布商品</el-button>
             </template>
         </el-result>
         <div v-if="commodities != undefined && commodities.length != 0" class="push-button-wrapper">
-            <el-button type="primary">发布新商品</el-button>
+            <el-button type="primary" @click="toLaunch">发布新商品</el-button>
         </div>
         <div class="infinite-list-wrapper" v-if="isMounted">
             <div v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled"
@@ -22,11 +22,7 @@
                     <el-row class="commodity-card">
                         <el-col :span="5" class="img-wrapper">
                             <el-image loading="lazy" :src="
-                                constant.NGINX_SERVER_HOST + '/'
-                                + commodity.cover.type + '/'
-                                + commodity.cover.uid + '/'
-                                + commodity.cover.date + '/'
-                                + commodity.cover.fileName
+                                constant.NGINX_SERVER_HOST + '/' + commodity.cover
                             " :fit="'fill'" class="cover">
                                 <template #placeholder>
                                     <div class="img-slot-wrapper">
@@ -42,33 +38,50 @@
                         </el-col>
                         <el-col :span="17" class="commodity-info-wrapper">
                             <div class="name-wrapper">
-                                <span class="name">{{ commodity.name }}</span><el-tag class="status"
+                                <span class="name">{{ commodity.name }}</span>
+                                <el-tag class="quality" :type="getQualityClass(commodity.quality)">{{ commodity.quality
+                                }}新</el-tag>
+
+                                <el-tag class="status"
                                     :type="commodity.sold ? 'danger' : commodity.launched ? 'success' : 'warning'">{{
                                         commodity.sold ? '已售出' : commodity.launched ? '上架中' : '已下架'
                                     }}</el-tag>
                             </div>
                             <div class="priceAndQualityWrapper">
-                                <span class="price">{{ "￥ "+ commodity.price }}</span>
-                                <el-tag class="quality" :type="getQualityClass(commodity.quality)">{{
-                                    commodity.quality
-                                }}新</el-tag>
-
+                                <span class="price">{{ "￥ " + commodity.price }}</span>
                             </div>
                             <div class="info">
-                                <span>类型：{{ commodity.typeName }}</span>
-                                <span>4人已出价</span>
+                                <el-row>
+                                    <el-col :span="8">
+                                        <span>商品编号：{{ commodity.cid }}</span>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <span>类型：{{ commodity.type.typeName }}</span>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="8">
+                                        <span>{{ commodity.bidCount }} 人出价</span>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <span class="view-count" v-show="commodity.viewCount > 0">{{
+                                            commodity.viewCount
+                                        }}人看过</span>
+                                    </el-col>
+                                </el-row>
                             </div>
                             <div class="bottom-wrapper">
-                                <span class="view-count" v-show="commodity.viewCount > 0">{{
-                                    commodity.viewCount
-                                }}人看过</span>
                                 <div class="bottom">
                                     <time class="launch-time">{{ commodity.time }}</time>
                                     <div class="commodity-button">
-                                        <el-button type="primary" size="small" v-if="!commodity.sold">查看出价</el-button>
-                                        <el-button type="primary" size="small" v-if="!commodity.sold">编辑</el-button>
-                                        <el-button type="warning" size="small" v-if="!commodity.sold">下架</el-button>
-                                        <el-button type="danger" size="small" v-if="!commodity.sold">删除</el-button>
+                                        <el-button type="primary" size="small" v-if="!commodity.sold"
+                                            :disabled="commodity.bidCount == '0'" @click="toBid(commodity)">查看出价</el-button>
+                                        <el-button type="primary" size="small" v-if="!commodity.sold"
+                                            @click="toEdit(commodity)">编辑</el-button>
+                                        <el-button type="warning" size="small" v-if="!commodity.sold"
+                                            @click="getDown(commodity)">下架</el-button>
+                                        <el-button type="danger" size="small" v-if="!commodity.sold"
+                                            @click="deleteCommodity(commodity)">删除</el-button>
                                         <el-button type="primary" size="small" v-if="commodity.sold"
                                             @click="toOrderDetail(commodity)">查看订单</el-button>
                                     </div>
@@ -86,7 +99,6 @@
 
         </div>
     </div>
-
 </template>
 <script lang="ts" setup>
 import { computed, ref, onMounted } from 'vue'
@@ -95,11 +107,11 @@ import constant from "@/common/constant";
 import type Commodity from '@/interface/Commodity';
 import type CommonResult from "@/interface/CommonResult";
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
-import { FetchGetWithToken } from '@/util/fetchUtil';
-import { useUserStore, usePathStore } from '@/stores';
+import { FetchDeleteWithToken, FetchGetWithToken } from '@/util/FetchUtil';
+import { useUserStore, usePathStore, useLoadingStore } from '@/stores';
 import { ElLoading, ElMessage } from 'element-plus';
-import { result } from 'lodash';
 import router from '@/router';
+const loadingStore = useLoadingStore();
 const pathStore = usePathStore();
 const userStore = useUserStore();
 const page = ref(0);
@@ -114,23 +126,16 @@ const load = function () {
 }
 const fetchcommodities = (PageNum: number) => {
     FetchGetWithToken("/api/commodity/u?page=" + PageNum)
-        .then((result) => {
-            if (result.flag) {
-                if (result.data.length < 28) {
-                    noMore.value = true;
-                    loading.value = false;
-                }
-                commodities.value = commodities.value.concat(result.data);
-                console.log(commodities.value);
+        .then(data => {
+            if (data.length < 28) {
+                noMore.value = true;
                 loading.value = false;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            } else {
-                ElMessage({
-                    message: result.message,
-                    type: 'error'
-                })
             }
+            commodities.value = commodities.value.concat(data);
+            console.log(commodities.value);
+            loading.value = false;
+            loadingStore.clodeLoading();
+
 
         })
 }
@@ -139,6 +144,7 @@ const toOrderDetail = (commodity: Commodity) => {
         if (result.flag) {
             router.push({ name: "seller-order-detail", params: { oid: result.data.oid } })
         } else if (result.code == constant.NOT_LOGIN_CODE) {
+            ElMessage.error('登录过期，请重新登录');
             userStore.loginFormVisible = true;
         } else {
             ElMessage({
@@ -164,6 +170,28 @@ const getQualityClass = (quality: number) => {
         return "danger" as EpPropMergeType<StringConstructor, "danger", unknown>;
     }
 
+}
+
+const toBid = (commodity: Commodity) => {
+    router.push({ name: "seller-bid-by-cid", params: { cid: commodity.cid } })
+}
+const toEdit = (commodity: Commodity) => {
+    router.push({ name: "edit", params: { cid: commodity.cid } });
+}
+//下架
+const getDown = (commodity: Commodity) => {
+
+}
+
+const deleteCommodity = (commodity: Commodity) => {
+    FetchDeleteWithToken("/api/commodity/" + commodity.cid).then(result => {
+        ElMessage.success("删除成功！");
+        //reload
+
+    })
+}
+const toLaunch = () => {
+    router.push({ name: "launch" });
 }
 
 const isMounted = ref(false);
@@ -199,7 +227,7 @@ onMounted(() => {
 
 .name-wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .name-wrapper .status {
@@ -224,7 +252,7 @@ onMounted(() => {
     flex-direction: column;
 }
 
-.info>span {
+.info>div {
     margin-top: .5rem;
 }
 
@@ -238,7 +266,7 @@ onMounted(() => {
 
 .price {
     font-size: larger;
-    color: red;
+    color: #e4393c;
 }
 
 .bottom-wrapper {

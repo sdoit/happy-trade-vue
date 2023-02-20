@@ -1,13 +1,16 @@
 import { defineStore } from 'pinia'
 import type User from '@/interface/User';
 import type CommonResult from '@/interface/CommonResult';
-import type CommodityBid from '@/interface/CommodityBid';
-import { FetchGetWithToken, FetchPostWithToken } from '@/util/fetchUtil';
+import type { Bid } from '@/interface/CommodityBid';
+import { FetchGetWithToken, FetchPostWithToken, FetchPostWithTokenNoLoginRequired } from '@/util/FetchUtil';
 import constant from '@/common/constant';
 import type Commodity from '@/interface/Commodity';
 import type UserAddress from '@/interface/UserAddress';
-import type Order from '@/interface/Order';
-export const useStore = defineStore('main', {
+import SSEInit from '@/util/SSEUtil'
+import type UserMessage from '@/interface/UserMessage';
+import { ref, nextTick } from 'vue';
+import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
+export const useModeStore = defineStore('mode', {
   state: () => {
     return {
       //backstage:后台模式，reception:前台模式
@@ -36,7 +39,7 @@ export const useUserStore = defineStore('user', {
     },
     tokenValue: () => {
       return localStorage.getItem(constant.TOKEN_VALUE_KEY);
-    }
+    },
 
   },
   actions: {
@@ -57,6 +60,8 @@ export const useUserStore = defineStore('user', {
             this.logged = true;
             localStorage.setItem(constant.TOKEN_NAME_KEY, this.user?.tokenName as string);
             localStorage.setItem(constant.TOKEN_VALUE_KEY, this.user?.tokenValue as string);
+            //连接SSE
+            SSEInit();
           }
           return result
 
@@ -64,29 +69,28 @@ export const useUserStore = defineStore('user', {
     },
     async logout() {
       if (this.logged) {
-        return await FetchPostWithToken("/api/user/logout").then(result => {
-          if (result.flag) {
-            this.user = {} as User
-            this.logged = false;
-          }
-          return result;
+        return await FetchPostWithToken("/api/user/logout").then(data => {
+          this.user = {} as User
+          this.logged = false;
         });
       }
     },
     async checkLogin() {
-      return await FetchPostWithToken("/api/user/check").then(result => {
-        if (result.flag) {
+      return await FetchPostWithTokenNoLoginRequired("/api/user/check").then(result => {
+        if (result?.flag) {
           //已经登录
           this.user = result.data;
-          this.logged = true;
-
+          //连接SSE
+          SSEInit();
         }
-        return result;
+        this.logged = result?.flag as boolean;
+        return result?.flag;
       })
     }
 
   }
 });
+
 
 export const useBidStepStore = defineStore('bid', {
 
@@ -94,7 +98,7 @@ export const useBidStepStore = defineStore('bid', {
     return {
       commodity: {} as Commodity,
       address: {} as UserAddress,
-      commodityBid: {} as CommodityBid,
+      commodityBid: {} as Bid,
       seller: {} as User
     }
   },
@@ -104,6 +108,8 @@ export const useBidStepStore = defineStore('bid', {
 
   }
 });
+
+
 
 export const usePathStore = defineStore('path', {
 
@@ -118,5 +124,57 @@ export const usePathStore = defineStore('path', {
   actions: {
 
 
+  }
+});
+
+export const useLoadingStore = defineStore('loading', {
+
+  state: () => {
+    return {
+      isLoading: false
+    }
+  },
+  actions: {
+    loading() {
+      this.isLoading = true;
+    },
+    clodeLoading() {
+      this.isLoading = false;
+    }
+  }
+});
+export const useUserMessageStore = defineStore('message', {
+
+  state: () => {
+    return {
+      chatDrawerVisible: false,
+      chatUserUid: '',
+      messageList: [] as UserMessage[],
+      chatMessage: '',
+    }
+  },
+  actions: {
+    showMessageDrawer() {
+      this.chatDrawerVisible = true;
+    },
+    clodeMessageDrawer() {
+      this.chatDrawerVisible = false;
+    },
+    async chatSend() {
+      return await FetchPostWithToken("/api/message", JSON.stringify({
+        content: this.chatMessage,
+        uidReceive: this.chatUserUid
+      })).then(data => {
+        //发送成功
+        this.chatMessage = '';
+        this.fetMessage();
+        return true;
+      })
+    },
+    fetMessage() {
+      FetchGetWithToken("/api/message/" + this.chatUserUid).then(data => {
+        this.messageList = data;
+      })
+    }
   }
 });

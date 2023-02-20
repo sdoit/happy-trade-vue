@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-result v-if="rowCount == 0" title="没有收藏" sub-title="你还没收藏过任何商品">
+        <el-result v-if="show" title="没有收藏" sub-title="你还没收藏过任何商品">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
                     <path fill="#888888"
@@ -21,11 +21,7 @@
                             <el-card :body-style="{ padding: '.3rem' }" shadow="hover">
                                 <div class="img-wrapper">
                                     <el-image loading="lazy" :src="
-                                        constant.NGINX_SERVER_HOST + '/'
-                                        + userFavorite.cover.type + '/'
-                                        + userFavorite.cover.uid + '/'
-                                        + userFavorite.cover.date + '/'
-                                        + userFavorite.cover.fileName
+                                        constant.NGINX_SERVER_HOST + '/' + userFavorite.commodity.cover
                                     " :fit="'fill'" class="cover">
                                         <template #placeholder>
                                             <div class="img-slot-wrapper">
@@ -41,11 +37,10 @@
                                 </div>
                                 <div style="padding: 14px">
                                     <div class="priceAndQualityWrapper">
-                                        <span class="price">{{ "￥ "+ userFavorite.commodity.price }}</span>
-                                        <el-tag class="quality"
-                                            :type="getQualityClass(userFavorite.commodity.quality)">{{
-                                                userFavorite.commodity.quality
-                                            }}新</el-tag>
+                                        <span class="price">{{ "￥ " + userFavorite.commodity.price }}</span>
+                                        <el-tag class="quality" :type="getQualityClass(userFavorite.commodity.quality)">{{
+                                            userFavorite.commodity.quality
+                                        }}新</el-tag>
                                     </div>
                                     <div class="name-wrapper">
                                         <span class="name">{{ userFavorite.commodity.name }}</span>
@@ -66,17 +61,17 @@
         </div>
 
     </div>
-
 </template>
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import constant from "@/common/constant";
 import type UserFavorite from "@/interface/UserFavorite";
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
-import { FetchGetWithToken } from '@/util/fetchUtil';
-import { useUserStore, usePathStore } from '@/stores'
+import { FetchGetWithToken } from '@/util/FetchUtil';
+import { useUserStore, usePathStore, useLoadingStore } from '@/stores'
 import { ElLoading, ElMessage } from 'element-plus';
-
+const loadingStore = useLoadingStore();
+const show = ref();
 const userStore = useUserStore();
 const rowCount = ref(0);
 const page = ref(0);
@@ -92,24 +87,19 @@ const load = function () {
 }
 const fetchFavorites = (PageNum: number) => {
     FetchGetWithToken("/api/favorites?" + "page=" + PageNum)
-        .then(result => {
-            if (result.flag) {
-                if (result.data.length < 30) {
-                    noMore.value = true;
-                    loading.value = false;
-                }
-                userFavorites.value = userFavorites.value.concat(result.data);
-                rowCount.value += Math.ceil(result.data.length / 4);
+        .then(data => {
 
+            if (data.length < 30) {
+                noMore.value = true;
                 loading.value = false;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            } else {
-                ElMessage({
-                    message: result.message,
-                    type: 'error'
-                })
             }
+            userFavorites.value = userFavorites.value.concat(data);
+            rowCount.value += Math.ceil(data.length / 4);
+            loading.value = false;
+            show.value = rowCount.value == 0
+
+            loadingStore.clodeLoading();
+
         })
 }
 
@@ -142,7 +132,7 @@ onMounted(() => {
 <style scoped>
 .price {
     font-size: smaller;
-    color: red;
+    color: #e4393c;
 }
 
 .time {
@@ -151,6 +141,23 @@ onMounted(() => {
 
 a {
     text-decoration: none;
+}
+
+.img-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.cover {
+    height: 10rem;
+}
+
+.img-slot-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 .name {

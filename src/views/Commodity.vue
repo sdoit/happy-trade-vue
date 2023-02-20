@@ -16,29 +16,19 @@
                 <el-col :span="16">
                     <el-row>
                         <el-col :span="7">
-                            <el-carousel class="imgs" :arrow="'hover'">
-                                <el-carousel-item v-for="res in commodity?.resources" :key="res.fileName" class="imgs">
-                                    <el-image loading="lazy" :src="
-                                        constant.NGINX_SERVER_HOST + '/'
-                                        + res.type + '/'
-                                        + res.uid + '/'
-                                        + res.date + '/'
-                                        + res.fileName
-                                    " :fit="'fill'" class="res-img">
-                                        <template #placeholder>
-                                            <div class="img-slot-wrapper">
-                                                <img src="/img/loading.svg" alt="正在加载" />
-                                            </div>
-                                        </template>
-                                        <template #error>
-                                            <div class="img-slot-wrapper">
-                                                <img src="/img/error.svg" alt="图片加载失败" />
-                                            </div>
-                                        </template>
-                                    </el-image>
-
-                                </el-carousel-item>
-                            </el-carousel>
+                            <el-image loading="lazy" :src="constant.NGINX_SERVER_HOST + '/' + commodity?.cover"
+                                :fit="'fill'" class="res-img">
+                                <template #placeholder>
+                                    <div class="img-slot-wrapper">
+                                        <img src="/img/loading.svg" alt="正在加载" />
+                                    </div>
+                                </template>
+                                <template #error>
+                                    <div class="img-slot-wrapper">
+                                        <img src="/img/error.svg" alt="图片加载失败" />
+                                    </div>
+                                </template>
+                            </el-image>
                         </el-col>
                         <el-col :span="15" :offset="2">
 
@@ -50,16 +40,24 @@
                             <el-row justify="space-between" class="tips">
                                 <el-col :span="12">
                                     <el-row justify="start">
-                                        <el-col :span="3"><span class="quality">{{
-                                            Math.round(
-                                                commodity?.quality! * 10)
-                                        }}新</span></el-col>
-                                        <el-col :span="3"><span class="free-shipping">包邮</span></el-col>
+                                        <el-col>
+                                            <span class="commodity-type">{{ commodity?.type.typeName }}</span>
+                                            <span class="quality">{{ Math.round(commodity?.quality! * 10) }}新</span>
+                                            <span class="free-shipping">包邮</span>
+                                        </el-col>
+
+
+                                    </el-row>
+                                    <el-row justify="start">
+                                        <el-col>
+                                            <el-tag v-for="tag in commodity?.tags" :key="tag.tid" :type="getTagType(tag)"
+                                                class="commodity-tag">{{ tag.tag }}</el-tag>
+                                        </el-col>
                                     </el-row>
                                 </el-col>
                                 <el-col :span="5" class="right-wrapper"><span class="view-count">{{
-                                commodity?.viewCount == 0 ?
-                                '您是本商品的第1个看客' : commodity?.viewCount + '人浏览过'}}</span></el-col>
+                                    commodity?.viewCount == 0 ?
+                                    '您是本商品的第1个看客' : commodity?.viewCount + '人浏览过' }}</span></el-col>
                             </el-row>
 
                             <el-row class="price-wrapper" justify="space-between">
@@ -80,23 +78,23 @@
                                                 <el-row class="seller-item">
                                                     <el-col :span="4">
                                                         <el-avatar :size="70"
-                                                            :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
+                                                            :src="constant.NGINX_SERVER_HOST + commodity?.user.avatar" />
                                                     </el-col>
                                                     <el-col :span="20">
                                                         <el-row>
                                                             <el-col class="seller-item-text-wrapper seller-item"><span
                                                                     class="seller-nickname">{{
-                                                                        seller?.nickname
+                                                                        commodity?.user.nickname
                                                                     }}</span></el-col>
                                                             <el-col class="seller-item-text-wrapper seller-item"><span
                                                                     class="seller-username">@{{
-                                                                        seller?.username
+                                                                        commodity?.user.username
                                                                     }}</span></el-col>
                                                         </el-row>
                                                         <el-row class="introduction-wrapper">
                                                             <el-col
                                                                 class="seller-item-text-wrapper seller-item introduction"><span>{{
-                                                                    seller?.introduction
+                                                                    commodity?.user.introduction
                                                                 }}</span></el-col>
                                                         </el-row>
                                                     </el-col>
@@ -121,9 +119,8 @@
                             <el-row class="button-wrapper" justify="end">
                                 <el-col :span="3">
                                     <el-popconfirm title="你确定不通过出价购买，而用卖家标价直接购买本商品吗?" confirm-button-text="继续购买"
-                                        cancel-button-text="我要出价" confirm-button-type="danger"
-                                        cancel-button-type="primary" @confirm="goOrder" @cancel="toBidView"
-                                        width="20rem">
+                                        cancel-button-text="我要出价" confirm-button-type="danger" cancel-button-type="primary"
+                                        @confirm="goOrder" @cancel="toBidView" width="20rem">
                                         <template #reference>
                                             <el-button type="danger">直接购买</el-button>
                                         </template>
@@ -131,7 +128,7 @@
 
                                 </el-col>
                                 <el-col :span="3">
-                                    <el-button type="success">联系卖家</el-button>
+                                    <el-button type="success" @click="toChat">联系卖家</el-button>
                                 </el-col>
                                 <el-col :span="2">
                                     <el-button type="primary" @click="toBidView">出价</el-button>
@@ -144,40 +141,32 @@
 
                     </el-row>
                     <el-divider class="divider">商品详情</el-divider>
-                    <el-row v-for="res in commodity?.resources">
-                        <el-col class="image-wrapper">
-                            <el-image :src="constant.NGINX_SERVER_HOST + '/'
-                            + res.type + '/'
-                            + res.uid + '/'
-                            + res.date + '/'
-                            + res.fileName" :fit="'contain'" />
-                        </el-col>
-                    </el-row>
-                    <el-divider content-position="left" class="divider">商品描述</el-divider>
                     <el-row>
                         <el-col>
-                            <p class="description-text"> {{ commodity?.description }}</p>
+                            <Editor v-model="valueHtml" :defaultConfig="editorConfig" :mode="mode"
+                                @onCreated="handleCreated" />
                         </el-col>
                     </el-row>
                     <el-divider content-position="left" class="divider">出价历史</el-divider>
                     <el-row>
                         <el-col>
                             <el-timeline>
-                                <el-timeline-item v-for="bid in commodityBids"
-                                    :type="bid.replySeller ? (bid.agree ? status.agree.type : status.reject.type) : status.unanswered.type"
-                                    :hollow="bid.replySeller ? (bid.agree ? status.agree.hollow : status.reject.hollow) : status.unanswered.hollow"
+                                <el-timeline-item v-for="bid in bids"
+                                    :type="bid.replySeller ? (bid.agree ? statusTimeLine.agree.type : statusTimeLine.reject.type) : statusTimeLine.unanswered.type"
+                                    :hollow="bid.replySeller ? (bid.agree ? statusTimeLine.agree.hollow : statusTimeLine.reject.hollow) : statusTimeLine.unanswered.hollow"
                                     :size="'large'" :timestamp="bid.timeCreated" placement="top">
                                     <el-card>
                                         <div class="bid-wrapper">
                                             <div :span="4" style="display: flex; align-items: center;">
-                                                <el-avatar :size="50" :src="constant.NGINX_SERVER_HOST + bid.avatar" />
+                                                <el-avatar :size="50"
+                                                    :src="constant.NGINX_SERVER_HOST + bid.buyer.avatar" />
                                                 <div style="margin-left:.5rem;">
                                                     <div class="quotation-swapper">
                                                         <div><span class="quotation-username"> {{
-                                                            bid.nickname
+                                                            bid.buyer.nickname
                                                         }}</span>
                                                             <el-tag style="margin-left: .2rem;"
-                                                                v-if="userStore.logged && bid.uidBuyer == userStore.user.uid">我</el-tag>
+                                                                v-if="userStore.logged && bid.buyer.uid == userStore.user.uid">我</el-tag>
                                                         </div>
                                                     </div>
                                                     <div class="quotation-swapper">
@@ -188,8 +177,8 @@
                                                 </div>
                                             </div>
                                             <div class="message-wrapper">
-                                                <el-alert class="quotation-message" :title="bid.messageBuyer"
-                                                    type="success" :closable="false" />
+                                                <el-alert class="quotation-message" :title="bid.messageBuyer" type="success"
+                                                    :closable="false" />
                                             </div>
                                         </div>
                                         <div v-if="bid.agree != undefined" class="reply-wrapper">
@@ -197,12 +186,12 @@
                                                 <div class="diversio-wire"></div>
                                             </div>
                                             <div class="quotation-padding"><el-avatar :size="50"
-                                                    :src="constant.NGINX_SERVER_HOST + seller?.avatar" /></div>
+                                                    :src="constant.NGINX_SERVER_HOST + commodity?.user.avatar" /></div>
                                             <div class="quotation-padding seller-nickname-wrapper">
                                                 <div class="nickname-wrapper">
                                                     <div>
                                                         <span class="quotation-username">{{
-                                                            seller?.nickname
+                                                            commodity?.user.nickname
                                                         }}</span><el-tag class="seller-tag">卖家</el-tag>
                                                     </div>
                                                 </div>
@@ -271,12 +260,8 @@
                 <div class="order-wrapper">
                     <div>
                         <el-space wrap>
-                            <el-image :src="constant.NGINX_SERVER_HOST + '/'
-                                + commodity?.resources[0].type + '/'
-                                + commodity?.resources[0].uid + '/'
-                                + commodity?.resources[0].date + '/'
-                                + commodity?.resources[0].fileName
-                            " style="width: 2rem; height: 2rem"></el-image>
+                            <el-image :src="constant.NGINX_SERVER_HOST + '/' + commodity?.cover"
+                                style="width: 2rem; height: 2rem"></el-image>
                             <span class="order-commodity-name">{{ commodity?.name }}</span>
                         </el-space>
                     </div>
@@ -287,17 +272,18 @@
                                 <el-col :span="10">
                                     <el-row class="seller-item">
                                         <el-col :span="6">
-                                            <el-avatar :size="40" :src="constant.NGINX_SERVER_HOST + seller?.avatar" />
+                                            <el-avatar :size="40"
+                                                :src="constant.NGINX_SERVER_HOST + commodity?.user.avatar" />
                                         </el-col>
                                         <el-col :span="18">
                                             <el-row>
                                                 <el-col class="seller-item-text-wrapper seller-item"><span
                                                         class="seller-nickname">{{
-                                                            seller?.nickname
+                                                            commodity?.user.nickname
                                                         }}</span></el-col>
                                                 <el-col class="seller-item-text-wrapper seller-item"><span
                                                         class="seller-username">@{{
-                                                            seller?.username
+                                                            commodity?.user.username
                                                         }}</span></el-col>
                                             </el-row>
                                         </el-col>
@@ -319,16 +305,14 @@
                         </el-card>
                     </div>
                     <div>
-                        <el-result v-if="addressDeafult == undefined" title="没有收货地址"
-                            sub-title="你还有没设置收货地址，请先设置收货地址后再下单">
+                        <el-result v-if="addressDeafult == undefined" title="没有收货地址" sub-title="你还有没设置收货地址，请先设置收货地址后再下单">
                             <template #icon>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
                                     <g fill="none" stroke="#888888" stroke-linecap="round" stroke-linejoin="round"
                                         stroke-width="2">
                                         <path
                                             d="M8 4h10a2 2 0 0 1 2 2v10m-.57 3.399c-.363.37-.87.601-1.43.601H8a2 2 0 0 1-2-2V6m4 10h6" />
-                                        <path
-                                            d="M11 11a2 2 0 0 0 2 2m2-2a2 2 0 0 0-2-2M4 8h3m-3 4h3m-3 4h3M3 3l18 18" />
+                                        <path d="M11 11a2 2 0 0 0 2 2m2-2a2 2 0 0 0-2-2M4 8h3m-3 4h3m-3 4h3M3 3l18 18" />
                                     </g>
                                 </svg>
                             </template>
@@ -381,7 +365,6 @@
             </el-dialog>
 
 
-
             <br />
             <br />
             <br />
@@ -399,82 +382,65 @@
         </div>
 
     </div>
-
 </template>
 <script setup lang="ts">
-
 import { Star, ArrowLeft } from '@element-plus/icons-vue'
-
+import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
 import constant from '@/common/constant';
 import { useRoute } from 'vue-router';
 import type Commodity from '@/interface/Commodity';
-import type CommodityBid from '@/interface/CommodityBid';
+import type { Bid, CommodityBid } from '@/interface/CommodityBid';
 import type CommonResult from "@/interface/CommonResult";
 import type UserAddress from "@/interface/UserAddress";
-import type User from '@/interface/User';
-import { ref, onMounted, computed, shallowRef } from 'vue';
+import type Tag from '@/interface/Tag';
+import { ref, onMounted, nextTick, shallowRef, onBeforeUnmount } from 'vue';
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 import BidStep1 from "@/components/BidStep1.vue";
 import BidStep2 from "@/components/BidStep2.vue";
 import BidStep3 from "@/components/BidStep3.vue";
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import { EventSourcePolyfill } from 'event-source-polyfill';
-import { useUserStore, useBidStepStore } from '@/stores'
-import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenRaw } from '@/util/fetchUtil';
-import { result } from 'lodash';
+import { useUserStore, useBidStepStore, useLoadingStore, useUserMessageStore } from '@/stores'
+import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenRaw } from '@/util/FetchUtil';
+import '@wangeditor/editor/dist/css/style.css'
+import '@/assets/css/wang.css'
 import router from '@/router';
 const userStore = useUserStore();
-
+const loadingStore = useLoadingStore();
+const userMessageStore = useUserMessageStore();
 const contentVisible = ref(false);
 //result组件
 const resultVisible = ref(false);
 const Route = useRoute();
 const commodity = ref<Commodity>();
-const seller = ref<User>();
 const fetchCommodity = () => {
     FetchGetWithToken("/api/commodity/" + Route.params.cid)
-        .then(result => {
-            if (result.flag) {
-                console.log(result.data.sold);
-                if (result.data.sold) {
-                    //商品已售出
-                    resultVisible.value = true;
-                    console.log("商品已售出");
-                    return;
-                }
-                contentVisible.value = true
-                commodity.value = result.data;
-                //获取卖家信息
-                fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/user/" + commodity.value?.uid)
-                    .then(response => response.json())
-                    .then((json: CommonResult) => {
-                        if (json.data != undefined) {
-                            seller.value = json.data;
-                        }
-                    });
-
-            } else {
-                ElMessage({
-                    message: result.message,
-                    type: "error"
-                });
+        .then(data => {
+            console.log(data.sold);
+            if (data.sold) {
+                //商品已售出
+                resultVisible.value = true;
+                console.log("商品已售出");
+                return;
             }
+            contentVisible.value = true
+            commodity.value = data;
+            //设置商品描述 富文本
+            valueHtml.value = commodity.value?.description;
+
             emits('loadDone');
+            loadingStore.clodeLoading();
         });
 }
 fetchCommodity();
-const commodityBids = ref<CommodityBid[]>([]);
+const bids = ref<Bid[]>([]);
 const fetchCommodityBid = () => {
     FetchGetWithToken("/api/bid/commodity/" + Route.params.cid)
-        .then(result => {
-            if (result.flag) {
-                commodityBids.value = result.data;
-            } else {
-                ElMessage({
-                    message: result.message,
-                    type: 'error'
-                })
+        .then(data => {
+            if (data != null && data.length > 0) {
+                bids.value = data.bids;
             }
+
         });
 }
 
@@ -483,26 +449,29 @@ const collect = () => {
     FetchPostWithToken("/api/favorites", JSON.stringify({
         cid: commodity.value?.cid
     })).then(result => {
-        if (result.flag) {
-            ElMessage({
-                message: "收藏成功",
-                type: 'success'
-            });
-            //点亮图标
-            //
-        } else if (result.code == constant.NOT_LOGIN_CODE) {
-            userStore.loginFormVisible = true;
-        } else {
-            ElMessage({
-                message: result.message,
-                type: 'error'
-            })
-        }
+        ElMessage({
+            message: "收藏成功",
+            type: 'success'
+        });
+        //点亮图标
+        //
     });
 }
 
 
-const status = {
+
+const tagType = ['' as EpPropMergeType<StringConstructor, '', unknown>,
+'success' as EpPropMergeType<StringConstructor, 'success', unknown>,
+'info' as EpPropMergeType<StringConstructor, 'info', unknown>,
+'danger' as EpPropMergeType<StringConstructor, 'danger', unknown>,
+'warning' as EpPropMergeType<StringConstructor, 'warning', unknown>];
+const getTagType = (tag: Tag) => {
+    let typeIndex = Number.parseInt(tag.tid) % tagType.length;
+    return tagType[typeIndex];
+}
+
+
+const statusTimeLine = {
     unanswered: {
         hollow: true,
         type: 'info' as EpPropMergeType<StringConstructor, 'info', unknown>
@@ -517,6 +486,38 @@ const status = {
     }
 
 }
+//wangeditor设置  
+const editorRef = shallowRef()
+const valueHtml = ref();
+const editorConfig = { readOnly: true, scroll: false }
+
+// 组件销毁时，也及时销毁编辑器
+onBeforeUnmount(() => {
+    const editor = editorRef.value
+    if (editor == null) return
+    editor.destroy()
+})
+
+const handleCreated = (editor: any) => {
+    editorRef.value = editor // 记录 editor 实例，重要！
+}
+const mode = "default"
+
+/**联系卖家 */
+const toChat = () => {
+    userMessageStore.chatUserUid = commodity.value?.cid as string
+    userMessageStore.fetMessage()
+    userMessageStore.showMessageDrawer();
+}
+// const messageList = shallowRef<UserMessage[]>([]);
+// const chatMessage = ref();
+// const chatDrawerVisible = ref(false);
+// const messageWrapper = ref();
+// const messageScrollbar = ref();
+
+
+//发送消息
+
 /**
  * 直接购买===================
  */
@@ -525,50 +526,29 @@ const goPayAlreadyOrder = ref(false);
 const addressDeafult = ref<UserAddress>()
 const goOrder = () => {
     userStore.checkLogin().then(result => {
-        if (result.flag) {
+        if (result) {
             openOrderDialog();
         } else {
+            ElMessage.error('登录过期，请重新登录');
             userStore.loginFormVisible = true;
         }
     });
 }
 const openOrderDialog = () => {
-    FetchGetWithToken("/api/order/" + commodity.value?.cid).then(result => {
-        if (result.flag) {
-            if (!result.data) {
-                FetchGetWithToken("/api/userAddress/u/default/")
-                    .then((result: CommonResult) => {
-                        if (result.flag) {
-                            addressDeafult.value = result.data;
-                            orderFormVisible.value = true;
-                        } else if (result.code == constant.NOT_LOGIN_CODE) {
-                            userStore.loginFormVisible = true;
-                        }
-                    });
-            } else {
-                ElMessage({
-                    message: "你已经存在一个对本商品的报价，请先取消出价再购买",
-                    type: "error"
+    FetchGetWithToken("/api/order/" + commodity.value?.cid).then(data => {
+        if (!data) {
+            FetchGetWithToken("/api/userAddress/u/default/")
+                .then(data => {
+                    addressDeafult.value = data;
+                    orderFormVisible.value = true;
                 });
-            }
-        } else if (result.code == constant.NOT_LOGIN_CODE) {
-            ElMessage({
-                message: "登录失效，请重新登录",
-                type: "error"
-            })
-            userStore.loginFormVisible = true;
         } else {
             ElMessage({
-                message: result.message,
+                message: "你已经存在一个对本商品的报价，请先取消出价再购买",
                 type: "error"
             });
         }
-
     })
-
-
-
-
 }
 
 const directGoPay = () => {
@@ -589,35 +569,27 @@ const directGoPay = () => {
     FetchPostWithToken("/api/order", JSON.stringify({
         "cid": commodity.value?.cid,
         "aid": addressDeafult.value?.aid,
-    })).then((result: CommonResult) => {
-        if (result.flag) {
-            FetchGetWithTokenRaw(result.data)
-                .then((response) => response.text())
-                .then((form) => {
-                    let divForm = document.getElementsByTagName('divform')
-                    if (divForm.length) {
-                        document.body.removeChild(divForm[0])
-                    }
-                    const div = document.createElement('divform')
-                    div.innerHTML = form
-                    document.body.appendChild(div)
-                    let alipay_form = document.getElementsByName('punchout_form')[0] as HTMLFormElement;
-                    alipay_form.setAttribute('target', '_blank');
-                    alipay_form.submit();
-                }).catch((err) => {
-                    console.log(err);
-                });
-
-            //开始等待支付结果
-            waitingPayResult("order");
-        } else {
-            orderFormVisible.value = false;
-            loading.close();
-            ElMessage({
-                message: result.message,
-                type: 'error',
+    })).then((data) => {
+        FetchGetWithTokenRaw(data)
+            .then((response) => response.text())
+            .then((form) => {
+                let divForm = document.getElementsByTagName('divform')
+                if (divForm.length) {
+                    document.body.removeChild(divForm[0])
+                }
+                const div = document.createElement('divform')
+                div.innerHTML = form
+                document.body.appendChild(div)
+                let alipay_form = document.getElementsByName('punchout_form')[0] as HTMLFormElement;
+                alipay_form.setAttribute('target', '_blank');
+                alipay_form.submit();
+            }).catch((err) => {
+                console.log(err);
             });
-        }
+
+        //开始等待支付结果
+        waitingPayResult("order");
+
     });
 
 }
@@ -671,7 +643,7 @@ const setStepComponent = (el: any) => {
 const openBid = () => {
     bidFormVisible.value = true;
     bidStepStore.commodity = commodity.value as Commodity;
-    bidStepStore.seller = seller.value as User;
+    bidStepStore.seller = commodity.value!.user;
 }
 const stepLast = () => {
     if (step.value > 0) {
@@ -726,41 +698,24 @@ const goBid = () => {
         text: '正在加载...',
         background: 'rgba(0, 0, 0, 0.7)',
     });
-    FetchGetWithToken("/api/bid/" + commodity.value?.cid).then((result) => {
-        if (result.flag) {
-            if (!result.data) {
-                //如果没有对这个商品的出价，就去弹出Bid Dialog 同时检查是否登录
-                userStore.checkLogin().then(result => {
-                    if (result.flag) {
-                        openBid();
-                    } else {
-                        ElMessage({
-                            message: '请先登录',
-                            type: 'error',
-                        });
-                        userStore.loginFormVisible = true;
-                    }
-                    loading.close();
-                });
-
-            } else {
+    FetchGetWithToken("/api/bid/" + commodity.value?.cid).then(data => {
+        if (!data) {
+            //如果没有对这个商品的出价，就去弹出Bid Dialog 同时检查是否登录
+            userStore.checkLogin().then(data => {
+                openBid();
                 loading.close();
-                ElMessage({
-                    message: '你已经对本商品出了一个价了',
-                    type: 'error',
-                });
-                loading.close();
+            });
 
-            }
-        } else if (result.code == constant.NOT_LOGIN_CODE) {
+        } else {
+            loading.close();
             ElMessage({
-                message: '请先登录',
+                message: '你已经对本商品出了一个价了',
                 type: 'error',
             });
-            userStore.loginFormVisible = true;
             loading.close();
 
         }
+
     });
 
 
@@ -779,35 +734,27 @@ const goPay = async () => {
         "messageBuyer": bidStepStore.commodityBid.messageBuyer,
         "price": bidStepStore.commodityBid.price,
         "aid": bidStepStore.address.aid
-    })).then((result: CommonResult) => {
-        if (result.flag) {
-            FetchGetWithTokenRaw(result.data)
-                .then((response) => response.text())
-                .then((form) => {
-                    let divForm = document.getElementsByTagName('divform')
-                    if (divForm.length) {
-                        document.body.removeChild(divForm[0])
-                    }
-                    const div = document.createElement('divform')
-                    div.innerHTML = form
-                    document.body.appendChild(div)
-                    let alipay_form = document.getElementsByName('punchout_form')[0] as HTMLFormElement;
-                    alipay_form.setAttribute('target', '_blank');
-                    alipay_form.submit();
-                }).catch((err) => {
-                    console.log(err);
-                });
-
-            //开始等待支付结果
-            waitingPayResult("bid");
-        } else {
-            bidFormVisible.value = false;
-            loading.close();
-            ElMessage({
-                message: result.message,
-                type: 'error',
+    })).then((data) => {
+        FetchGetWithTokenRaw(data)
+            .then((response) => response.text())
+            .then((form) => {
+                let divForm = document.getElementsByTagName('divform')
+                if (divForm.length) {
+                    document.body.removeChild(divForm[0])
+                }
+                const div = document.createElement('divform')
+                div.innerHTML = form
+                document.body.appendChild(div)
+                let alipay_form = document.getElementsByName('punchout_form')[0] as HTMLFormElement;
+                alipay_form.setAttribute('target', '_blank');
+                alipay_form.submit();
+            }).catch((err) => {
+                console.log(err);
             });
-        }
+
+        //开始等待支付结果
+        waitingPayResult("bid");
+
     });
 }
 const waitingPayResult = (type: string) => {
@@ -865,32 +812,24 @@ const waitingPayResult = (type: string) => {
                 text: '正在查询支付结果...',
                 background: 'rgba(0, 0, 0, 0.7)',
             });
-            FetchGetWithToken("/api/" + type + "/" + commodity.value?.cid).then((result) => {
-                if (result.flag) {
-                    if (result.data) {
-                        ElMessage({
-                            message: type == "bid" ? message.bid : message.order,
-                            type: 'success',
-                        });
-                        if (type == "bid") {
-                            fetchCommodityBid();
-                        } else {
-                            //跳转到订单详情
-                            console.log("跳转到订单详情")
-                        }
-                        loading.close();
-                    } else {
-                        ElMessage({
-                            message: '未查询到你的支付记录',
-                            type: 'error',
-                        });
-                    }
-                } else if (result.code == constant.NOT_LOGIN_CODE) {
+            FetchGetWithToken("/api/" + type + "/" + commodity.value?.cid).then(data => {
+                if (data) {
                     ElMessage({
-                        message: '登陆失效，请重新登录',
+                        message: type == "bid" ? message.bid : message.order,
+                        type: 'success',
+                    });
+                    if (type == "bid") {
+                        fetchCommodityBid();
+                    } else {
+                        //跳转到订单详情
+                        console.log("跳转到订单详情")
+                    }
+                    loading.close();
+                } else {
+                    ElMessage({
+                        message: '未查询到你的支付记录',
                         type: 'error',
                     });
-                    userStore.loginFormVisible = true;
                 }
                 loading.close();
             });
@@ -927,6 +866,11 @@ onMounted(() => {
     font-size: xx-large;
 }
 
+.commodity-tag {
+    margin-right: .3rem;
+    margin-top: 1rem;
+}
+
 .tips {
     margin-top: 1rem;
 }
@@ -935,17 +879,24 @@ onMounted(() => {
     color: darkgreen;
     font-weight: 700;
     font-size: large;
+    margin-left: 1rem;
 }
 
 .tips .free-shipping {
     color: darkblue;
     font-weight: 700;
     font-size: large;
+    margin-left: 1rem;
 }
 
 .tips .view-count {
     color: gray;
     font-size: small;
+}
+
+.tips .commodity-type {
+    font-size: smaller;
+    color: gray;
 }
 
 .price-wrapper {
@@ -1182,4 +1133,62 @@ onMounted(() => {
     height: 22rem;
     width: 50rem;
 }
+
+
+</style>
+<style>
+.editor-content-view {
+    border: 3px solid #ccc;
+    border-radius: 5px;
+    padding: 0 10px;
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.editor-content-view p,
+.editor-content-view li {
+    white-space: pre-wrap;
+    /* 保留空格 */
+}
+
+.editor-content-view blockquote {
+    border-left: 8px solid #d0e5f2;
+    padding: 10px 10px;
+    margin: 10px 0;
+    background-color: #f1f1f1;
+}
+
+.editor-content-view code {
+    font-family: monospace;
+    background-color: #eee;
+    padding: 3px;
+    border-radius: 3px;
+}
+
+.editor-content-view pre>code {
+    display: block;
+    padding: 10px;
+}
+
+.editor-content-view table {
+    border-collapse: collapse;
+}
+
+.editor-content-view td,
+.editor-content-view th {
+    border: 1px solid #ccc;
+    min-width: 50px;
+    height: 20px;
+}
+
+.editor-content-view th {
+    background-color: #f1f1f1;
+}
+
+.editor-content-view ul,
+.editor-content-view ol {
+    padding-left: 20px;
+}
+
+
 </style>

@@ -20,8 +20,8 @@
                         <div>
                             <span class="addr-detail">{{
                                 address.province + ' ' + address.city + ' ' + address.area + ' ' +
-                                    address.street
-                                    + ' ' + address.address
+                                address.street
+                                + ' ' + address.address
                             }} </span>
                         </div>
                     </div>
@@ -34,13 +34,11 @@
                 </el-col>
             </div>
         </el-card>
-        <el-result v-if="addressList == undefined || addressList.length == 0" title="没有收货地址"
-            sub-title="你还有没收货地址，请先添加一个吧">
+        <el-result v-if="addressList == undefined || addressList.length == 0" title="没有收货地址" sub-title="你还有没收货地址，请先添加一个吧">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
                     <g fill="none" stroke="#888888" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                        <path
-                            d="M8 4h10a2 2 0 0 1 2 2v10m-.57 3.399c-.363.37-.87.601-1.43.601H8a2 2 0 0 1-2-2V6m4 10h6" />
+                        <path d="M8 4h10a2 2 0 0 1 2 2v10m-.57 3.399c-.363.37-.87.601-1.43.601H8a2 2 0 0 1-2-2V6m4 10h6" />
                         <path d="M11 11a2 2 0 0 0 2 2m2-2a2 2 0 0 0-2-2M4 8h3m-3 4h3m-3 4h3M3 3l18 18" />
                     </g>
                 </svg>
@@ -101,25 +99,24 @@
             <template #footer>
                 <span class="dialog-footer">
                     <el-button type="primary" @click="add">
-                        {{ dialogEditMode?'修改': '添加' }}
+                        {{ dialogEditMode ? '修改' : '添加' }}
                     </el-button>
                     <el-button @click="addAddressDialogVisible = false">取消</el-button>
                 </span>
             </template>
         </el-dialog>
     </div>
-
 </template>
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from "vue";
-import { useUserStore, useBidStepStore } from "@/stores"
-import { FetchGetWithToken, FetchPostWithToken, FetchDeleteWithToken, FetchPutWithToken } from "@/util/fetchUtil"
+import { useUserStore, useLoadingStore } from "@/stores"
+import { FetchGetWithToken, FetchPostWithToken, FetchDeleteWithToken, FetchPutWithToken } from "@/util/FetchUtil"
 import type UserAddress from "@/interface/UserAddress"
 import type { Province, City, Area, Street } from "@/interface/Address"
 import constant from "@/common/constant";
 import { ElLoading, ElMessage } from "element-plus";
-import { result } from "lodash";
 
+const loadingStore = useLoadingStore();
 const addressList = ref<UserAddress[]>([]);
 const userStore = useUserStore();
 const addAddressDialogVisible = ref(false);
@@ -142,53 +139,37 @@ const areaList = ref<Area[]>();
 const streetList = ref<Street[]>();
 const fetchUserAddress = () => {
     FetchGetWithToken("/api/userAddress/u/")
-        .then(result => {
-            if (result.flag) {
-                addressList.value = result.data;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            }
+        .then(data => {
+            addressList.value = data;
+
+            loadingStore.clodeLoading();
+
         });
 }
 
 const fetchProvinceList = () => {
     FetchGetWithToken("/api/address")
-        .then(result => {
-            if (result.flag) {
-                provinceList.value = result.data;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            }
+        .then(data => {
+            provinceList.value = data;
+
         });
 }
 const fetchCityList = (pCode: string) => {
     FetchGetWithToken("/api/address/" + pCode)
-        .then(result => {
-            if (result.flag) {
-                cityList.value = result.data;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            }
+        .then(data => {
+            cityList.value = data;
         });
 }
 const fetchAreaList = (pCode: string, cCode: string) => {
     FetchGetWithToken("/api/address/" + pCode + "/" + cCode)
-        .then(result => {
-            if (result.flag) {
-                areaList.value = result.data;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            }
+        .then(data => {
+            areaList.value = data;
         });
 }
 const fetchStreetList = (pCode: string, cCode: string, aCode: string) => {
     FetchGetWithToken("/api/address/" + pCode + "/" + cCode + "/" + aCode)
-        .then(result => {
-            if (result.flag) {
-                streetList.value = result.data;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            }
+        .then(data => {
+            streetList.value = data;
         });
 }
 
@@ -249,21 +230,13 @@ const add = () => {
         fetchResult = FetchPostWithToken('/api/userAddress', JSON.stringify(addressAdd))
     }
     fetchResult.then(result => {
-        if (result.flag) {
-            ElMessage({
-                message: message,
-                type: 'success'
-            });
-            fetchUserAddress();
-            addAddressDialogVisible.value = false;
-        } else if (result.code == constant.NOT_LOGIN_CODE) {
-            userStore.loginFormVisible = true;
-        } else {
-            ElMessage({
-                message: result.message,
-                type: 'error'
-            });
-        }
+        ElMessage({
+            message: message,
+            type: 'success'
+        });
+        fetchUserAddress();
+        addAddressDialogVisible.value = false;
+
         loading.close();
     })
 }
@@ -286,21 +259,13 @@ const deleteAddress = (aid: number) => {
         background: 'rgba(0, 0, 0, 0.7)',
     });
     FetchDeleteWithToken("/api/userAddress/" + aid).then(result => {
-        if (result.flag) {
-            ElMessage({
-                message: "删除成功",
-                type: 'success'
-            });
-            fetchUserAddress();
+        ElMessage({
+            message: "删除成功",
+            type: 'success'
+        });
+        fetchUserAddress();
 
-        } else if (result.code == constant.NOT_LOGIN_CODE) {
-            userStore.loginFormVisible = true;
-        } else {
-            ElMessage({
-                message: result.message,
-                type: 'error'
-            });
-        }
+
         loading.close();
     })
 }

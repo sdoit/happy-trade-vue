@@ -8,12 +8,7 @@
                         <el-card :body-style="{ padding: '.3rem' }" shadow="hover">
                             <div class="img-wrapper">
                                 <el-image loading="lazy" :src="
-                                    constant.NGINX_SERVER_HOST + '/'
-                                    + commodity.cover.type + '/'
-                                    + commodity.cover.uid + '/'
-                                    + commodity.cover.date + '/'
-                                    + commodity.cover.fileName
-                                " :fit="'fill'" class="cover">
+                                constant.NGINX_SERVER_HOST + '/' + commodity.cover" :fit="'fill'" class="cover">
                                     <template #placeholder>
                                         <div class="img-slot-wrapper">
                                             <img src="/img/loading.svg" alt="正在加载" />
@@ -74,9 +69,10 @@ import constant from "@/common/constant";
 import type Commodity from '@/interface/Commodity';
 import type CommonResult from "@/interface/CommonResult";
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
+import { useLoadingStore } from '@/stores';
 
 const emits = defineEmits(['loadDone'])
-
+const loadingStore=useLoadingStore();
 const rowCount = ref(0);
 const page = ref(0);
 const loading = ref(false);
@@ -105,7 +101,9 @@ const fetchcommodities = (PageNum: number) => {
                 //首次加载完成
                 emits('loadDone');
             }
-        })
+            loadingStore.clodeLoading();
+
+        });
 }
 
 // const coverError = function () {

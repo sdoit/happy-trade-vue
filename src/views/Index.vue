@@ -1,12 +1,13 @@
 <template>
-    首页推荐
-    <el-table :data="tableData" style="width: 100%">
+  首页推荐
+  <el-table :data="tableData" style="width: 100%">
     <el-table-column prop="date" label="Date" width="180" />
     <el-table-column prop="name" label="Name" width="180" />
     <el-table-column prop="address" label="Address" />
   </el-table>
 </template>
 <script setup lang="ts">
+
 const tableData = [
   {
     date: '2016-05-03',
@@ -42,171 +43,171 @@ const tableData = [
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
-  },{
+  }, {
     date: '2016-05-07',
     name: 'Tom',
     address: 'No. 189, Grove St, Los Angeles',
@@ -215,5 +216,11 @@ const tableData = [
 
 </script>
 <style>
+a {
+  text-decoration: none;
+}
 
+a:hover {
+  text-decoration: underline;
+}
 </style>

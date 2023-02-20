@@ -1,137 +1,193 @@
 <template>
     <div>
-        <el-row :justify="'center'">
-            <el-col :span="16" class="launch-content-wrapper">
-                <div class="launch-content">
-                    <div class="step1">
+        <el-result v-if="!userStore.logged" title="请先登录" sub-title="登录后才能继续操作">
+            <template #icon>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 2048 2048">
+                    <path fill="#888888"
+                        d="M1728 1152q26 0 45 19t19 45q0 26-19 45t-45 19q-26 0-45-19t-19-45q0-26 19-45t45-19zm-603-19q-79-54-170-81t-187-28q-88 0-170 23t-153 64t-129 100t-100 130t-65 153t-23 170H0q0-117 35-229t101-207t157-169t203-113q-56-36-100-83t-76-103t-47-118t-17-130q0-106 40-199t109-163T568 40T768 0q106 0 199 40t163 109t110 163t40 200q0 67-16 129t-48 119t-75 103t-101 83q81 29 156 80l-71 107zM384 512q0 80 30 149t82 122t122 83t150 30q79 0 149-30t122-82t83-122t30-150q0-79-30-149t-82-122t-123-83t-149-30q-80 0-149 30t-122 82t-83 123t-30 149zm1280 384q79 0 149 30t122 82t83 123t30 149q0 80-30 149t-82 122t-123 83t-149 30q-65 0-128-23v151h-128v128h-128v128H896v-282l395-396q-11-46-11-90q0-79 30-149t82-122t122-83t150-30zm0 640q53 0 99-20t82-55t55-81t20-100q0-53-20-99t-55-82t-81-55t-100-20q-53 0-99 20t-82 55t-55 81t-20 100q0 35 9 64t21 61l-414 413v102h128v-128h128v-128h128v-91l93-92q40 23 77 39t86 16z" />
+                </svg>
+            </template>
+            <template #extra>
+                <el-button type="primary" @click="userStore.loginFormVisible = true">点击登录</el-button>
+            </template>
+        </el-result>
+        <div v-if="userStore.logged">
+            <el-row :justify="'center'">
+                <el-col :span="16" class="launch-content-wrapper">
+                    <div class="launch-content">
+                        <div class="step1">
 
+                        </div>
+                        <div class="step2">
+
+                        </div>
+                        <div class="step3">
+                            <el-row class="commodity-info">
+                                <el-col :span="4" class="upload-wrapper">
+                                    <el-upload class="cover-uploader"
+                                        :action="constant.SPRINGBOOT_SERVER_HOST + '/api/upload/image'"
+                                        :headers="{ [userStore.user.tokenName]: userStore.user.tokenValue }"
+                                        :on-success="updateSuccess" :on-error="updateError" :before-upload="beforeUpload"
+                                        :show-file-list="false">
+                                        <el-image v-if="coverUrl" loading="lazy" :src="coverUrl" :fit="'fill'"
+                                            class="res-img">
+                                            <template #placeholder>
+                                                <div class="img-slot-wrapper">
+                                                    <img src="/img/loading.svg" alt="正在加载" />
+                                                </div>
+                                            </template>
+                                            <template #error>
+                                                <div class="img-slot-wrapper">
+                                                    <img src="/img/error.svg" alt="图片加载失败" />
+                                                </div>
+                                            </template>
+                                        </el-image>
+                                        <el-icon v-else class="cover-uploader-icon">
+                                            <Plus />
+                                        </el-icon>
+                                    </el-upload>
+                                </el-col>
+                                <el-col :span="20">
+                                    <el-form :model="commodity" label-position="right" label-width="5rem">
+                                        <el-row>
+                                            <el-col :span="18">
+                                                <el-form-item label="商品名：" required>
+                                                    <el-input v-model="commodity.name" />
+                                                </el-form-item>
+                                            </el-col>
+                                            <el-col :span="6">
+                                                <el-form-item label="成色：" required>
+                                                    <el-input-number v-model="commodity.quality" :precision="1" :min='0'
+                                                        :max="9.9" :step="0.1" />
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="14">
+                                                <el-form-item label="价格：" required>
+                                                    <el-input v-model="commodity.price" type="number">
+                                                        <template #prepend>￥</template>
+                                                    </el-input>
+                                                </el-form-item>
+                                            </el-col>
+
+                                            <el-col :span="5">
+                                                <el-form-item label="邮费："
+                                                    :required="!commodity.freeShipping && !commodity.freightCollect">
+                                                    <el-input v-model="commodity.fare" type="number"
+                                                        :disabled="commodity.freeShipping || commodity.freightCollect">
+                                                        <template #prepend>￥</template>
+                                                    </el-input>
+
+                                                </el-form-item>
+
+                                            </el-col>
+                                            <el-col :span="5">
+                                                <div class="postage-info">
+                                                    <el-switch :disabled="commodity.freeShipping"
+                                                        v-model="commodity.freightCollect" class="settlement-method"
+                                                        inline-prompt
+                                                        style="--el-switch-on-color: #006400; --el-switch-off-color: #8B4513"
+                                                        active-text="邮费到付" inactive-text="邮费现结" />
+
+                                                    <el-checkbox v-model="commodity.freeShipping" label="包邮" size="large"
+                                                        class="postage-check" />
+                                                </div>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col>
+                                                <el-form-item label="分类：" required>
+                                                    <el-cascader :props="props" placeholder="选择分类"
+                                                        v-model="commodity.type.typePath" @change="typeChange"
+                                                        class="typeSelecter" />
+                                                </el-form-item>
+                                            </el-col>
+                                        </el-row>
+
+                                    </el-form>
+                                    <div class="tag-wrapper">
+                                        <el-tag v-for="tag, index in commodity.tags" :key="index" class="tag" closable
+                                            :disable-transitions="false" @close="handleClose(tag)"
+                                            :type="randomTagType(index)">
+                                            {{ tag.tag }}
+                                        </el-tag>
+                                        <el-autocomplete v-if="inputVisible" ref="InputRef" v-model="tagValue"
+                                            :trigger-on-focus="false" :fetch-suggestions="fetchTagSuggestions"
+                                            placeholder="请输入标签" @select="handleSelectConfirm"
+                                            @keyup.enter="handleInputConfirm" @blur="handleInputConfirm" size="small" />
+                                        <el-button v-else class="button-new-tag ml-1" size="small" @click="showInput"
+                                            type="primary">
+                                            + 新标签
+                                        </el-button>
+                                    </div>
+                                </el-col>
+                            </el-row>
+
+
+                            <div class="editor-wrapper">
+                                <Toolbar style="border-bottom: 1px solid #ccc" :editor="editorRef"
+                                    :defaultConfig="toolbarConfig" :mode="mode" />
+                                <el-scrollbar height="500px">
+                                    <Editor style="overflow-y: hidden;" v-model="valueHtml" :defaultConfig="editorConfig"
+                                        :mode="mode" @onCreated="handleCreated" />
+                                </el-scrollbar>
+                            </div>
+                        </div>
+                        <div class="launch-button">
+                            <el-button type="primary" size="large" @click="submit">提交</el-button>
+                        </div>
                     </div>
-                    <div class="step2">
-
-                    </div>
-                    <div class="step3">
-                        <el-row class="commodity-info">
-                            <el-col :span="4">
-                                <el-upload class="avatar-uploader"
-                                    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                                    :show-file-list="false">
-                                    <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-                                    <el-icon v-else class="avatar-uploader-icon">
-                                        <Plus />
-                                    </el-icon>
-                                </el-upload>
-                            </el-col>
-                            <el-col :span="20">
-                                <el-form :model="commodity" label-position="right" label-width="5rem">
-                                    <el-row>
-                                        <el-col :span="18">
-                                            <el-form-item label="商品名：" required>
-                                                <el-input v-model="commodity.name" />
-                                            </el-form-item>
-                                        </el-col>
-                                        <el-col :span="6">
-                                            <el-form-item label="成色：" required>
-                                                <el-input-number v-model="commodity.quality" :precision="2" :min='0'
-                                                    :max="10" :step="0.01" />
-                                            </el-form-item>
-                                        </el-col>
-                                    </el-row>
-                                    <el-row>
-                                        <el-col :span="14">
-                                            <el-form-item label="价格：" required>
-                                                <el-input v-model="commodity.price" type="number">
-                                                    <template #prepend>￥</template>
-                                                </el-input>
-                                            </el-form-item>
-                                        </el-col>
-                                        <el-col :span="4">
-                                            <el-form-item>
-                                                <el-checkbox v-model="commodity.freeShipping" label="包邮" size="large" />
-                                            </el-form-item>
-                                        </el-col>
-                                        <el-col :span="5">
-                                            <el-form-item label="邮费：" :required="!commodity.freeShipping">
-                                                <el-input v-model="commodity.price" type="number"
-                                                    :disabled="commodity.freeShipping">
-                                                    <template #prepend>￥</template>
-                                                </el-input>
-                                            </el-form-item>
-                                            <el-switch v-model="value5" class="ml-2" inline-prompt
-                                                style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949"
-                                                active-text="完整展示多个内容" inactive-text="多个内容" />
-</template>
-</el-col>
-
-</el-row>
-
-</el-form>
-<div class="tag-wrapper">
-    <el-tag v-for="tag in dynamicTags" :key="tag" class="tag" closable :disable-transitions="false"
-        @close="handleClose(tag)" :type="randomTagType()">
-        {{ tag }}
-    </el-tag>
-    <el-input v-if="inputVisible" ref="InputRef" v-model="inputValue" class="tag-input" size="small"
-        @keyup.enter="handleInputConfirm" @blur="handleInputConfirm" />
-    <el-button v-else class="button-new-tag ml-1" size="small" @click="showInput">
-        + 新标签
-    </el-button>
-</div>
-</el-col>
-</el-row>
-
-
-<div class="editor-wrapper">
-    <Toolbar style="border-bottom: 1px solid #ccc" :editor="editorRef" :defaultConfig="toolbarConfig" :mode="mode" />
-    <el-scrollbar height="500px">
-        <Editor style="overflow-y: hidden;" v-model="valueHtml" :defaultConfig="editorConfig" :mode="mode"
-            @onCreated="handleCreated" />
-    </el-scrollbar>
-</div>
-</div>
-</div>
-</el-col>
-</el-row>
-<el-row class="launch-wrapper" :justify="'center'">
-    <el-col :span="8">
-        <el-steps :active="1">
-            <el-step title="交易形式" description="选择你的闲置物品的处理方式" :icon="Edit" />
-            <el-step title="交易方式" description="设置你与买家之间的交易方式" :icon="Upload" />
-            <el-step title="商品信息" description="填写商品的信息" :icon="Picture" />
-        </el-steps>
-    </el-col>
-</el-row>
-</div>
-
-
+                </el-col>
+            </el-row>
+        </div>
+    </div>
 </template>
 <script lang="ts" setup>
-import { ref, shallowRef, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { Edit, Picture, Upload } from '@element-plus/icons-vue'
+import { ref, shallowRef, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
-import { useUserStore } from '@/stores'
+import { useUserStore, useLoadingStore } from '@/stores'
 import '@wangeditor/editor/dist/css/style.css';
+import '@/assets/css/wang.css'
 import type CommonResult from '@/interface/CommonResult';
 import constant from '@/common/constant';
 import { Plus } from '@element-plus/icons-vue'
-import type { UploadProps, ElInput } from 'element-plus'
-import type Commodity from '@/interface/Commodity';
+import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
+import { type UploadProps, type ElInput, ElLoading } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { FetchGetWithToken, FetchPostFileWithToken, FetchPostWithToken, FetchPutWithToken } from '@/util/FetchUtil';
+import type CommodityType from '@/interface/CommodityType';
+import type Node from 'element-plus/es/components/cascader-panel/src/node';
+import router from '@/router';
+import { useRoute } from 'vue-router';
+import type Tag from '@/interface/Tag';
+const loadingStore = useLoadingStore();
 const userStore = useUserStore();
-const commodity = ref({
+const commodity = shallowRef({
+    cid: 0,
     name: '',
     price: 0,
-    quality: 0,
-    freeShipping: false
+    quality: 9.9,
+    fare: 0,
+    freeShipping: false,
+    freightCollect: false,
+    type: {
+        tid: 0,
+        typePath: []
+    },
+    description: '',
+    cover: '',
+    tags: [] as Tag[]
 });
-const imageUrl = ref('');
+const coverUrl = ref('');
 
-
-const inputValue = ref('')
-const dynamicTags = ref(['Tag 1', 'Tag 2', 'Tag 3'])
-const inputVisible = ref(false)
+//tag
 const InputRef = ref<InstanceType<typeof ElInput>>()
 
-const handleClose = (tag: string) => {
-    dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
+const inputVisible = ref(false)
+
+const handleClose = (tag: Tag) => {
+    commodity.value.tags.splice(commodity.value.tags.indexOf(tag), 1)
 }
 
 const showInput = () => {
@@ -140,26 +196,82 @@ const showInput = () => {
         InputRef.value!.input!.focus()
     })
 }
-
+const tagValue = ref()
 const handleInputConfirm = () => {
-    if (inputValue.value) {
-        dynamicTags.value.push(inputValue.value)
+    if (tagValue.value) {
+        commodity.value.tags.push({ tid: '0', tag: tagValue.value })
     }
     inputVisible.value = false
-    inputValue.value = ''
+    tagValue.value = '';
 }
-const tagType = ['', 'success', 'info', 'danger', 'warning'];
-const randomTagType = () => {
-    return tagType[Math.floor((Math.random() * tagType.length))]
+const tagType = ['' as EpPropMergeType<StringConstructor, '', unknown>,
+'success' as EpPropMergeType<StringConstructor, 'success', unknown>,
+'info' as EpPropMergeType<StringConstructor, 'info', unknown>,
+'danger' as EpPropMergeType<StringConstructor, 'danger', unknown>,
+'warning' as EpPropMergeType<StringConstructor, 'warning', unknown>];
+const randomTagType = (index: number) => {
+    return tagType[index % tagType.length]
+}
+type TagCandidate = { tid: string, value: string }
+const handleSelectConfirm = (item: Record<string, any>) => {
+    commodity.value.tags.push({ tid: item.tid, tag: item.value })
+}
+
+const fetchTagSuggestions = (queryString: string, cb: (arg: any) => void) => {
+    FetchGetWithToken("/api/tag/" + queryString).then(data => {
+        const tagCandidates: TagCandidate[] = [];
+        for (const tag of data as Tag[]) {
+            tagCandidates.push({ tid: tag.tid, value: tag.tag })
+        }
+        cb(tagCandidates);
+
+    });
+}
+
+//cover上传
+const updateSuccess: UploadProps['onSuccess'] = (
+    response: CommonResult,
+    uploadFile
+) => {
+    if (response.flag) {
+        coverUrl.value = constant.NGINX_SERVER_HOST + "/" + response.data;
+        commodity.value.cover = response.data;
+    } else if (response.code == constant.NOT_LOGIN_CODE) {
+        ElMessage.error('登录过期，请重新登录');
+        userStore.loginFormVisible = true;
+    } else {
+        ElMessage({
+            message: response.message,
+            type: "error"
+        });
+    }
+
+}
+const updateError: UploadProps['onError'] = (error: Error, uploadFile) => {
+    const result: CommonResult = JSON.parse(error.message);
+    if (result.code == constant.NOT_LOGIN_CODE) {
+        ElMessage.error('登录过期，请重新登录');
+        userStore.loginFormVisible = true;
+    } else {
+        ElMessage({
+            message: result.message,
+            type: "error"
+        });
+    }
+}
+const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
+    if (rawFile.type.slice(0, 6) !== 'image/') {
+        ElMessage.error('必须上传图片类型文件!')
+        return false
+    } else if (rawFile.size / 1024 / 1024 > 5) {
+        ElMessage.error('图片不能大于5MB!')
+        return false
+    }
+    return true
 }
 
 
-
-
-
-
-
-
+//富文本
 const editorRef = shallowRef();
 const mode = ref('default');
 const valueHtml = ref('')
@@ -202,7 +314,7 @@ const toolbarConfig = {
 type InsertFnType = (url: string, alt: string, href: string) => void;
 
 const editorConfig = {
-    placeholder: '请输入内容...',
+    placeholder: '请输入商品描述...',
     MENU_CONF: {
         uploadImage: {
             server: constant.SPRINGBOOT_SERVER_HOST + '/api/upload/image',
@@ -221,11 +333,93 @@ const editorConfig = {
                     insertFn(url, '', '');
                 }
             },
+        },
+        uploadVideo: {
+            server: constant.SPRINGBOOT_SERVER_HOST + '/api/upload/video',
+            fieldName: 'file',
+            maxFileSize: 150 * 1024 * 1024, // 150M
+            maxNumberOfFiles: 3,
+            allowedFileTypes: ['video/*'],
+            headers: { [userStore.user.tokenName]: userStore.user.tokenValue },
+            timeout: 60 * 1000, // 60 秒
+            // async customUpload(file: File, insertFn: InsertFnType) {  // TS 语法
+            //     FetchPostFileWithToken("/api/upload/video", file).then(result => {
+            //         if (result.flag) {
+            //             insertFn(constant.NGINX_SERVER_HOST + "/" + result.data, '', '');
+            //         } else if (result.code == constant.NOT_LOGIN_CODE) {
+            //             ElMessage.error('登录过期，请重新登录');
+            //             userStore.loginFormVisible = true;
+            //         } else {
+            //             ElMessage({
+            //                 message: result.message,
+            //                 type: "error"
+            //             });
+            //         }
+            //     })
+
+            // },
+
+            customInsert(result: CommonResult, insertFn: InsertFnType) {  // TS 语法
+                if (result.flag) {
+                    console.log(result.data);
+                    let url = constant.NGINX_SERVER_HOST + "/" + result.data
+                    insertFn(url, '', '');
+                }
+            },
+            onSuccess(file: File, res: any) {  // TS 语法
+                // onSuccess(file, res) {          // JS 语法
+                console.log(`${file.name} 上传成功`, res)
+            },
+            // 单个文件上传失败
+            onFailed(file: File, res: any) {  // TS 语法
+                // onFailed(file, res) {          // JS 语法
+                console.log(`${file.name} 上传失败`, res)
+            },
+            onError(file: File, err: any, res: any) {
+                let result: CommonResult = JSON.parse(err.request.response)
+                if (result.code == constant.NOT_LOGIN_CODE) {
+                    ElMessage.error('登录过期，请重新登录');
+                    userStore.loginFormVisible = true;
+                } else {
+                    ElMessage.error('发生意外错误，请稍后重试');
+                }
+            },
         }
     }
 }
+const Route = useRoute();
 onMounted(() => {
-})
+    //读取模式（新建或编辑）
+    if (Route.meta.edit) {
+        FetchGetWithToken("/api/commodity/" + Route.params.cid).then(result => {
+            if (result.data.uid != userStore.user.uid && userStore.logged) {
+                ElMessage.error("这不是你的商品");
+                return;
+            }
+            commodity.value = result.data;
+            // commodity.value.cid = commodityEditStore.commodity.cid;
+            // commodity.value.name = commodityEditStore.commodity.name;
+            // commodity.value.price = commodityEditStore.commodity.price;
+            // commodity.value.quality = commodityEditStore.commodity.quality;
+            // commodity.value.fare = commodityEditStore.commodity.fare;
+            // commodity.value.freeShipping = commodityEditStore.commodity.freeShipping;
+            // commodity.value.freightCollect = commodityEditStore.commodity.freightCollect;
+            // commodity.value.type = commodityEditStore.commodity.type.tid;
+            // commodity.value.description = commodityEditStore.commodity.description;
+            // commodity.value.cover = commodityEditStore.commodity.cover;
+            // commodity.value.tags = commodityEditStore.commodity.tags;
+            //设置cover
+            coverUrl.value = constant.NGINX_SERVER_HOST + "/" + commodity.value.cover;
+            //设置商品描述 富文本
+            valueHtml.value = commodity.value.description;
+            loadingStore.clodeLoading();
+
+        });
+    }
+    loadingStore.clodeLoading();
+
+
+});
 // 组件销毁时，也及时销毁编辑器
 onBeforeUnmount(() => {
     const editor = editorRef.value
@@ -237,14 +431,84 @@ const handleCreated = (editor: any) => {
     editorRef.value = editor // 记录 editor 实例，重要！
 }
 
-</script>
-<style scoped>
-.avatar-uploader .avatar {
-    width: 178px;
-    height: 178px;
-    display: block;
+
+
+//商品type
+const props = {
+    // expandTrigger: 'hover' as const,
+    lazy: true,
+    lazyLoad(node: Node, resolve: any) {
+        let url = "/api/type"
+        if (node.level != 0) {
+            url += "/" + node.value
+        }
+        FetchGetWithToken(url).then(result => {
+            const nodes = result.data.map((typeItem: CommodityType) => ({
+                value: typeItem.tid,
+                label: typeItem.typeName,
+                leaf: node.level >= 2 || typeItem.tid == 20,
+            })
+            );
+            resolve(nodes);
+        });
+    },
 }
 
+const typeChange = (value: any) => {
+    if (value.length == 3) {
+        commodity.value.type.tid = value[2]
+    }
+}
+//提交
+const submit = () => {
+    //数据校验
+    if (commodity.value.name == '') {
+        ElMessage.error('请输入商品名');
+        return;
+    }
+    if (commodity.value.quality == 0) {
+        ElMessage.error('请输入商品成色');
+        return;
+    }
+    if (commodity.value.price <= 0) {
+        ElMessage.error('请输入正确的商品价格');
+        return;
+    }
+    if (commodity.value.cover == '') {
+        ElMessage.error('请上传商品的封面图');
+        return;
+    }
+    if (commodity.value.type.tid == 0) {
+        ElMessage.error('请选择分类');
+        return;
+    }
+    if (editorRef.value.getText().length < 10) {
+        ElMessage.error('请详细介绍一下你的商品 (至少10字)');
+        return;
+    }
+    const loading = ElLoading.service({
+        lock: true,
+        text: '正在提交，请稍等...',
+        background: 'rgba(0, 0, 0, 0.7)',
+    });
+    commodity.value.description = editorRef.value.getHtml();
+    let fetchResult;
+    let successMessage = "发布成功，即将跳转到商品详情页"
+    if (Route.meta.edit) {
+        fetchResult = FetchPostWithToken("/api/commodity", JSON.stringify(commodity.value));
+        successMessage = "编辑成功，即将跳转到商品详情页"
+    } else {
+        fetchResult = FetchPutWithToken("/api/commodity", JSON.stringify(commodity.value))
+    }
+    fetchResult.then(result => {
+        ElMessage.success(successMessage);
+        router.push({ name: "commodity", params: { cid: result.data } })
+        loading.close();
+    })
+
+}
+</script>
+<style scoped>
 .launch-content-wrapper {
     height: 45rem;
 }
@@ -255,9 +519,41 @@ const handleCreated = (editor: any) => {
     border: 1px solid var(--el-border-color);
 }
 
-.commodity-info {}
+.launch-button {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
 
+.res-img {
+    height: 100%;
+    width: 100%;
+}
 
+.img-slot-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.step-wrapper {
+    margin-top: 3rem;
+}
+
+.postage-info {
+    display: flex;
+    align-items: center;
+}
+
+.postage-info .settlement-method {
+    margin-left: 1rem;
+}
+
+.postage-info .postage-check {
+    margin-left: 1rem;
+}
 
 .tag-wrapper {
     margin-left: 5rem;
@@ -271,79 +567,41 @@ const handleCreated = (editor: any) => {
 .tag-input {
     width: 5rem;
 }
-
-:deep(h5, .h5) {
-    font-size: 14px !important;
-}
-
-:deep(h4,
-    .h4) {
-    font-size: 16px !important;
-    font-weight: bold !important;
-}
-
-:deep(h3,
-    .h3) {
-    font-size: 18px !important;
-    font-weight: bold !important;
-}
-
-:deep(h2,
-    .h2) {
-    font-size: 20px !important;
-    font-weight: bold !important;
-}
-
-:deep(h1,
-    .h1) {
-    font-size: 22px !important;
-    font-weight: bold !important;
-}
-
-:deep(i) {
-    font-style: italic !important;
-}
-
-:deep(.italic) {
-    font-style: italic !important;
-}
-
-:deep(.bold, strong) {
-    font-weight: bold !important;
-}
-
-:deep(.italic strong) {
-    font-weight: bold !important;
-    font-style: italic !important;
-}
-
-:deep(.w-e-toolbar .w-e-menu i) {
-    font-style: normal !important;
-}
-
-:deep(ol) {
-    list-style-type: decimal !important;
-}
 </style>
 <style>
-.avatar-uploader .el-upload {
+.cover-uploader {
+    height: 12rem;
+    width: 12rem;
+}
+
+.cover-uploader .el-upload {
     border: 1px dashed var(--el-border-color);
     border-radius: 6px;
     cursor: pointer;
     position: relative;
     overflow: hidden;
     transition: var(--el-transition-duration-fast);
+    height: 100%;
+    width: 100%;
 }
 
-.avatar-uploader .el-upload:hover {
+.cover-uploader .el-upload:hover {
     border-color: var(--el-color-primary);
 }
 
-.el-icon.avatar-uploader-icon {
+.el-icon.cover-uploader-icon {
     font-size: 28px;
     color: #8c939d;
     width: 178px;
     height: 178px;
     text-align: center;
+}
+
+.typeSelecter {
+    width: 18rem;
+}
+
+.el-cascader-node__label {
+    width: 10rem;
 }
 </style>

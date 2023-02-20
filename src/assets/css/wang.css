@@ -1,0 +1,109 @@
+.w-e-text-container {
+  padding: 0 10px !important;
+  margin-top: 20px !important;
+  overflow-x: auto !important;
+}
+
+.w-e-text-container p,
+.w-e-text-container li {
+  white-space: pre-wrap !important;
+  /* 保留空格 */
+}
+
+.w-e-text-container blockquote {
+  border-left: 8px solid #d0e5f2 !important;
+  padding: 10px 10px !important;
+  margin: 10px 0 !important;
+  background-color: #f1f1f1 !important;
+}
+
+.w-e-text-container code {
+  font-family: monospace !important;
+  background-color: #eee !important;
+  padding: 3px !important;
+  border-radius: 3px !important;
+}
+
+.w-e-text-container pre>code {
+  display: block !important;
+  padding: 10px !important;
+}
+
+.w-e-text-container table {
+  border-collapse: collapse !important;
+}
+
+.w-e-text-container td,
+.w-e-text-container th {
+  border: 1px solid #ccc !important;
+  min-width: 50px !important;
+  height: 20px !important;
+}
+
+.w-e-text-container th {
+  background-color: #f1f1f1 !important;
+}
+
+.w-e-text-container ul,
+.w-e-text-container ol {
+  padding-left: 20px !important;
+}
+
+.w-e-text-container input[type="checkbox"] {
+  margin-right: 5px !important;
+}
+
+.w-e-text-container h5,
+.w-e-text-container .h5 {
+  font-size: 14px !important;
+}
+
+.w-e-text-container h4,
+.w-e-text-container .h4 {
+  font-size: 16px !important;
+  font-weight: bold !important;
+}
+
+.w-e-text-container h3,
+.w-e-text-container .h3 {
+  font-size: 18px !important;
+  font-weight: bold !important;
+}
+
+.w-e-text-container h2,
+.w-e-text-container .h2 {
+  font-size: 20px !important;
+  font-weight: bold !important;
+}
+
+.w-e-text-container h1,
+.w-e-text-container .h1 {
+  font-size: 22px !important;
+  font-weight: bold !important;
+}
+
+.w-e-text-container i {
+  font-style: italic !important;
+}
+
+.w-e-text-container .italic {
+  font-style: italic !important;
+}
+
+.w-e-text-container .bold,
+.w-e-text-container strong {
+  font-weight: bold !important;
+}
+
+.w-e-text-container .italic strong {
+  font-weight: bold !important;
+  font-style: italic !important;
+}
+
+.w-e-text-container .w-e-toolbar .w-e-menu i {
+  font-style: normal !important;
+}
+
+.w-e-text-container ol {
+  list-style-type: decimal !important;
+}

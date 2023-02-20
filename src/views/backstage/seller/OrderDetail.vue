@@ -4,11 +4,8 @@
             <el-card>
                 <div class="commodity-wrapper">
                     <div>
-                        <el-image :src="constant.NGINX_SERVER_HOST + '/'
-                        + order.cover.type + '/'
-                        + order.cover.uid + '/'
-                        + order.cover.date + '/'
-                        + order.cover.fileName" :fit="'fill'" class="cover"></el-image>
+                        <el-image :src="constant.NGINX_SERVER_HOST + '/' + order.commodity.cover" :fit="'fill'"
+                            class="cover"></el-image>
                     </div>
                     <div class="commodity-info-wrapper">
                         <span class="name">{{ order.name }}</span>
@@ -56,9 +53,9 @@
                         <div class="address-detail-wrapper">
                             <span class="address">{{
                                 order.userAddress.province + ' ' + order.userAddress.city + ' ' +
-                                    order.userAddress.area + ' ' +
-                                    order.userAddress.street
-                                    + ' ' + order.userAddress.address
+                                order.userAddress.area + ' ' +
+                                order.userAddress.street
+                                + ' ' + order.userAddress.address
                             }}</span>
                         </div>
                     </div>
@@ -140,33 +137,26 @@
             </el-card>
         </div>
     </div>
-
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import constant from '@/common/constant';
 import router from '@/router';
 import { useRoute } from 'vue-router'
-import { FetchGetWithToken } from '@/util/fetchUtil'
+import { FetchGetWithToken } from '@/util/FetchUtil'
 import { fill, result } from 'lodash';
 import type Order from '@/interface/Order';
-import { useUserStore, usePathStore } from '@/stores';
+import { useUserStore, usePathStore, useLoadingStore } from '@/stores';
 import { ElMessage } from 'element-plus';
+const loadingStore = useLoadingStore();
 const userStore = useUserStore();
 const route = useRoute();
 const pathStore = usePathStore();
 const order = ref<Order>();
-FetchGetWithToken("/api/order/oid/" + route.params.oid).then(result => {
-    if (result.flag) {
-        order.value = result.data;
-    } else if (result.code == constant.NOT_LOGIN_CODE) {
-        userStore.loginFormVisible = true;
-    } else {
-        ElMessage({
-            message: result.message,
-            type: "error"
-        });
-    }
+FetchGetWithToken("/api/order/oid/" + route.params.oid).then(data => {
+    order.value = data;
+    loadingStore.clodeLoading();
+
 })
 
 onMounted(() => {

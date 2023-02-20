@@ -19,12 +19,7 @@
             <el-card v-for="order in orders" :key="order.oid" @click="toDetail(order)" shadow="hover" class="card">
                 <div class="commodity-wrapper">
                     <el-image :src="
-                        constant.NGINX_SERVER_HOST + '/'
-                        + order.cover.type + '/'
-                        + order.cover.uid + '/'
-                        + order.cover.date + '/'
-                        + order.cover.fileName
-                    " class="order-cover"></el-image>
+                        constant.NGINX_SERVER_HOST + '/' + order.commodity.cover" class="order-cover"></el-image>
                     <div class="info-wrapper">
                         <div>
                             <span class="order-name">{{ order.name }}</span>
@@ -43,7 +38,7 @@
                             <el-col :span="10" class="right-wrapper">
                                 <span class="order-price">{{
                                     order.status == 0 ? ('￥' + order.totalAmount) :
-                                        order.statusName
+                                    order.statusName
                                 }}</span>
                             </el-col>
                         </el-row>
@@ -53,35 +48,28 @@
             </el-card>
         </div>
     </div>
-
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useUserStore, usePathStore } from '@/stores'
+import { useUserStore, usePathStore, useLoadingStore } from '@/stores'
 import type Order from '@/interface/Order';
-import { FetchGetWithToken } from '@/util/fetchUtil';
+import { FetchGetWithToken } from '@/util/FetchUtil';
 import constant from '@/common/constant';
 import { ElMessage } from 'element-plus';
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 import router from '@/router';
 
+const loadingStore = useLoadingStore();
 const orders = ref<Order[]>([])
 const userStore = useUserStore();
 const pathStore = usePathStore();
 
 //获取订单
-FetchGetWithToken("/api/order/seller").then((result) => {
-    if (result.flag) {
-        orders.value = result.data;
-    } else if (result.code == constant.NOT_LOGIN_CODE) {
-        userStore.loginFormVisible = true;
-    } else {
-        ElMessage({
-            message: result.message,
-            type: "error"
-        });
-    }
+FetchGetWithToken("/api/order/seller").then(data => {
+    orders.value = data;
+    loadingStore.clodeLoading();
+
 });
 const getQualityClass = (quality: number) => {
     if (quality >= 9.5) {

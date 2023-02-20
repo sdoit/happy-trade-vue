@@ -1,7 +1,6 @@
 <template>
     <div>
-
-        <el-result v-if="bids == undefined || bids.length == 0" title="没有出价" sub-title="你还没有对任何商品有过出价">
+        <el-result v-if="show" title="没有出价" sub-title="你还没有对任何商品有过出价">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
                     <path fill="#888888"
@@ -13,35 +12,32 @@
             </template>
         </el-result>
         <div class="bid-card-wrapper">
-            <el-card v-for="bid in bids" :key="bid.bid">
+            <el-card v-for="bid in bids" :key="bid.bids[0].bid">
                 <div class="bid-wrapper">
                     <div>
-                        <el-image :src="constant.NGINX_SERVER_HOST + '/'
-                        + bid.cover.type + '/'
-                        + bid.cover.uid + '/'
-                        + bid.cover.date + '/'
-                        + bid.cover.fileName" :fit="'fill'" class="cover"></el-image>
+                        <el-image :src="constant.NGINX_SERVER_HOST + '/' + bid.cover" :fit="'fill'"
+                            class="cover"></el-image>
                     </div>
                     <div>
                         <div class="commodity-info-wrapper">
-                            <span class="name">{{ bid.commodity.name }}</span>
+                            <span class="name">{{ bid.name }}</span>
                             <span class="cid">商品编号：{{ bid.cid }}</span>
-                            <span class="time">发布时间：{{ bid.commodity.time }}</span>
+                            <span class="time">发布时间：{{ bid.time }}</span>
                         </div>
                         <div class="buyer-message-wrapper">
-                            <span class="buyer-message">你的留言：{{ bid.messageBuyer }}</span>
-                            <span class="time-created">{{ bid.timeCreated }}</span>
+                            <span class="buyer-message">你的留言：{{ bid.bids[0].messageBuyer }}</span>
+                            <span class="time-created">{{ bid.bids[0].timeCreated }}</span>
                         </div>
                         <div class="price-wrapper">
                             <div class="price-item">
-                                <span class="price">￥{{ bid.commodity.price }}</span>
+                                <span class="price">￥{{ bid.price }}</span>
                                 <span class="price-tip">卖家标价</span>
                             </div>
                             <div class="price-item-arrow">
                                 <div></div>
                             </div>
                             <div class="price-item">
-                                <span class="price-bid" :class="myBidPriceClass(bid)">￥{{ bid.price }}</span>
+                                <span class="price-bid" :class="myBidPriceClass(bid)">￥{{ bid.bids[0] }}</span>
                                 <span class="price-tip">你的出价</span>
                             </div>
                         </div>
@@ -49,12 +45,12 @@
                     <div class="seller-reply-wrapper">
                         <div class="seller-reply">
                             <span class="result" :class="sellerReplyClass(bid)">{{ sellerReply(bid) }}</span>
-                            
-                            <span class="reply" :class="sellerReplyClass(bid)">{{ bid.replySeller }}</span>
+
+                            <span class="reply" :class="sellerReplyClass(bid)">{{ bid.bids[0].replySeller }}</span>
                         </div>
                         <div class="bid-button">
                             <el-button size="small" type="primary">联系卖家</el-button>
-                            <el-button :disabled="bid.agree != undefined || bid.cancel == true" size="small"
+                            <el-button :disabled="bid.bids[0].agree != undefined || bid.bids[0].cancel == true" size="small"
                                 type="danger" @click="revoke(bid)">撤销出价</el-button>
                         </div>
                     </div>
@@ -62,70 +58,53 @@
             </el-card>
         </div>
     </div>
-
 </template>
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import type CommodityBid from '@/interface/CommodityBid';
-import { FetchGetWithToken, FetchPostWithToken } from '@/util/fetchUtil';
-import { useUserStore, usePathStore } from '@/stores';
+import type { CommodityBid } from '@/interface/CommodityBid';
+import { FetchGetWithToken, FetchPostWithToken } from '@/util/FetchUtil';
+import { useUserStore, usePathStore, useLoadingStore } from '@/stores';
 import constant from '@/common/constant';
 import { ElMessage } from 'element-plus';
-import { result } from 'lodash';
+import type { data } from 'dom7';
+const loadingStore = useLoadingStore();
+const show = ref();
 const userStore = useUserStore();
 const pathStore = usePathStore();
 const bids = ref<CommodityBid[]>();
 
 const fetchCommodityBids = () => {
-    userStore.checkLogin().then(result => {
-        if (result.flag) {
-            FetchGetWithToken("/api/bid").then(result => {
-                if (result.flag) {
-                    bids.value = result.data;
-                } else if (result.code == constant.NOT_LOGIN_CODE) {
-                    userStore.loginFormVisible = true;
-                } else {
-                    ElMessage({
-                        message: result.message,
-                        type: 'error'
-                    })
-                }
-            })
-        } else {
-            userStore.loginFormVisible = true;
-        }
+    userStore.checkLogin().then(data => {
+        FetchGetWithToken("/api/bid").then(data => {
+            bids.value = data;
+            show.value = bids.value == undefined || bids.value.length == 0
+            loadingStore.clodeLoading();
+        })
+
     });
 }
 const revoke = (bid: CommodityBid) => {
-    FetchPostWithToken("/api/bid/revoke/" + bid.bid).then(result => {
-        if (result.flag) {
-            ElMessage({
-                message: '撤销成功',
-                type: 'success'
-            });
-            fetchCommodityBids();
+    FetchPostWithToken("/api/bid/revoke/" + bid.bids[0].bid).then(result => {
+        ElMessage({
+            message: '撤销成功',
+            type: 'success'
+        });
+        fetchCommodityBids();
 
-        } else if (result.code == constant.NOT_LOGIN_CODE) {
-            userStore.loginFormVisible = true;
-        } else {
-            ElMessage({
-                message: result.message,
-                type: 'error'
-            });
-        }
+
     });
 }
 
 
 const sellerReply = (bid: CommodityBid) => {
-    return bid.replySeller == undefined ? '卖家未回复' : bid.agree ? '卖家已同意此报价' : '卖家已拒绝此报价'
+    return bid.bids[0].replySeller == undefined ? '卖家未回复' : bid.bids[0].agree ? '卖家已同意此报价' : '卖家已拒绝此报价'
 }
 const sellerReplyClass = (bid: CommodityBid) => {
-    return bid.replySeller == undefined ? '' : bid.agree ? 'agreed-reply' : 'rejected-reply'
+    return bid.bids[0].replySeller == undefined ? '' : bid.bids[0].agree ? 'agreed-reply' : 'rejected-reply'
 
 }
 const myBidPriceClass = (bid: CommodityBid) => {
-    return bid.replySeller == undefined ? 'unanswered' : bid.agree ? 'agreed' : 'rejected'
+    return bid.bids[0].replySeller == undefined ? 'unanswered' : bid.bids[0].agree ? 'agreed' : 'rejected'
 }
 
 onMounted(() => {
@@ -138,7 +117,7 @@ onMounted(() => {
 </script>
 <style scoped>
 .unanswered {
-    color: red;
+    color: #e4393c;
 }
 
 .agreed {
@@ -156,7 +135,7 @@ onMounted(() => {
 }
 
 .rejected-reply {
-    color: red !important;
+    color: #e4393c !important;
     font-weight: 700;
 }
 
@@ -223,7 +202,7 @@ onMounted(() => {
 }
 
 .price-bid {
-    color: red;
+    color: #e4393c;
     font-weight: 700;
     font-size: larger;
 }
@@ -252,11 +231,13 @@ onMounted(() => {
     flex-direction: column;
     margin-left: .5rem;
     margin-top: 1rem;
-} 
-.buyer-message-wrapper .time-created{
-font-size: xx-small;
-margin-top: .5rem;
 }
+
+.buyer-message-wrapper .time-created {
+    font-size: xx-small;
+    margin-top: .5rem;
+}
+
 .buyer-message {
     font-size: small;
     font-weight: 700;

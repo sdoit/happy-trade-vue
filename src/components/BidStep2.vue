@@ -16,8 +16,7 @@
         <div>
 
         </div>
-        <el-scrollbar height="18rem" class="step2-margin-top step2-address-bar"
-            :wrap-class="'step2-address-bar-content'">
+        <el-scrollbar height="18rem" class="step2-margin-top step2-address-bar" :wrap-class="'step2-address-bar-content'">
             <el-radio-group v-model="index" class="addr-radio-wrapper">
                 <el-radio :label="index" v-for="address, index in addressList" :key="address.aid" class="addr-radio">
                     <el-card>
@@ -39,8 +38,8 @@
                                 <div>
                                     <span>{{
                                         address.province + ' ' + address.city + ' ' + address.area + ' ' +
-                                            address.street
-                                            + ' ' + address.address
+                                        address.street
+                                        + ' ' + address.address
                                     }} </span>
                                 </div>
                             </div>
@@ -52,8 +51,7 @@
                     sub-title="你还有没设置收货地址，请先设置收货地址后再下单">
                     <template #icon>
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-                            <g fill="none" stroke="#888888" stroke-linecap="round" stroke-linejoin="round"
-                                stroke-width="2">
+                            <g fill="none" stroke="#888888" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
                                 <path
                                     d="M8 4h10a2 2 0 0 1 2 2v10m-.57 3.399c-.363.37-.87.601-1.43.601H8a2 2 0 0 1-2-2V6m4 10h6" />
                                 <path d="M11 11a2 2 0 0 0 2 2m2-2a2 2 0 0 0-2-2M4 8h3m-3 4h3m-3 4h3M3 3l18 18" />
@@ -74,8 +72,9 @@ import { ref, onMounted, watchEffect } from "vue";
 import type UserAddress from "@/interface/UserAddress";
 import type CommonResult from "@/interface/CommonResult";
 import constant from "@/common/constant";
-import { FetchGetWithToken, FetchPostWithToken } from "@/util/fetchUtil"
+import { FetchGetWithToken, FetchPostWithToken } from "@/util/FetchUtil"
 import { useUserStore, useBidStepStore } from "@/stores"
+import { ElMessage } from "element-plus";
 // const props = defineProps(["commodity", 'bid', 'user']);
 // const emits = defineEmits(['checkLogin'])
 const userStore = useUserStore();
@@ -86,13 +85,9 @@ const index = ref(0);
 const addressList = ref<UserAddress[]>([]);
 
 const fetchUserAddress = () => {
-    FetchGetWithToken("/api/userAddress/u/" )
-        .then((result: CommonResult) => {
-            if (result.flag) {
-                addressList.value = result.data;
-            } else if (result.code == constant.NOT_LOGIN_CODE) {
-                userStore.loginFormVisible = true;
-            }
+    FetchGetWithToken("/api/userAddress/u/")
+        .then(data => {
+            addressList.value = data;
         });
 }
 

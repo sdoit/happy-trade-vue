@@ -1,20 +1,25 @@
-import type Resource from '@/interface/Resource';
 import type User from '@/interface/User';
+import type Tag from '@/interface/Tag';
+import type CommodityType from '@/interface/CommodityType';
 export default interface Commodity {
-    cid: number,
-    uid: number,
+    cid: string,
+    uid: string,
     name: string,
-    coverId: string,
     quality: number,
     price: number,
+    fare:number,
     sold: boolean,
     launched: boolean,
     time: string,
     description: string,
-    typeName: string,
+    type:CommodityType,
     viewCount: number,
     user: User,
-    cover: Resource,
-    resources: Resource[]
+    cover: string,
+    tags:Tag[],
+    freightCollect: boolean,
+    freeShipping: boolean,
+
+    bidCount:string
 }
 

@@ -5,9 +5,9 @@
         <Header />
       </el-affix>
     </el-header>
-    <el-main class="main">
+    <el-main class="main" v-loading="loadingStore.isLoading">
       <el-scrollbar @scroll="mapSearchBar" ref="scrollbar">
-        <el-row v-if="store.mode == constant.MODE_RECEPTION">
+        <el-row v-if="modeStore.mode == constant.MODE_RECEPTION">
           <el-col :span="7">
             <div class="grid-content">
             </div>
@@ -25,7 +25,7 @@
             </div>
           </el-col>
         </el-row>
-        <div v-if="store.mode == constant.MODE_RECEPTION" class="content-head"></div>
+        <div v-if="modeStore.mode == constant.MODE_RECEPTION" class="content-head"></div>
         <el-row :justify="'center'">
           <el-col :span="24">
             <router-view v-slot="{ Component }" v-if="isRouterAlive" @toBidView="toBidView" @loadDone="loadDone">
@@ -59,7 +59,40 @@
       </el-form>
     </template>
   </el-dialog>
-
+  <div class="chat-wrapper">
+    <el-drawer v-model="userMessageStore.chatDrawerVisible">
+      <template #header>
+        <h4>{{ userMessageStore.chatUserUid }}</h4>
+      </template>
+      <template #default>
+        <el-scrollbar ref="messageScrollBar">
+          <div ref="messageWrapper">
+            <el-row v-for="message in userMessageStore.messageList" :key="message.mid" class="chat-message-wrapper"
+              :class="message.sender.uid == userStore.user.uid ? 'message-self' : ''">
+              <el-col :span="3">
+                <el-avatar :size="50" :src="constant.NGINX_SERVER_HOST + message.sender.avatar" />
+              </el-col>
+              <el-col :span="20" :class="message.sender.uid == userStore.user.uid ? 'message-self-content' : ''">
+                <div class="chat-message-content">
+                  <span>{{ message.content }}</span>
+                </div>
+              </el-col>
+            </el-row>
+          </div>
+        </el-scrollbar>
+      </template>
+      <template #footer>
+        <div class="chat-content-wrapper">
+          <el-input class="chat-content" v-model="userMessageStore.chatMessage" rows="4" maxlength="250"
+            placeholder="请输入消息..." show-word-limit type="textarea" @keydown.enter="userMessageStore.chatSend" />
+        </div>
+        <div style="flex: auto" class="chat-button-warpper">
+          <el-button type="primary" @click="userMessageStore.chatSend">发送</el-button>
+          <el-button type="warning" @click="userMessageStore.clodeMessageDrawer">关闭</el-button>
+        </div>
+      </template>
+    </el-drawer>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -67,14 +100,16 @@ import { reactive, ref, onMounted, nextTick, provide, watch } from 'vue'
 import constant from './common/constant';
 import Header from "./components/Header.vue";
 import Search from "./components/Search.vue";
-import type User from './interface/User';
-import type CommonResult from './interface/CommonResult';
 import router from './router'
-import { ElLoading, ElMessage } from 'element-plus'
-import smoothscroll from 'smoothscroll-polyfill'
-import { useStore, useUserStore } from '@/stores'
+import { ElLoading, ElMessage, ElNotification } from 'element-plus'
+import { useModeStore, useUserStore, useLoadingStore, useUserMessageStore } from '@/stores'
 import { useRoute } from 'vue-router';
-const store = useStore();
+import SSEInit from '@/util/SSEUtil'
+import { storeToRefs } from 'pinia';
+const loadingStore = useLoadingStore();
+const modeStore = useModeStore();
+const userMessageStore = useUserMessageStore();
+const { chatDrawerVisible, chatUserUid, messageList } = storeToRefs(userMessageStore);
 const isRouterAlive = ref(true);
 const reload = () => {
   isRouterAlive.value = false;
@@ -83,12 +118,15 @@ const reload = () => {
   })
 }
 provide('reload', reload);
-
 const lockScroll = ref(false);
 const SearchBar = ref();
 
 const mapSearchBar = function (scroll: { scrollTop: number, scrollLeft: number }) {
-  SearchBar.value.changeSearchBarSize(scroll.scrollTop);
+
+  if (modeStore.mode == "reception") {
+    SearchBar.value.changeSearchBarSize(scroll.scrollTop);
+  }
+
 
 
   if (lockScroll.value && scroll.scrollTop < 500) {
@@ -110,7 +148,7 @@ const loadDone = () => {
       behavior: "smooth",
     });
     setTimeout(() => {
-      lockScroll.value = true;
+      lockScroll.value = modeStore.mode == "reception"
     }, 500);
   }, 200);
 }
@@ -153,13 +191,35 @@ const onLogin = () => {
 //监听路由，随时更改mode
 const rout = useRoute();
 watch(rout, (value) => {
-  store.mode = value.meta.mode as string
+  modeStore.mode = value.meta.mode as string;
+  loadingStore.loading();
+  if (rout.name == "index") {
+    loadingStore.clodeLoading();
+  }
+});
+
+//消息抽屉
+const messageScrollBar = ref();
+const messageWrapper = ref();
+
+// 监听chatuseruid，如果发生变化，就去获取相应的聊天记录
+watch(messageList, () => {
+  if (chatDrawerVisible.value) {
+    nextTick(() => {
+      messageScrollBar.value.scrollTo({
+        top: messageWrapper.value.clientHeight,
+        behavior: "smooth",
+      });
+    });
+  }
 })
 
 
 userStore.checkLogin();
 onMounted(() => {
-  smoothscroll.polyfill();
+  // userMessageStore.messageScrollBar = messageScrollBar;
+  // userMessageStore.messageWrapper = messageWrapper;
+  // console.log(messageScrollBar.value)
 })
 
 
@@ -220,5 +280,56 @@ onMounted(() => {
   100% {
     transform: scale(1);
   }
+}
+
+
+
+.chat-message-wrapper {
+  display: flex;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.message-self {
+  flex-direction: row-reverse;
+}
+
+.message-self-content {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chat-message-content {
+  margin-left: .5rem;
+  padding: .8rem;
+  background-color: #74867c;
+  border: 1px solid rgba(100, 100, 100, 0.144);
+  border-radius: .5rem;
+  display: inline-flex;
+  color: white;
+  z-index: 10;
+}
+
+
+
+.message-self .chat-message-content {
+  margin-right: .5rem;
+  background-color: rgba(231, 231, 231, 0.329);
+  border: 1px solid rgba(128, 128, 128, 0.144);
+  color: black;
+
+}
+
+.chat-button-warpper {
+  margin-top: 1rem;
+}
+</style>
+<style>
+.chat-wrapper .el-drawer__body {
+  padding-bottom: 0;
+}
+
+.chat-content>textarea {
+  max-height: 8rem;
 }
 </style>

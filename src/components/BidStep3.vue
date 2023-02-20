@@ -4,11 +4,7 @@
         <el-space direction="vertical" :size="30" :fill="true">
             <div>
                 <el-space wrap>
-                    <el-image :src="constant.NGINX_SERVER_HOST + '/'
-                        + bidStepStore.commodity.resources[0].type + '/'
-                        + bidStepStore.commodity.resources[0].uid + '/'
-                        + bidStepStore.commodity.resources[0].date + '/'
-                        + bidStepStore.commodity.resources[0].fileName
+                    <el-image :src="constant.NGINX_SERVER_HOST + '/' + bidStepStore.commodity.cover
                     " style="width: 2rem; height: 2rem"></el-image>
                     <span class="commodity-name">{{ bidStepStore.commodity.name }}</span>
                 </el-space>
@@ -33,9 +29,9 @@
                             <div>
                                 <span>{{
                                     bidStepStore.address.province + ' ' + bidStepStore.address.city + ' ' +
-                                        bidStepStore.address.district + ' ' +
-                                        bidStepStore.address.street
-                                        + ' ' + bidStepStore.address.address
+                                    bidStepStore.address.address + ' ' +
+                                    bidStepStore.address.street
+                                    + ' ' + bidStepStore.address.address
                                 }} </span>
                             </div>
                         </div>
@@ -65,8 +61,7 @@
                 </div>
             </div>
         </el-space>
-    </div>
-
+</div>
 </template>
 <script setup lang="ts">
 import constant from "@/common/constant";

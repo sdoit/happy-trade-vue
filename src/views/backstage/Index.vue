@@ -15,7 +15,6 @@
         <el-row class="wrapper" v-if="userStore.logged">
             <el-col :span="3">
                 <el-affix :offset="60">
-
                     <el-menu :default-active="active" class="menu" @open="handleOpen" @close="handleClose"
                         :router="true">
                         <el-sub-menu index="1">
@@ -54,13 +53,13 @@
                             </el-icon>
                             <span>地址管理</span>
                         </el-menu-item>
-                        <el-menu-item index="6">
+                        <el-menu-item index="/home/wallet">
                             <el-icon>
                                 <document />
                             </el-icon>
                             <span>账户余额</span>
                         </el-menu-item>
-                        <el-menu-item index="5">
+                        <el-menu-item index="9">
                             <el-icon>
                                 <setting />
                             </el-icon>
@@ -98,10 +97,12 @@ import {
     ArrowRight,
     LocationFilled
 } from '@element-plus/icons-vue';
-import { useUserStore, usePathStore } from "@/stores";
+import { useUserStore, usePathStore,useLoadingStore } from "@/stores";
 import router from '@/router';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { ElMessage } from 'element-plus';
+const loadingStore=useLoadingStore();
 const pathStore = usePathStore();
 const active = ref();
 const handleOpen = (key: string, keyPath: string[]) => {
@@ -113,12 +114,13 @@ const handleClose = (key: string, keyPath: string[]) => {
 const userStore = useUserStore();
 userStore.checkLogin().then(result => {
     if (!result.flag) {
+                ElMessage.error('登录过期，请重新登录');
         userStore.loginFormVisible = true;
     }
 })
 const route = useRoute();
 onMounted(() => {
-    active.value = router.currentRoute.value.path;
+    active.value = route.path;
 })
 </script>
 

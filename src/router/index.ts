@@ -85,6 +85,12 @@ const router = createRouter({
           component: () => import('../views/backstage/seller/Bid.vue')
         },
         {
+          path: 'bid/:cid',
+          name: 'seller-bid-by-cid',
+          meta: { mode: "cid" },
+          component: () => import('../views/backstage/seller/Bid.vue')
+        },
+        {
           path: 'commodity',
           name: 'seller-commodity',
           component: () => import('../views/backstage/seller/Commodity.vue')
@@ -114,6 +120,11 @@ const router = createRouter({
           name: 'home-address',
           component: () => import('@/views/backstage/Address.vue')
         },
+        {
+          path: 'wallet',
+          name: 'home-wallet',
+          component: () => import('@/views/backstage/AccountBalance.vue')
+        },
       ]
     },
     //商品发布
@@ -122,6 +133,27 @@ const router = createRouter({
       name: 'launch',
       meta: { mode: 'backstage' },
       component: () => import('../views/backstage/Launch.vue')
+    },
+    //商品编辑
+    {
+      path: '/edit/:cid',
+      name: 'edit',
+      meta: { mode: 'backstage', edit: 'ture' },
+      component: () => import('../views/backstage/Launch.vue')
+    },
+
+
+
+
+    //404
+    {
+      path: '/404',
+      name: '404',
+      component: () => import('@/views/error/404.vue')
+    },
+    {
+      path: '/:pathMatch(.*)',
+      redirect: '/404'
     }
   ]
 })

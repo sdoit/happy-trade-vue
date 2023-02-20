@@ -1,6 +1,5 @@
 import type User from "./User"
 import type Commodity from "./Commodity"
-import type Resource from "./Resource"
 import type UserAddress from "./UserAddress"
 
 export default interface Order {
@@ -24,5 +23,4 @@ export default interface Order {
     user: User,
     commodity: Commodity,
     userAddress: UserAddress,
-    cover: Resource
 }
