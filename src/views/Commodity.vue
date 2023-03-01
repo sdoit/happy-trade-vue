@@ -43,7 +43,7 @@
                                         <el-col>
                                             <span class="commodity-type">{{ commodity?.type.typeName }}</span>
                                             <span class="quality">{{ Math.round(commodity?.quality! * 10) }}新</span>
-                                            <span class="free-shipping">包邮</span>
+                                            <span class="free-shipping">{{ commodity?.freeShipping ? '包邮' : '' }}</span>
                                         </el-col>
 
 
@@ -61,10 +61,10 @@
                             </el-row>
 
                             <el-row class="price-wrapper" justify="space-between">
-                                <el-col :span="5">
-                                    <span style="color: #e4393c;">￥</span><span class="price">{{
-                                        commodity?.price
-                                    }}</span>
+                                <el-col :span="8">
+                                    <span style="color: #e4393c;">￥</span><span class="price">{{ commodity?.price }} </span>
+                                    <span style="color: #e4393c; font-size: small;padding-left: .7rem;"
+                                        v-if="!commodity?.freeShipping">邮费：￥ {{ commodity?.fare }}</span>
                                 </el-col>
                                 <el-col :span="5" class="right-wrapper">
                                     <el-button type="warning" :icon="Star" @click="collect" circle />
@@ -100,15 +100,27 @@
                                                     </el-col>
                                                 </el-row>
                                             </el-col>
-                                            <el-col :span="7">
+                                            <el-col :span="6" :offset="1">
                                                 <el-row class="seller-item">
                                                     <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                                        <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
+                                                        <span class="seller-record">{{
+                                                            commodity!.user.ratingCountBuyer == 0 ? '此用户还没有购买过商品' :
+                                                            '作为买家的好评率：' +
+                                                            (commodity!.user.goodRatingCountBuyer
+                                                                / commodity!.user.ratingCountBuyer * 100).toFixed(2)
+                                                            + '%' + '(' + commodity?.user.goodRatingCountBuyer
+                                                            + '/' + commodity?.user.ratingCountBuyer + ')' }}</span>
                                                     </el-col>
                                                 </el-row>
                                                 <el-row class="seller-item">
                                                     <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                                        <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
+                                                        <span class="seller-record">{{ commodity!.user.ratingCountSeller ==
+                                                            0
+                                                            ? '此用户还没有卖出过商品' : '作为卖家的好评率：' +
+                                                            (commodity!.user.goodRatingCountSeller
+                                                                / commodity!.user.ratingCountSeller * 100).toFixed(2)
+                                                            + '%' + '(' + commodity?.user.goodRatingCountSeller + '/' +
+                                                            commodity?.user.ratingCountSeller + ')' }}</span>
                                                     </el-col>
                                                 </el-row>
                                             </el-col>
@@ -143,8 +155,10 @@
                     <el-divider class="divider">商品详情</el-divider>
                     <el-row>
                         <el-col>
-                            <Editor v-model="valueHtml" :defaultConfig="editorConfig" :mode="mode"
-                                @onCreated="handleCreated" />
+                            <el-card shadow="always">
+                                <Editor v-model="valueHtml" :defaultConfig="editorConfig" :mode="mode"
+                                    @onCreated="handleCreated" class="editor" />
+                            </el-card>
                         </el-col>
                     </el-row>
                     <el-divider content-position="left" class="divider">出价历史</el-divider>
@@ -211,11 +225,29 @@
                                     </el-card>
                                 </el-timeline-item>
                             </el-timeline>
+                            <el-result v-if="bids == undefined || bids == null || bids.length == 0" title="没有出价"
+                                sub-title="还没有用户出价，期待你成为第一个出价人">
+                                <template #icon>
+                                    <svg t="1677403050548" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                                        xmlns="http://www.w3.org/2000/svg" p-id="21247" width="200" height="200">
+                                        <path
+                                            d="M972.798816 522.111021A319.9994 319.9994 0 0 0 575.99956 1023.99808H52.288542A51.903903 51.903903 0 0 1 0.00064 971.902178V282.49547c0-28.799946 23.039957-52.095902 52.287902-52.095902h868.222372c28.863946 0 52.287902 22.911957 52.287902 52.095902v239.615551zM307.200064 382.783282c28.287947 0 51.199904-22.783957 51.199904-50.751905a51.007904 51.007904 0 0 0-51.199904-50.751904c-28.287947 0-51.199904 22.719957-51.199904 50.751904 0 27.967948 22.911957 50.751905 51.199904 50.751905z m358.399328 0c28.287947 0 51.199904-22.783957 51.199904-50.751905a51.007904 51.007904 0 0 0-51.199904-50.751904c-28.287947 0-51.199904 22.719957-51.199904 50.751904 0 27.967948 22.911957 50.751905 51.199904 50.751905zM767.9992 1023.99808a255.99952 255.99952 0 1 1 0-511.99904 255.99952 255.99952 0 0 1 0 511.99904z m106.6878-248.703534c11.775978 0 21.31196-9.599982 21.31196-21.439959a21.43996 21.43996 0 0 0-21.31196-21.50396h-55.167897l55.039897-55.679896a21.631959 21.631959 0 0 0 0-30.399943 21.24796 21.24796 0 0 0-30.079943 0l-78.271854 78.975852-78.207853-78.975852a21.24796 21.24796 0 0 0-30.207943 0 21.631959 21.631959 0 0 0 0 30.463943l55.167896 55.615896h-51.583903a21.43996 21.43996 0 0 0-21.37596 21.50396c0 11.839978 9.599982 21.43996 21.37596 21.439959h85.31184v43.00792h-85.37584a21.37596 21.37596 0 0 0-21.31196 21.503959c0 11.903978 9.599982 21.56796 21.31196 21.56796h85.37584v50.175906c0 11.903978 9.535982 21.50396 21.31196 21.50396 11.775978 0 21.37596-9.599982 21.37596-21.50396v-50.175906h85.31184c11.775978 0 21.31196-9.599982 21.31196-21.56796a21.37596 21.37596 0 0 0-21.31196-21.503959h-85.31184v-43.00792h85.31184z"
+                                            fill="#515151" p-id="21248"></path>
+                                        <path
+                                            d="M691.199344 255.99952v-51.199904a204.863616 204.863616 0 0 0-409.599232 0V255.99952h51.199904v-50.879905A153.343712 153.343712 0 0 1 486.399728 51.199904C571.199569 51.199904 639.99944 120.319774 639.99944 205.119615V255.99952h51.199904z"
+                                            fill="#515151" p-id="21249"></path>
+                                    </svg>
+                                </template>
+                                <template #extra>
+                                    <el-button type="primary" size="large" @click="goBid">我要出价</el-button>
+                                </template>
+                            </el-result>
                         </el-col>
                     </el-row>
                     <el-row>
                         <el-col class="right-wrapper">
-                            <el-button type="primary" size="large" @click="goBid">我要出价</el-button>
+                            <el-button v-if="bids != undefined && bids != null && bids.length > 0" type="primary"
+                                size="large" @click="goBid">我要出价</el-button>
                         </el-col>
                     </el-row>
                 </el-col>
@@ -292,12 +324,23 @@
                                 <el-col :span="12">
                                     <el-row class="seller-item">
                                         <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                            <span class="seller-record">作为买家的好评率：89%(2124/4667)</span>
+                                            <span class="seller-record">{{
+                                                commodity!.user.ratingCountBuyer == 0 ? '此用户还没有购买过商品' :
+                                                '作为买家的好评率：' +
+                                                (commodity!.user.goodRatingCountBuyer
+                                                    / commodity!.user.ratingCountBuyer * 100).toFixed(2)
+                                                + '%' + '(' + commodity?.user.goodRatingCountBuyer
+                                                + '/' + commodity?.user.ratingCountBuyer + ')' }}</span>
                                         </el-col>
                                     </el-row>
                                     <el-row class="seller-item">
                                         <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                            <span class="seller-record">作为卖家的好评率：89%(2134/2667)</span>
+                                            <span class="seller-record">{{ commodity!.user.ratingCountBuyer == 0
+                                                ? '此用户还没有卖出过商品' : '作为卖家的好评率：' +
+                                                (commodity!.user.goodRatingCountSeller
+                                                    / commodity!.user.ratingCountSeller * 100).toFixed(2)
+                                                + '%' + '(' + commodity?.user.goodRatingCountSeller + '/' +
+                                                commodity?.user.ratingCountSeller + ')' }}</span>
                                         </el-col>
                                     </el-row>
                                 </el-col>
@@ -365,16 +408,7 @@
             </el-dialog>
 
 
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
+
             <br />
             <br />
 
@@ -390,7 +424,7 @@ import constant from '@/common/constant';
 import { useRoute } from 'vue-router';
 import type Commodity from '@/interface/Commodity';
 import type { Bid, CommodityBid } from '@/interface/CommodityBid';
-import type CommonResult from "@/interface/CommonResult";
+import type User from "@/interface/User";
 import type UserAddress from "@/interface/UserAddress";
 import type Tag from '@/interface/Tag';
 import { ref, onMounted, nextTick, shallowRef, onBeforeUnmount } from 'vue';
@@ -400,7 +434,7 @@ import BidStep2 from "@/components/BidStep2.vue";
 import BidStep3 from "@/components/BidStep3.vue";
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import { EventSourcePolyfill } from 'event-source-polyfill';
-import { useUserStore, useBidStepStore, useLoadingStore, useUserMessageStore } from '@/stores'
+import { useUserStore, useBidStepStore, useLoadingStore, useUserMessageStore, useCaptchaStore, usePayStore } from '@/stores'
 import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenRaw } from '@/util/FetchUtil';
 import '@wangeditor/editor/dist/css/style.css'
 import '@/assets/css/wang.css'
@@ -416,11 +450,15 @@ const commodity = ref<Commodity>();
 const fetchCommodity = () => {
     FetchGetWithToken("/api/commodity/" + Route.params.cid)
         .then(data => {
+            if (data == null || data.cid == undefined) {
+                router.push({ path: "/404" });
+            }
             console.log(data.sold);
             if (data.sold) {
                 //商品已售出
                 resultVisible.value = true;
                 console.log("商品已售出");
+                loadingStore.clodeLoading();
                 return;
             }
             contentVisible.value = true
@@ -437,7 +475,10 @@ const bids = ref<Bid[]>([]);
 const fetchCommodityBid = () => {
     FetchGetWithToken("/api/bid/commodity/" + Route.params.cid)
         .then(data => {
-            if (data != null && data.length > 0) {
+            if (data == null) {
+                return;
+            }
+            if (data.bids != undefined && data.bids.length > 0) {
                 bids.value = data.bids;
             }
 
@@ -455,6 +496,13 @@ const collect = () => {
         });
         //点亮图标
         //
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = collect;
+            captchaStore.nextMethodParam = undefined;
+        }
     });
 }
 
@@ -505,8 +553,10 @@ const mode = "default"
 
 /**联系卖家 */
 const toChat = () => {
-    userMessageStore.chatUserUid = commodity.value?.cid as string
-    userMessageStore.fetMessage()
+    userMessageStore.chatUser = commodity.value?.user as User
+    userMessageStore.messageList = [];
+    userMessageStore.fetchMessage();
+    userMessageStore.putVirtuaChatUserToMap(commodity.value!.user);
     userMessageStore.showMessageDrawer();
 }
 // const messageList = shallowRef<UserMessage[]>([]);
@@ -590,7 +640,14 @@ const directGoPay = () => {
         //开始等待支付结果
         waitingPayResult("order");
 
-    });
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = directGoPay;
+            captchaStore.nextMethodParam = undefined;
+        }
+    });;
 
 }
 
@@ -755,91 +812,90 @@ const goPay = async () => {
         //开始等待支付结果
         waitingPayResult("bid");
 
-    });
+    }).catch((e: Error) => {
+        loading.close();
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = goPay;
+            captchaStore.nextMethodParam = undefined;
+        }
+    });;
 }
-const waitingPayResult = (type: string) => {
+const paySuccessCallBack = (type: string, url?: string) => {
     const message = {
         "bid": "支付成功，请耐心等待卖家的回复",
         "order": "支付成功，请等待卖家发货"
     }
-
-    const tokenName: string = localStorage.getItem(constant.TOKEN_NAME_KEY) as string;
-    const tokenValue: string = localStorage.getItem(constant.TOKEN_VALUE_KEY) as string;
-    const sse = new EventSourcePolyfill(constant.SPRINGBOOT_SERVER_HOST + '/api/sse/connect', {
-        headers: {
-            [tokenName]: tokenValue
-        }
+    bidFormVisible.value = false;
+    orderFormVisible.value = false;
+    loading.close();
+    ElMessage({
+        message: type == "bid" ? message.bid : message.order,
+        type: 'success',
     });
-    sse.onopen = function (event: any) {
-        console.log("连接成功", event);
-    };
-    sse.onmessage = function (event: MessageEvent) {
-        if (event.lastEventId == constant.ALIPAY_SUCCESS) {
-            bidFormVisible.value = false;
-            loading.close();
-            ElMessage({
-                message: type == "bid" ? message.bid : message.order,
-                type: 'success',
-            });
-            sse.close();
-            if (type == "bid") {
-                fetchCommodityBid();
-            } else {
-                //跳转到订单详情
-                console.log("跳转到订单详情")
-            }
+    if (type == "bid") {
+        fetchCommodityBid();
+    } else {
+        //跳转到订单详情
+        router.push({ path: url as string });
+    }
+}
+const payTimeOutCallBack = (type: string) => {
+    const message = {
+        "bid": "支付成功，请耐心等待卖家的回复",
+        "order": "支付成功，请等待卖家发货"
+    }
+    bidFormVisible.value = false;
+    orderFormVisible.value = false;
+    ElMessageBox.confirm(
+        '你是否完成了支付？',
+        '未收到您的支付结果',
+        {
+            confirmButtonText: '已完成支付',
+            cancelButtonText: '未完成支付',
+            type: 'warning',
+            center: true,
+            showClose: false,
+            closeOnPressEscape: false,
+            closeOnClickModal: false,
         }
-
-    };
-    sse.onerror = function (error: any) {
-        bidFormVisible.value = false;
-        ElMessageBox.confirm(
-            '你是否完成了支付？',
-            '未收到您的支付结果',
-            {
-                confirmButtonText: '已完成支付',
-                cancelButtonText: '未完成支付',
-                type: 'warning',
-                center: true,
-                showClose: false,
-                closeOnPressEscape: false,
-                closeOnClickModal: false,
-            }
-        ).then(() => {
-            //查询支付结果
-            loading = ElLoading.service({
-                lock: true,
-                text: '正在查询支付结果...',
-                background: 'rgba(0, 0, 0, 0.7)',
-            });
-            FetchGetWithToken("/api/" + type + "/" + commodity.value?.cid).then(data => {
-                if (data) {
-                    ElMessage({
-                        message: type == "bid" ? message.bid : message.order,
-                        type: 'success',
-                    });
-                    if (type == "bid") {
-                        fetchCommodityBid();
-                    } else {
-                        //跳转到订单详情
-                        console.log("跳转到订单详情")
-                    }
-                    loading.close();
+    ).then(() => {
+        //查询支付结果
+        loading = ElLoading.service({
+            lock: true,
+            text: '正在查询支付结果...',
+            background: 'rgba(0, 0, 0, 0.7)',
+        });
+        FetchGetWithToken("/api/" + type + "/" + commodity.value?.cid).then(data => {
+            if (data) {
+                ElMessage({
+                    message: type == "bid" ? message.bid : message.order,
+                    type: 'success',
+                });
+                if (type == "bid") {
+                    fetchCommodityBid();
                 } else {
-                    ElMessage({
-                        message: '未查询到你的支付记录',
-                        type: 'error',
-                    });
+                    //跳转到订单详情
+                    console.log("跳转到订单详情")
                 }
                 loading.close();
-            });
+            } else {
+                ElMessage({
+                    message: '未查询到你的支付记录',
+                    type: 'error',
+                });
+            }
+            loading.close();
+        });
 
-        }).catch(() => {
-
-        })
-        loading.close();
-        sse.close();
-    }
+    })
+    loading.close();
+}
+const waitingPayResult = (type: string) => {
+    const payStore = usePayStore();
+    payStore.paySuccessCallBack = paySuccessCallBack;
+    payStore.payTimeOutCallBack = payTimeOutCallBack;
 }
 
 const toAddressSetting = () => {
@@ -922,6 +978,7 @@ onMounted(() => {
 .seller-item {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
 }
 
 .seller-item-text-wrapper {
@@ -1133,8 +1190,6 @@ onMounted(() => {
     height: 22rem;
     width: 50rem;
 }
-
-
 </style>
 <style>
 .editor-content-view {
@@ -1190,5 +1245,22 @@ onMounted(() => {
     padding-left: 20px;
 }
 
+.el-divider__text {
+    background-color: #f2f3f5;
+}
 
+.w-e-text-container {
+    color: var(--el-text-color-primary);
+    background-color: var(--el-bg-color-overlay);
+
+}
+
+.w-e-textarea-video-container {
+    background-image: none;
+    border: none;
+}
+
+.w-e-textarea-video-container video {
+    width: 100%;
+}
 </style>

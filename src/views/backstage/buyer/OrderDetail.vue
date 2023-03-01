@@ -5,7 +5,7 @@
             <el-card>
                 <div class="commodity-wrapper">
                     <div>
-                        <el-image :src="constant.NGINX_SERVER_HOST + '/' order.commodity.cover" :fit="'fill'"
+                        <el-image :src="constant.NGINX_SERVER_HOST + '/' + order.commodity.cover" :fit="'fill'"
                             class="cover"></el-image>
                     </div>
                     <div class="commodity-info-wrapper">
@@ -34,8 +34,18 @@
                     </div>
                     <div>
                         <div class="seller-appraisal">
-                            <span>作为卖家卖出432件商品，好评率67%</span>
-                            <span>作为买家买到64件商品，好评率98%</span>
+                            <span>{{ order.user.ratingCountBuyer == 0
+                                ? '此用户还没有购买过商品' : '作为买家的好评率：' +
+                                (order.user.goodRatingCountBuyer
+                                    / order.user.ratingCountBuyer * 100).toFixed(2)
+                                + '%' + '(' + order.user.goodRatingCountBuyer + '/' +
+                                order.user.ratingCountBuyer + ')' }}</span>
+                            <span>{{ order.user.ratingCountSeller == 0
+                                ? '此用户还没有卖出过商品' : '作为卖家的好评率：' +
+                                (order.user.goodRatingCountSeller
+                                    / order.user.ratingCountSeller * 100).toFixed(2)
+                                + '%' + '(' + order.user.goodRatingCountSeller + '/' +
+                                order.user.ratingCountSeller + ')' }}</span>
                         </div>
 
                     </div>
@@ -128,13 +138,108 @@
                     </el-row>
 
                     <div class="order-bottom">
-                        <el-button size="small">联系卖家</el-button>
-                        <el-button size="small">退货申请</el-button>
+                        <el-button size="small" @click="toChat">联系卖家</el-button>
+                        <el-button size="small" v-if="order.status == 1">退货申请</el-button>
                         <el-button size="small">交易快照</el-button>
+                        <el-button size="small" v-if="order.status == 0" @click="toConfirmReceipt">确定收货</el-button>
                     </div>
                 </div>
 
             </el-card>
+        </div>
+        <div>
+
+            <el-dialog title="确认收货" width="40rem" v-model="confirmVisible" :close-on-click-modal="false"
+                :close-on-press-escape="false">
+
+                <el-row>
+                    <el-col :span="6">
+                        <el-image :src="constant.NGINX_SERVER_HOST + '/' + order!.commodity.cover" :fit="'fill'"
+                            class="cover"></el-image>
+                    </el-col>
+                    <el-col :span="13" :offset="1">
+                        <span class="confirm-info-name">商品名</span>
+                        <div class="confirm-info-wrapper">
+                            <div class="confirm-info-title">
+                                <span>订单号</span>
+                                <span>下单时间</span>
+                                <span>发货时间</span>
+                                <span>运单号</span>
+                            </div>
+                            <div class="confirm-info-content">
+                                <span>{{ order?.oid }}</span>
+                                <span>{{ order?.payTime }}</span>
+                                <span>{{ order?.shipTime }}</span>
+                                <span>{{ order?.shipId }}</span>
+                            </div>
+                        </div>
+
+                    </el-col>
+                </el-row>
+                <el-row class="confirm-seller">
+                    <el-col>
+                        <el-card>
+                            <div class="seller-wrapper">
+                                <div class="seller-head">
+                                    <div>
+                                        <el-avatar :src="constant.NGINX_SERVER_HOST + order!.user.avatar"></el-avatar>
+                                    </div>
+                                    <div class="seller-name-wrapper">
+                                        <span class="seller-name">{{ order!.user.nickname }}</span>
+                                        <span class="seller-username">@{{ order!.user.username }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="seller-appraisal">
+                                        <span>{{ order!.user.ratingCountBuyer == 0
+                                            ? '此用户还没有购买过商品' : '作为买家的好评率：' +
+                                            (order!.user.goodRatingCountBuyer
+                                                / order!.user.ratingCountBuyer * 100).toFixed(2)
+                                            + '%' + '(' + order!.user.goodRatingCountBuyer + '/' +
+                                            order!.user.ratingCountBuyer + ')' }}</span>
+                                        <span>{{ order!.user.ratingCountSeller == 0
+                                            ? '此用户还没有卖出过商品' : '作为卖家的好评率：' +
+                                            (order!.user.goodRatingCountSeller
+                                                / order!.user.ratingCountSeller * 100).toFixed(2)
+                                            + '%' + '(' + order!.user.goodRatingCountSeller + '/' +
+                                            order!.user.ratingCountSeller + ')' }}</span>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </el-card>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col>
+                        <el-row style="display: flex; align-items: center;">
+                            <el-col :span="5">
+                                <span>请为卖家评分:</span>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-rate v-model="score" size="large" :colors="colors"
+                                    :texts="['垃圾!糟糕的体验!', '差评!不好的购物体验', '中评,有一些小问题', '好评!不错的购物体验', '好评!好评!!好评!!!']"
+                                    show-text />
+                            </el-col>
+                        </el-row>
+                        <el-row style="display: flex; align-items: center;">
+                            <el-col :span="5">
+                                <span>对卖家的评价:</span>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-input v-model="comment" placeholder="请输入你对卖家的评价" />
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+                <el-row justify="end" style="margin-top: 1rem;">
+                    <el-col :span="6">
+                        <el-button type="primary" @click="confirmReceipt">确定</el-button>
+                        <el-button @click="confirmVisible = false;">取消</el-button>
+                    </el-col>
+                </el-row>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -143,22 +248,54 @@ import { ref, onMounted } from "vue";
 import constant from '@/common/constant';
 import router from '@/router';
 import { useRoute } from 'vue-router'
-import { FetchGetWithToken } from '@/util/FetchUtil'
-import { fill, result } from 'lodash';
+import { FetchGetWithToken, FetchPostWithToken, FetchPutWithToken } from '@/util/FetchUtil'
 import type Order from '@/interface/Order';
-import { useUserStore, usePathStore, useLoadingStore } from '@/stores';
+import { useUserStore, usePathStore, useLoadingStore, useCaptchaStore, useUserMessageStore } from '@/stores';
 import { ElMessage } from 'element-plus';
+import type User from "@/interface/User";
+const userMessageStore = useUserMessageStore();
+const cptchaStore = useCaptchaStore();
 const loadingStore = useLoadingStore();
 const userStore = useUserStore();
 const route = useRoute();
 const pathStore = usePathStore();
 const order = ref<Order>();
-FetchGetWithToken("/api/order/oid/" + route.params.oid).then(result => {
-    order.value = result.data;
-
+FetchGetWithToken("/api/order/oid/" + route.params.oid).then(data => {
+    order.value = data;
     loadingStore.clodeLoading();
-})
-
+});
+const confirmVisible = ref(false);
+const toConfirmReceipt = () => {
+    confirmVisible.value = true;
+}
+const confirmReceipt = () => {
+    if (score.value <= 0) {
+        ElMessage.error("请填写评分");
+        return;
+    }
+    if (comment.value.length < 5) {
+        ElMessage.error("请输入5字以上的评价");
+        return;
+    }
+    FetchPutWithToken("/api/order", JSON.stringify({
+        oid: order.value!.oid,
+        score: score.value,
+        comment: comment.value
+    })).then(data => {
+        ElMessage.success("确认成功!");
+        confirmVisible.value = false;
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = confirmReceipt;
+            captchaStore.nextMethodParam = undefined;
+        }
+    });
+}
+const score = ref(0)
+const comment = ref('')
+const colors = ref({ 2: '#99A9BF', 3: '#F7BA2A', 4.5: '#FF9900' });
 onMounted(() => {
     pathStore.path = [
         { name: "个人中心", path: '/buyer/order' },
@@ -166,6 +303,14 @@ onMounted(() => {
         { name: "订单详情", path: '/buyer/order/' + order.value?.oid },
     ]
 });
+
+const toChat = () => {
+    userMessageStore.chatUser = order.value!.user as User
+    userMessageStore.messageList = [];
+    userMessageStore.fetchMessage();
+    userMessageStore.putVirtuaChatUserToMap(order.value!.user);
+    userMessageStore.showMessageDrawer();
+}
 </script>
 <style scoped>
 .order-wrapper>div {
@@ -317,5 +462,38 @@ onMounted(() => {
 .order-bottom {
     display: flex;
     justify-content: end;
+}
+
+
+.confirm-info-wrapper {
+    display: flex;
+    margin-top: 1rem;
+}
+
+.confirm-info-wrapper span {
+    margin-top: .3rem;
+}
+
+.confirm-info-title,
+.confirm-info-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.confirm-info-title {
+    text-align: right;
+}
+
+.confirm-info-content {
+    margin-left: 5rem;
+}
+
+.confirm-info-name {
+    font-size: large;
+    ;
+}
+
+.confirm-seller {
+    margin-top: 1rem;
 }
 </style>

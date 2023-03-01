@@ -27,6 +27,10 @@
                                 order.commodity.quality
                             }}新</el-tag>
                         </div>
+                        <div>
+                            <span class="order-status" :class="getOrderStatusClass(order)">{{ getOrderStatusName(order)
+                            }}</span>
+                        </div>
                         <el-row class="margin-top justify-content-between align-items-center">
                             <el-col :span="9" class="flex align-items-center">
                                 <el-avatar :src="constant.NGINX_SERVER_HOST + order.user.avatar" :size="20"></el-avatar>
@@ -36,9 +40,8 @@
                                 <span class="paytime">{{ order.payTime }}</span>
                             </el-col>
                             <el-col :span="10" class="right-wrapper">
-                                <span class="order-price">{{
-                                    order.status == 0 ? ('￥' + order.totalAmount) :
-                                    order.statusName
+                                <span class="order-price" :class="getPriceClass(order.status)">{{
+                                    '￥' + order.totalAmount
                                 }}</span>
                             </el-col>
                         </el-row>
@@ -86,7 +89,45 @@ const getQualityClass = (quality: number) => {
     }
 
 }
+const getPriceClass = (status: number) => {
+    switch (status) {
+        case constant.ORDER_STATUS_CLOSED:
+            return 'status-closed'
+        case constant.ORDER_STATUS_NORMAL:
+            return 'status-normal'
+        case constant.ORDER_STATUS_REFUNDED:
+            return 'status-closed'
+        case constant.ORDER_STATUS_COMPLETED:
+            return 'status-normal'
+        default:
+            break;
+    }
 
+}
+const getOrderStatusName = (order: Order) => {
+    switch (order.status) {
+        case constant.ORDER_STATUS_CLOSED:
+            return '已取消'
+        case constant.ORDER_STATUS_NORMAL:
+            return order.shipTime ? '等待收货' : '等待发货'
+        case constant.ORDER_STATUS_REFUNDED:
+            return '已退款'
+        case constant.ORDER_STATUS_COMPLETED:
+            return '已完成'
+    }
+}
+const getOrderStatusClass = (order: Order) => {
+    switch (order.status) {
+        case constant.ORDER_STATUS_CLOSED:
+            return 'status-closed'
+        case constant.ORDER_STATUS_NORMAL:
+            return 'status-normal'
+        case constant.ORDER_STATUS_REFUNDED:
+            return 'status-refunded'
+        case constant.ORDER_STATUS_COMPLETED:
+            return 'status-refunded'
+    }
+}
 const toDetail = (order: Order) => {
     router.push({ name: "seller-order-detail", params: { "oid": order.oid } });
 }
@@ -184,5 +225,20 @@ onMounted(() => {
 
 .tag {
     margin-left: .5rem;
+}
+.order-status {
+    font-size: small;
+}
+
+.status-closed {
+    color: gray;
+}
+
+.status-normal {
+    color: #e1251b;
+}
+
+.status-refunded {
+    color: green;
 }
 </style>

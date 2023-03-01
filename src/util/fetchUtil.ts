@@ -2,7 +2,7 @@ import constant from "@/common/constant";
 import type CommonResult from "@/interface/CommonResult";
 import type CommonResultPage from "@/interface/CommonResultPage";
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
-import { useUserStore } from '@/stores'
+import { useUserStore, useCaptchaStore } from '@/stores'
 
 
 export const FetchPostWithToken = async (url: string, body?: BodyInit) => {
@@ -24,6 +24,13 @@ export const FetchPostWithToken = async (url: string, body?: BodyInit) => {
                 ElMessage.error("未登录，请重新登录")
                 useUserStore().loginFormVisible = true;
                 throw new Error('未登录');
+            } else if (result.code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+                const captchaStore = useCaptchaStore()
+                //储存验证码参数
+                captchaStore.imageCaptchaInfo = result.data;
+                captchaStore.captchaVisble = true;
+                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString());
+
             } else {
                 ElMessage.error(result.message);
                 throw new Error(result.message);
@@ -50,6 +57,13 @@ export const FetchPostFileWithToken = async (url: string, file: File) => {
                 ElMessage.error("未登录，请重新登录")
                 useUserStore().loginFormVisible = true;
                 throw new Error('未登录');
+            } else if (result.code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+                const captchaStore = useCaptchaStore()
+                //储存验证码参数
+                captchaStore.imageCaptchaInfo = result.data;
+                captchaStore.captchaVisble = true;
+                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString());
+
             } else {
                 ElMessage.error(result.message);
                 throw new Error(result.message);
@@ -70,11 +84,16 @@ export const FetchDeleteWithToken = async (url: string, body?: BodyInit) => {
         .then((result: CommonResult) => {
             if (result.flag) {
                 return result.data;
-            }
-            else if (result.code == constant.NOT_LOGIN_CODE) {
+            } else if (result.code == constant.NOT_LOGIN_CODE) {
                 ElMessage.error("未登录，请重新登录")
                 useUserStore().loginFormVisible = true;
                 throw new Error('未登录');
+            } else if (result.code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+                const captchaStore = useCaptchaStore()
+                //储存验证码参数
+                captchaStore.imageCaptchaInfo = result.data;
+                captchaStore.captchaVisble = true;
+                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString());
             } else {
                 ElMessage.error(result.message);
                 throw new Error(result.message);
@@ -100,6 +119,12 @@ export const FetchPutWithToken = async (url: string, body?: BodyInit) => {
                 ElMessage.error("未登录，请重新登录")
                 useUserStore().loginFormVisible = true;
                 throw new Error('未登录');
+            } else if (result.code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+                const captchaStore = useCaptchaStore()
+                //储存验证码参数
+                captchaStore.imageCaptchaInfo = result.data;
+                captchaStore.captchaVisble = true;
+                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString())
             } else {
                 ElMessage.error(result.message);
                 throw new Error(result.message);
@@ -123,6 +148,12 @@ export const FetchGetWithToken = async (url: string) => {
                 ElMessage.error("未登录，请重新登录")
                 useUserStore().loginFormVisible = true;
                 throw new Error('未登录');
+            } else if (result.code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+                const captchaStore = useCaptchaStore()
+                //储存验证码参数
+                captchaStore.imageCaptchaInfo = result.data;
+                captchaStore.captchaVisble = true;
+
             } else {
                 ElMessage.error(result.message);
                 throw new Error(result.message);
@@ -141,7 +172,13 @@ export const FetchPostWithTokenNoLoginRequired = async (url: string, body?: Body
         body
     }).then(response => response.json())
         .then((result: CommonResult) => {
-            if (result.flag) {
+            if (result.code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+                const captchaStore = useCaptchaStore()
+                //储存验证码参数
+                captchaStore.imageCaptchaInfo = result.data;
+                captchaStore.captchaVisble = true;
+                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString())
+            } else {
                 return result;
             }
         })

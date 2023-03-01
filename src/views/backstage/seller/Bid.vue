@@ -125,7 +125,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import type { CommodityBid, Bid } from '@/interface/CommodityBid';
 import type Commodity from '@/interface/Commodity';
 import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenPage } from '@/util/FetchUtil';
-import { useUserStore, usePathStore, useLoadingStore } from '@/stores';
+import { useUserStore, usePathStore, useLoadingStore ,useCaptchaStore} from '@/stores';
 import constant from '@/common/constant';
 import { ElLoading, ElMessage } from 'element-plus';
 import { useRoute } from 'vue-router'
@@ -175,7 +175,14 @@ const operate = () => {
 
 
         loading.close();
-    })
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = operate;
+            captchaStore.nextMethodParam = undefined;
+        }
+    });
 }
 const pageTotal = ref<number>(1);
 const filter = ref("all");
@@ -343,6 +350,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     margin-top: 1rem;
+    justify-content: space-evenly;
 }
 
 .buyer-info-wrapper {

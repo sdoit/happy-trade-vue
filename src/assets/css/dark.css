@@ -1,0 +1,19 @@
+html.dark .editor div {
+    background-color: var(--el-bg-color-overlay);
+    color: var(--el-text-color-primary);
+}
+
+html.dark .header {
+    background-color: #121212 !important;
+    color: var(--el-text-color-primary);
+}
+
+html.dark .w-e-text-container {
+    background-color: var(--el-bg-color-overlay);
+    color: var(--el-text-color-primary);
+}
+
+html.dark .el-divider__text{
+    background-color: #0a0a0a;
+
+}

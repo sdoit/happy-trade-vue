@@ -109,7 +109,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from "vue";
-import { useUserStore, useLoadingStore } from "@/stores"
+import { useUserStore, useLoadingStore,useCaptchaStore } from "@/stores"
 import { FetchGetWithToken, FetchPostWithToken, FetchDeleteWithToken, FetchPutWithToken } from "@/util/FetchUtil"
 import type UserAddress from "@/interface/UserAddress"
 import type { Province, City, Area, Street } from "@/interface/Address"
@@ -238,7 +238,14 @@ const add = () => {
         addAddressDialogVisible.value = false;
 
         loading.close();
-    })
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+          // 储存本次操作
+          const captchaStore = useCaptchaStore();
+          captchaStore.nextMethod = add;
+          captchaStore.nextMethodParam=undefined
+        }
+      });
 }
 const toUpdateAddress = (address: UserAddress) => {
     fetchProvinceList();

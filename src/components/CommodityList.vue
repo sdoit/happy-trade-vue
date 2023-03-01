@@ -1,41 +1,13 @@
 <template>
-    <CommodityList :url="url" @loadDone="loadDone" />
-</template>
-<script setup lang="ts">
-import CommodityList from '@/components/CommodityList.vue';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-const Route = useRoute();
-// const url = ref('/api/commodity?keyword=');
-// if (Route.name == "search-type") {
-//     url.value = '/api/commodity/type/' + Route.params.typeId;
-// } else if (Route.name == "search") {
-//     url.value = '/api/commodity?keyword=' + Route.params.keyword
-// }
-const url = ref('/api/commodity?keyword=' + Route.params.keyword);
-const emits = defineEmits(['loadDone'])
-const loadDone = () => {
-    emits("loadDone");
-}
-
-</script>
-
-
-
-
-
-
-<!-- <template>
     <div class="infinite-list-wrapper" v-if="isMounted">
-        <div v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled"
-            infinite-scroll-immediate="false">
+        <div v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled" infinite-scroll-immediate="false">
             <el-row v-for="i in rowCount" class="list-item" :gutter="5">
                 <el-col v-for="commodity in data.slice((i - 1) * 4, i * 4)" :key="commodity.cid" :span="4">
                     <router-link :to="{ name: 'commodity', params: { cid: commodity.cid } }" class="a">
                         <el-card :body-style="{ padding: '.3rem' }" shadow="hover">
                             <div class="img-wrapper">
                                 <el-image loading="lazy" :src="
-                                constant.NGINX_SERVER_HOST + '/' + commodity.cover" :fit="'fill'" class="cover">
+                                    constant.NGINX_SERVER_HOST + '/' + commodity.cover" :fit="'fill'" class="cover">
                                     <template #placeholder>
                                         <div class="img-slot-wrapper">
                                             <img src="/img/loading.svg" alt="正在加载" />
@@ -50,7 +22,7 @@ const loadDone = () => {
                             </div>
                             <div style="padding: 14px">
                                 <div class="priceAndQualityWrapper">
-                                    <span class="price">{{ "￥ "+ commodity.price }}</span>
+                                    <span class="price">{{ "￥ " + commodity.price }}</span>
                                     <el-tag class="quality" :type="getQualityClass(commodity.quality)">{{
                                         commodity.quality
                                     }}新</el-tag>
@@ -61,8 +33,7 @@ const loadDone = () => {
 
                                 <el-row class="seller-wrapper">
                                     <el-col :span="4">
-                                        <el-avatar :size="40"
-                                            :src="constant.NGINX_SERVER_HOST + commodity.user.avatar" />
+                                        <el-avatar :size="40" :src="constant.NGINX_SERVER_HOST + commodity.user.avatar" />
                                     </el-col>
                                     <el-col :span="20" class="username-wrapper">
                                         <span class="nickname">{{
@@ -87,19 +58,44 @@ const loadDone = () => {
         </div>
         <p v-if="loading" class="bottomTips">正在获取更多 请稍等...</p>
         <p v-if="noMore" class="bottomTips">没有更多了...</p>
+        <!-- 如果商品太少，导致不能自动下滑，所以填充换行符 -->
+        <div v-if="rowCount < 3">
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+            <br />
+        </div>
+
     </div>
-</template> -->
-<!-- <script lang="ts" setup>
-import { computed, ref, onMounted } from 'vue'
+</template>
+<script lang="ts" setup>
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router';
 import constant from "@/common/constant";
 import type Commodity from '@/interface/Commodity';
 import type CommonResult from "@/interface/CommonResult";
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
-import { useLoadingStore } from '@/stores';
+import { useLoadingStore, useCommodityListStore } from '@/stores';
+import { FetchGetWithToken } from '@/util/FetchUtil';
+import { storeToRefs } from 'pinia';
 
+const props = defineProps({
+    url: {
+        type: String
+    }
+
+})
 const emits = defineEmits(['loadDone'])
-const loadingStore=useLoadingStore();
+const loadingStore = useLoadingStore();
+const refresh = ref(false);
 const rowCount = ref(0);
 const page = ref(0);
 const loading = ref(false);
@@ -111,18 +107,33 @@ const load = function () {
     page.value += 1;
     fetchcommodities(page.value);
 }
-const Route = useRoute();
 const fetchcommodities = (PageNum: number) => {
-    console.log(Route.params.keyword);
-    fetch(constant.SPRINGBOOT_SERVER_HOST + "/api/commodity?keyword=" + Route.params.keyword + "&page=" + PageNum)
-        .then(response => response.json())
-        .then((json: CommonResult) => {
-            if (json.data.length < 28) {
+    let realUrl = ''
+    if (url.value == '') {
+        realUrl = props.url!;
+    } else {
+        realUrl = url.value;
+    }
+    if (realUrl.includes('?')) {
+        realUrl = realUrl + '&page=' + PageNum
+    } else {
+        realUrl = realUrl + '?page=' + PageNum
+    }
+
+    console.log(realUrl);
+
+    FetchGetWithToken(realUrl)
+        .then(result => {
+            if (result.length < 28) {
                 noMore.value = true;
                 loading.value = false;
             }
-            data.value = data.value.concat(json.data);
-            rowCount.value += Math.ceil(json.data.length / 4);
+            if (refresh.value) {
+                data.value = [];
+                rowCount.value = 0;
+            }
+            data.value = data.value.concat(result);
+            rowCount.value += Math.ceil(result.length / 4);
             loading.value = false;
             if (PageNum == 1) {
                 //首次加载完成
@@ -152,16 +163,29 @@ const getQualityClass = (quality: number) => {
     }
 
 }
+const { url } = storeToRefs(useCommodityListStore());
 
+
+
+watch(url, () => {
+    if (url.value == '') {
+        return;
+    }
+    page.value = 0;
+    //标记刷新，完成数据后清空data
+    refresh.value = true;
+    load();
+    console.log(url)
+});
 
 const isMounted = ref(false);
 onMounted(() => {
     isMounted.value = true;
     load();
 })
-</script> -->
+</script>
 
-<!-- <style scoped>
+<style scoped>
 .infinite-list-wrapper {
     text-align: center;
 }
@@ -287,4 +311,4 @@ onMounted(() => {
     justify-content: center;
     height: 100%;
 }
-</style> -->
+</style>

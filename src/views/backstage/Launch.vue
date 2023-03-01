@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="margin-top: 2rem;">
         <el-result v-if="!userStore.logged" title="请先登录" sub-title="登录后才能继续操作">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 2048 2048">
@@ -15,12 +15,12 @@
             <el-row :justify="'center'">
                 <el-col :span="16" class="launch-content-wrapper">
                     <div class="launch-content">
-                        <div class="step1">
+                        <!-- <div class="step1">
 
                         </div>
                         <div class="step2">
 
-                        </div>
+                        </div> -->
                         <div class="step3">
                             <el-row class="commodity-info">
                                 <el-col :span="4" class="upload-wrapper">
@@ -127,8 +127,8 @@
 
                             <div class="editor-wrapper">
                                 <Toolbar style="border-bottom: 1px solid #ccc" :editor="editorRef"
-                                    :defaultConfig="toolbarConfig" :mode="mode" />
-                                <el-scrollbar height="500px">
+                                    :defaultConfig="toolbarConfig" :mode="mode" class="editor-toolbar" />
+                                <el-scrollbar height="500px" class="editor-scroll">
                                     <Editor style="overflow-y: hidden;" v-model="valueHtml" :defaultConfig="editorConfig"
                                         :mode="mode" @onCreated="handleCreated" />
                                 </el-scrollbar>
@@ -146,7 +146,7 @@
 <script lang="ts" setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
-import { useUserStore, useLoadingStore } from '@/stores'
+import { useUserStore, useLoadingStore, useCaptchaStore } from '@/stores'
 import '@wangeditor/editor/dist/css/style.css';
 import '@/assets/css/wang.css'
 import type CommonResult from '@/interface/CommonResult';
@@ -163,7 +163,7 @@ import { useRoute } from 'vue-router';
 import type Tag from '@/interface/Tag';
 const loadingStore = useLoadingStore();
 const userStore = useUserStore();
-const commodity = shallowRef({
+const commodity = ref({
     cid: 0,
     name: '',
     price: 0,
@@ -391,12 +391,12 @@ const Route = useRoute();
 onMounted(() => {
     //读取模式（新建或编辑）
     if (Route.meta.edit) {
-        FetchGetWithToken("/api/commodity/" + Route.params.cid).then(result => {
-            if (result.data.uid != userStore.user.uid && userStore.logged) {
+        FetchGetWithToken("/api/commodity/" + Route.params.cid).then(data => {
+            if (data.uid != userStore.user.uid && userStore.logged) {
                 ElMessage.error("这不是你的商品");
                 return;
             }
-            commodity.value = result.data;
+            commodity.value = data;
             // commodity.value.cid = commodityEditStore.commodity.cid;
             // commodity.value.name = commodityEditStore.commodity.name;
             // commodity.value.price = commodityEditStore.commodity.price;
@@ -442,8 +442,8 @@ const props = {
         if (node.level != 0) {
             url += "/" + node.value
         }
-        FetchGetWithToken(url).then(result => {
-            const nodes = result.data.map((typeItem: CommodityType) => ({
+        FetchGetWithToken(url).then(data => {
+            const nodes = data.map((typeItem: CommodityType) => ({
                 value: typeItem.tid,
                 label: typeItem.typeName,
                 leaf: node.level >= 2 || typeItem.tid == 20,
@@ -495,16 +495,23 @@ const submit = () => {
     let fetchResult;
     let successMessage = "发布成功，即将跳转到商品详情页"
     if (Route.meta.edit) {
-        fetchResult = FetchPostWithToken("/api/commodity", JSON.stringify(commodity.value));
+        fetchResult = FetchPutWithToken("/api/commodity", JSON.stringify(commodity.value));
         successMessage = "编辑成功，即将跳转到商品详情页"
     } else {
-        fetchResult = FetchPutWithToken("/api/commodity", JSON.stringify(commodity.value))
+        fetchResult = FetchPostWithToken("/api/commodity", JSON.stringify(commodity.value))
     }
     fetchResult.then(result => {
         ElMessage.success(successMessage);
-        router.push({ name: "commodity", params: { cid: result.data } })
+        router.push({ name: "commodity", params: { cid: result, t: new Date().getTime().toString() } });
         loading.close();
-    })
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = submit;
+            captchaStore.nextMethodParam = undefined;
+        }
+    });
 
 }
 </script>
@@ -603,5 +610,16 @@ const submit = () => {
 
 .el-cascader-node__label {
     width: 10rem;
+}
+
+.editor-scroll,
+.editor-toolbar,
+.editor-toolbar>div {
+    background-color: var(--el-bg-color-overlay) !important;
+    color: var(--el-text-color-primary) !important;
+}
+
+.w-e-textarea-video-container video {
+    width: 100%;
 }
 </style>

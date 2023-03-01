@@ -20,7 +20,7 @@
                 <el-card :body-style="{ padding: '.3rem' }" v-for="commodity in commodities" :key="commodity.cid"
                     shadow="hover" class="card">
                     <el-row class="commodity-card">
-                        <el-col :span="5" class="img-wrapper">
+                        <el-col :span="5" class="img-wrapper" @click="toCommodity(commodity.cid)">
                             <el-image loading="lazy" :src="
                                 constant.NGINX_SERVER_HOST + '/' + commodity.cover
                             " :fit="'fill'" class="cover">
@@ -78,10 +78,22 @@
                                             :disabled="commodity.bidCount == '0'" @click="toBid(commodity)">查看出价</el-button>
                                         <el-button type="primary" size="small" v-if="!commodity.sold"
                                             @click="toEdit(commodity)">编辑</el-button>
-                                        <el-button type="warning" size="small" v-if="!commodity.sold"
-                                            @click="getDown(commodity)">下架</el-button>
-                                        <el-button type="danger" size="small" v-if="!commodity.sold"
-                                            @click="deleteCommodity(commodity)">删除</el-button>
+                                        <el-button :type="commodity.launched ? 'warning' : 'primary'" size="small"
+                                            v-if="!commodity.sold"
+                                            @click="commodity.launched ? getDown(commodity) : uploaded(commodity)">{{
+                                                commodity.launched ? '下架' : '上架' }}</el-button>
+
+
+                                        <el-popconfirm title="你确定永久删除本商品吗?" confirm-button-text="确定删除"
+                                            cancel-button-text="取消" confirm-button-type="danger"
+                                            cancel-button-type="primary" @confirm="deleteCommodity(commodity)"
+                                            width="11rem">
+                                            <template #reference>
+                                                <el-button type="danger" size="small" v-if="!commodity.sold">删除</el-button>
+                                            </template>
+                                        </el-popconfirm>
+
+
                                         <el-button type="primary" size="small" v-if="commodity.sold"
                                             @click="toOrderDetail(commodity)">查看订单</el-button>
                                     </div>
@@ -107,8 +119,8 @@ import constant from "@/common/constant";
 import type Commodity from '@/interface/Commodity';
 import type CommonResult from "@/interface/CommonResult";
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
-import { FetchDeleteWithToken, FetchGetWithToken } from '@/util/FetchUtil';
-import { useUserStore, usePathStore, useLoadingStore } from '@/stores';
+import { FetchDeleteWithToken, FetchGetWithToken, FetchPutWithToken } from '@/util/FetchUtil';
+import { useUserStore, usePathStore, useLoadingStore, useCaptchaStore } from '@/stores';
 import { ElLoading, ElMessage } from 'element-plus';
 import router from '@/router';
 const loadingStore = useLoadingStore();
@@ -171,7 +183,10 @@ const getQualityClass = (quality: number) => {
     }
 
 }
+const toCommodity = (cid: string) => {
+    router.push({ name: "commodity", params:{ cid: cid }})
 
+}
 const toBid = (commodity: Commodity) => {
     router.push({ name: "seller-bid-by-cid", params: { cid: commodity.cid } })
 }
@@ -180,7 +195,32 @@ const toEdit = (commodity: Commodity) => {
 }
 //下架
 const getDown = (commodity: Commodity) => {
+    FetchPutWithToken("/api/commodity/down/" + commodity.cid).then(data => {
+        ElMessage.success("下架成功");
+        commodity.launched = false;
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = getDown;
+            captchaStore.nextMethodParam = commodity;
+        }
+    });
 
+}
+//上架
+const uploaded = (commodity: Commodity) => {
+    FetchPutWithToken("/api/commodity/uploaded/" + commodity.cid,).then(data => {
+        ElMessage.success("上架成功");
+        commodity.launched = true;
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = uploaded;
+            captchaStore.nextMethodParam = commodity;
+        }
+    });
 }
 
 const deleteCommodity = (commodity: Commodity) => {
@@ -216,6 +256,9 @@ onMounted(() => {
 
 .commodity-card {
     justify-content: space-around;
+}
+.img-wrapper{
+    cursor: pointer;
 }
 
 .loading-tips {

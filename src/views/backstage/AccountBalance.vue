@@ -45,7 +45,7 @@ import type UserAmountLog from '@/interface/UserAmountLog'
 import { FetchGetWithToken, FetchPostWithToken } from '@/util/FetchUtil';
 import constant from '@/common/constant';
 import { ElMessage } from 'element-plus';
-import { useUserStore, useLoadingStore } from '@/stores';
+import { useUserStore, useLoadingStore,useCaptchaStore } from '@/stores';
 const loadingStore = useLoadingStore();
 const userStore = useUserStore();
 const userAmountLogs = ref<UserAmountLog[]>();
@@ -54,8 +54,8 @@ const fetchUserAmountAndLog = () => {
     FetchGetWithToken("/api/amount").then(data => {
         userAmount.value = data;
         //获取收支日志
-        FetchGetWithToken("/api/amount/log").then(result => {
-            userAmountLogs.value = result.data;
+        FetchGetWithToken("/api/amount/log").then(data => {
+            userAmountLogs.value = data;
         });
 
         loadingStore.clodeLoading();
@@ -74,7 +74,14 @@ const withdrawal = () => {
         ElMessage.success("提现申请已发起，请关注到账提示");
         fetchUserAmountAndLog();
 
-    })
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+          // 储存本次操作
+          const captchaStore = useCaptchaStore();
+          captchaStore.nextMethod = withdrawal;
+          captchaStore.nextMethodParam=undefined;
+        }
+      });
 }
 onMounted(() => {
     fetchUserAmountAndLog();

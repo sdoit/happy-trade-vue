@@ -21,6 +21,12 @@ const router = createRouter({
       component: () => import('../views/Search.vue')
     },
     {
+      path: '/type/:typeId',
+      name: 'search-type',
+      meta: { mode: 'reception' },
+      component: () => import('../views/Search.vue')
+    },
+    {
       path: '/commodity/:cid',
       name: 'commodity',
       meta: { mode: 'reception' },
@@ -142,7 +148,11 @@ const router = createRouter({
       component: () => import('../views/backstage/Launch.vue')
     },
 
-
+    {
+      path: '/empty',
+      name: 'empty',
+      component: () => import('@/views/error/404.vue')
+    },
 
 
     //404

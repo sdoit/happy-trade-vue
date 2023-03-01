@@ -12,78 +12,81 @@
             </template>
         </el-result>
 
-        <el-row class="wrapper" v-if="userStore.logged">
-            <el-col :span="3">
-                <el-affix :offset="60">
-                    <el-menu :default-active="active" class="menu" @open="handleOpen" @close="handleClose"
-                        :router="true">
-                        <el-sub-menu index="1">
-                            <template #title>
-                                <el-icon>
-                                    <location />
-                                </el-icon>
-                                <span>买家中心</span>
-                            </template>
-                            <el-menu-item-group title="订单">
-                                <el-menu-item index="/buyer/order">我的订单</el-menu-item>
-                                <el-menu-item index="/buyer/bid">我的出价</el-menu-item>
-                            </el-menu-item-group>
-                            <el-menu-item-group title="浏览">
-                                <el-menu-item index="/buyer/favorites">我的收藏</el-menu-item>
-                                <el-menu-item index="/buyer/history">浏览历史</el-menu-item>
-                            </el-menu-item-group>
-                        </el-sub-menu>
-                        <el-sub-menu index="2">
-                            <template #title>
-                                <el-icon><icon-menu /></el-icon>
-                                <span>卖家中心</span>
-                            </template>
-                            <el-menu-item-group title="商品">
-                                <el-menu-item index="/seller/commodity">我的商品</el-menu-item>
-                                <el-menu-item index="/seller/bid">出价管理</el-menu-item>
-                            </el-menu-item-group>
-                            <el-menu-item-group title="订单">
-                                <el-menu-item index="/seller/order">订单管理</el-menu-item>
-                                <el-menu-item index="1-2">...</el-menu-item>
-                            </el-menu-item-group>
-                        </el-sub-menu>
-                        <el-menu-item index="/home/address">
-                            <el-icon>
-                                <LocationFilled />
-                            </el-icon>
-                            <span>地址管理</span>
-                        </el-menu-item>
-                        <el-menu-item index="/home/wallet">
-                            <el-icon>
-                                <document />
-                            </el-icon>
-                            <span>账户余额</span>
-                        </el-menu-item>
-                        <el-menu-item index="9">
-                            <el-icon>
-                                <setting />
-                            </el-icon>
-                            <span>个人信息</span>
-                        </el-menu-item>
-                    </el-menu>
-                </el-affix>
+        <el-row justify="center" v-if="userStore.logged">
+            <el-col :span="15" class="wrapper">
+                <el-row justify="center">
+                    <el-col :span="5" style="display: flex;">
+                        <el-affix :offset="60" class="menu-affix">
+                            <el-menu :default-active="active" @open="handleOpen" @close="handleClose" :router="true">
+                                <el-sub-menu index="1">
+                                    <template #title>
+                                        <el-icon>
+                                            <location />
+                                        </el-icon>
+                                        <span>买家中心</span>
+                                    </template>
+                                    <el-menu-item-group title="订单">
+                                        <el-menu-item index="/buyer/order">我的订单</el-menu-item>
+                                        <el-menu-item index="/buyer/bid">我的出价</el-menu-item>
+                                    </el-menu-item-group>
+                                    <el-menu-item-group title="浏览">
+                                        <el-menu-item index="/buyer/favorites">我的收藏</el-menu-item>
+                                        <el-menu-item index="/buyer/history">浏览历史</el-menu-item>
+                                    </el-menu-item-group>
+                                </el-sub-menu>
+                                <el-sub-menu index="2">
+                                    <template #title>
+                                        <el-icon><icon-menu /></el-icon>
+                                        <span>卖家中心</span>
+                                    </template>
+                                    <el-menu-item-group title="商品">
+                                        <el-menu-item index="/seller/commodity">我的商品</el-menu-item>
+                                        <el-menu-item index="/seller/bid">出价管理</el-menu-item>
+                                    </el-menu-item-group>
+                                    <el-menu-item-group title="订单">
+                                        <el-menu-item index="/seller/order">订单管理</el-menu-item>
+                                        <el-menu-item index="1-2">...</el-menu-item>
+                                    </el-menu-item-group>
+                                </el-sub-menu>
+                                <el-menu-item index="/home/address">
+                                    <el-icon>
+                                        <LocationFilled />
+                                    </el-icon>
+                                    <span>地址管理</span>
+                                </el-menu-item>
+                                <el-menu-item index="/home/wallet">
+                                    <el-icon>
+                                        <document />
+                                    </el-icon>
+                                    <span>账户余额</span>
+                                </el-menu-item>
+                                <el-menu-item index="9">
+                                    <el-icon>
+                                        <setting />
+                                    </el-icon>
+                                    <span>个人信息</span>
+                                </el-menu-item>
+                            </el-menu>
+                        </el-affix>
 
+                    </el-col>
+                    <el-col :span="18" :offset="1" class="back--indea-main">
+                        <el-breadcrumb :separator-icon="ArrowRight" style="margin-top: .3rem;">
+                            <el-breadcrumb-item v-for="path in pathStore.path" :to="{ path: path.path }">{{
+                                path.name
+                            }}</el-breadcrumb-item>
+                        </el-breadcrumb>
+                        <div style="margin-top: 2rem;"></div>
+                        <router-view v-slot="{ Component }">
+                            <transition name="fade">
+                                <component :is="Component" />
+                            </transition>
+                        </router-view>
+
+                    </el-col>
+                </el-row>
             </el-col>
 
-            <el-col :span="10" :offset="1">
-                <el-breadcrumb :separator-icon="ArrowRight" style="margin-top: .3rem;">
-                    <el-breadcrumb-item v-for="path in pathStore.path" :to="{ path: path.path }">{{
-                        path.name
-                    }}</el-breadcrumb-item>
-                </el-breadcrumb>
-                <div style="margin-top: 2rem;"></div>
-                <router-view v-slot="{ Component }">
-                    <transition name="fade">
-                        <component :is="Component" />
-                    </transition>
-                </router-view>
-
-            </el-col>
         </el-row>
     </div>
 </template>
@@ -97,12 +100,12 @@ import {
     ArrowRight,
     LocationFilled
 } from '@element-plus/icons-vue';
-import { useUserStore, usePathStore,useLoadingStore } from "@/stores";
+import { useUserStore, usePathStore, useLoadingStore } from "@/stores";
 import router from '@/router';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-const loadingStore=useLoadingStore();
+const loadingStore = useLoadingStore();
 const pathStore = usePathStore();
 const active = ref();
 const handleOpen = (key: string, keyPath: string[]) => {
@@ -113,11 +116,18 @@ const handleClose = (key: string, keyPath: string[]) => {
 }
 const userStore = useUserStore();
 userStore.checkLogin().then(result => {
-    if (!result.flag) {
-                ElMessage.error('登录过期，请重新登录');
+    if (result == undefined) {
+        //本次操作需要验证
+        return;
+    }
+    if (!result) {
+        ElMessage.error('登录过期，请重新登录');
         userStore.loginFormVisible = true;
     }
-})
+});
+
+
+
 const route = useRoute();
 onMounted(() => {
     active.value = route.path;
@@ -125,8 +135,18 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.back--indea-main {
+    padding-right: 3rem;
+}
+
+.menu-affix {
+    width: 100%;
+}
+
 .wrapper {
     justify-content: center;
+    background-color: var(--el-bg-color);
+    min-height: 55rem;
 }
 
 .menu {
@@ -146,4 +166,6 @@ onMounted(() => {
 .fade-leave-to {
     opacity: 0;
 }
+</style>
+<style>
 </style>

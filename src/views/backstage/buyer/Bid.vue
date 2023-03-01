@@ -13,12 +13,12 @@
         </el-result>
         <div class="bid-card-wrapper">
             <el-card v-for="bid in bids" :key="bid.bids[0].bid">
-                <div class="bid-wrapper">
-                    <div>
+                <el-row class="bid-wrapper">
+                    <el-col :span="6">
                         <el-image :src="constant.NGINX_SERVER_HOST + '/' + bid.cover" :fit="'fill'"
                             class="cover"></el-image>
-                    </div>
-                    <div>
+                    </el-col>
+                    <el-col :span="14">
                         <div class="commodity-info-wrapper">
                             <span class="name">{{ bid.name }}</span>
                             <span class="cid">商品编号：{{ bid.cid }}</span>
@@ -37,12 +37,12 @@
                                 <div></div>
                             </div>
                             <div class="price-item">
-                                <span class="price-bid" :class="myBidPriceClass(bid)">￥{{ bid.bids[0] }}</span>
+                                <span class="price-bid" :class="myBidPriceClass(bid)">￥{{ bid.bids[0].price }}</span>
                                 <span class="price-tip">你的出价</span>
                             </div>
                         </div>
-                    </div>
-                    <div class="seller-reply-wrapper">
+                    </el-col>
+                    <el-col :span="4" class="seller-reply-wrapper">
                         <div class="seller-reply">
                             <span class="result" :class="sellerReplyClass(bid)">{{ sellerReply(bid) }}</span>
 
@@ -53,8 +53,8 @@
                             <el-button :disabled="bid.bids[0].agree != undefined || bid.bids[0].cancel == true" size="small"
                                 type="danger" @click="revoke(bid)">撤销出价</el-button>
                         </div>
-                    </div>
-                </div>
+                    </el-col>
+                </el-row>
             </el-card>
         </div>
     </div>
@@ -63,7 +63,7 @@
 import { ref, computed, onMounted } from 'vue';
 import type { CommodityBid } from '@/interface/CommodityBid';
 import { FetchGetWithToken, FetchPostWithToken } from '@/util/FetchUtil';
-import { useUserStore, usePathStore, useLoadingStore } from '@/stores';
+import { useUserStore, usePathStore, useLoadingStore, useCaptchaStore } from '@/stores';
 import constant from '@/common/constant';
 import { ElMessage } from 'element-plus';
 import type { data } from 'dom7';
@@ -92,6 +92,13 @@ const revoke = (bid: CommodityBid) => {
         fetchCommodityBids();
 
 
+    }).catch((e: Error) => {
+        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = revoke;
+            captchaStore.nextMethodParam = bid;
+        }
     });
 }
 
@@ -283,5 +290,6 @@ onMounted(() => {
 .seller-reply-wrapper .result {
     font-size: small;
     color: gray;
+    padding-top: 1rem;
 }
 </style>

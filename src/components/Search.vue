@@ -1,13 +1,14 @@
 <template>
-    <el-autocomplete v-model="keyword" :fetch-suggestions="querySearchAsync" placeholder="请输入商品名" class="searchBar"
-        :style="{ width: width + '%', marginLeft: marginLeft + '%' }" :trigger-on-focus="false" size="large"
-        @select="$emit('search', keyword)" ref="searchBar">
-        <template #append>
-            <el-button :icon="Search" @click="$emit('search', keyword)">搜索</el-button>
-        </template>
-    </el-autocomplete>
+    <div>
 
-
+        <el-autocomplete v-model="keyword" :fetch-suggestions="querySearchAsync" placeholder="请输入商品名" class="searchBar"
+            :style="{ width: width + '%', marginLeft: marginLeft + '%' }" :trigger-on-focus="false" size="large"
+            @select="$emit('search', keyword)" ref="searchBar" @keydown.enter="$emit('search', keyword)">
+            <template #append>
+                <el-button :icon="Search" @click="$emit('search', keyword)">搜索</el-button>
+            </template>
+        </el-autocomplete>
+    </div>
 </template>
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
@@ -20,7 +21,7 @@ const width = ref(100)
 const marginLeft = ref(0)
 const lastscrollTop = ref(0)
 const changeSearchBarSize = function (scrollTop: number) {
-    if (scrollTop > lastscrollTop.value && width.value <= 60) {
+    if (scrollTop > lastscrollTop.value && width.value <= 70) {
         return;
     }
     close();

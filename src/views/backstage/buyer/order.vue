@@ -19,11 +19,18 @@
                     <el-image :src="
                         constant.NGINX_SERVER_HOST + '/' + order.commodity.cover" class="order-cover"></el-image>
                     <div class="info-wrapper">
-                        <div>
-                            <span class="order-name">{{ order.name }}</span>
-                            <el-tag class="tag" :type="getQualityClass(order.commodity.quality)">{{
-                                order.commodity.quality
-                            }}新</el-tag>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center;">
+                                <span class="order-name">{{ order.name }}</span>
+                                <el-tag class="tag" :type="getQualityClass(order.commodity.quality)">{{
+                                    order.commodity.quality
+                                }}新</el-tag>
+                            </div>
+                            <div>
+                                <span class="order-status" :class="getOrderStatusClass(order)">{{ getOrderStatusName(order)
+                                }}</span>
+                            </div>
+
                         </div>
                         <el-row class="margin-top justify-content-between align-items-center">
                             <el-col :span="9" class="flex align-items-center">
@@ -34,9 +41,8 @@
                                 <span class="paytime">{{ order.payTime }}</span>
                             </el-col>
                             <el-col :span="10" class="right-wrapper">
-                                <span class="order-price">{{
-                                    order.status == 0 ? ('￥' + order.totalAmount) :
-                                    order.statusName
+                                <span class="order-price" :class="getPriceClass(order.status)">{{
+                                    '￥' + order.totalAmount
                                 }}</span>
                             </el-col>
                         </el-row>
@@ -63,8 +69,8 @@ const userStore = useUserStore();
 const pathStore = usePathStore();
 
 //获取订单
-FetchGetWithToken("/api/order").then((result) => {
-    orders.value = result.data;
+FetchGetWithToken("/api/order").then(data => {
+    orders.value = data;
     loadingStore.clodeLoading();
 });
 const getQualityClass = (quality: number) => {
@@ -82,6 +88,47 @@ const getQualityClass = (quality: number) => {
     }
 
 }
+
+const getPriceClass = (status: number) => {
+    switch (status) {
+        case constant.ORDER_STATUS_CLOSED:
+            return 'status-closed'
+        case constant.ORDER_STATUS_NORMAL:
+            return 'status-normal'
+        case constant.ORDER_STATUS_REFUNDED:
+            return 'status-closed'
+        case constant.ORDER_STATUS_COMPLETED:
+            return 'status-normal'
+        default:
+            break;
+    }
+
+}
+const getOrderStatusName = (order: Order) => {
+    switch (order.status) {
+        case constant.ORDER_STATUS_CLOSED:
+            return '已取消'
+        case constant.ORDER_STATUS_NORMAL:
+            return order.shipTime ? '等待收货' : '等待发货'
+        case constant.ORDER_STATUS_REFUNDED:
+            return '已退款'
+        case constant.ORDER_STATUS_COMPLETED:
+            return '已完成'
+    }
+}
+const getOrderStatusClass = (order: Order) => {
+    switch (order.status) {
+        case constant.ORDER_STATUS_CLOSED:
+            return 'status-closed'
+        case constant.ORDER_STATUS_NORMAL:
+            return 'status-normal'
+        case constant.ORDER_STATUS_REFUNDED:
+            return 'status-refunded'
+        case constant.ORDER_STATUS_COMPLETED:
+            return 'status-refunded'
+    }
+}
+
 
 const toDetail = (order: Order) => {
     router.push({ name: "buyer-order-detail", params: { "oid": order.oid } });
@@ -180,5 +227,21 @@ onMounted(() => {
 
 .tag {
     margin-left: .5rem;
+}
+
+.order-status {
+    font-size: small;
+}
+
+.status-closed {
+    color: gray;
+}
+
+.status-normal {
+    color: #e1251b;
+}
+
+.status-refunded {
+    color: green;
 }
 </style>

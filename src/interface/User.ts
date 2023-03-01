@@ -1,6 +1,6 @@
 export default interface User {
     certificate:string,
-    uid: number,
+    uid: string,
     username: string,
     password: string,
     phone: string,
@@ -10,5 +10,14 @@ export default interface User {
     banedTime: string,
 
     tokenName: string,
-    tokenValue: string
+    tokenValue: string,
+
+
+
+    goodRatingCountSeller:number,
+    ratingCountSeller:number,   
+    goodRatingCountBuyer:number,
+    ratingCountBuyer:number,
+
+    
 }
