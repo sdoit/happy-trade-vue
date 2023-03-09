@@ -9,7 +9,10 @@
                             class="cover"></el-image>
                     </div>
                     <div class="commodity-info-wrapper">
-                        <span class="name">{{ order.name }}</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span class="name">{{ order.name }}</span>
+                            <span class="status" :class="getOrderStatusClass(order)"> {{ getOrderStatusName(order) }}</span>
+                        </div>
                         <span class="cid">商品编号：{{ order.cid }}</span>
                         <span class="time">发布时间：{{ order.commodity.time }}</span>
                         <div class="info-bottom">
@@ -71,12 +74,49 @@
                         </div>
                     </div>
                     <div class="address-ship">
-                        <span>运单号：34098759348275</span>
-                        <span>发货时间：2023年2月8日20点23分</span>
+                        <span v-if="order.shipId != undefined">运单号：{{ order.shipId }}</span>
+                        <span v-if="order.shipId != undefined">发货时间：{{ order.shipTime }}</span>
                     </div>
                 </div>
 
 
+            </el-card>
+            <el-card v-if="order.orderRatingToSeller != undefined || order.orderRatingToBuyer != undefined">
+                <el-row justify="space-between" v-if="order.orderRatingToBuyer != undefined">
+                    <el-col :span="12" class="seller-head">
+                        <div>
+                            <el-avatar :src="constant.NGINX_SERVER_HOST + order.user.avatar"></el-avatar>
+                        </div>
+                        <div class="seller-name-wrapper">
+                            <div>
+                                <span class="seller-name">{{ order.user.nickname }}</span><el-tag type="success">卖家</el-tag>
+                            </div>
+                            <span class="seller-username">@{{ order.user.username }}</span>
+                        </div>
+                    </el-col>
+                    <el-col :span="7" :offset="3" style="display: flex; flex-direction: column;">
+                        <el-rate v-model="order.orderRatingToBuyer.score" disabled text-color="#ff9900" />
+                        <span>{{ order.orderRatingToBuyer.comment }}</span>
+                    </el-col>
+                </el-row>
+                <el-divider v-if="order.orderRatingToSeller != undefined && order.orderRatingToBuyer != undefined" />
+                <el-row style="display: flex; justify-content: space-between;" v-if="order.orderRatingToSeller != undefined">
+                    <el-col :span="12" class="seller-head">
+                        <div>
+                            <el-avatar :src="constant.NGINX_SERVER_HOST + userStore.user.avatar"></el-avatar>
+                        </div>
+                        <div class="seller-name-wrapper">
+                            <div>
+                                <span class="seller-name">{{ userStore.user.nickname }}</span><el-tag>我</el-tag>
+                            </div>
+                            <span class="seller-username">@{{ userStore.user.username }}</span>
+                        </div>
+                    </el-col>
+                    <el-col :span="7" :offset="3" style="display: flex; flex-direction: column;">
+                        <el-rate v-model="order.orderRatingToSeller.score" disabled text-color="#ff9900" />
+                        <span>{{ order.orderRatingToSeller.comment }}</span>
+                    </el-col>
+                </el-row>
             </el-card>
             <el-card>
                 <div class="order-detail-wrapper">
@@ -138,10 +178,11 @@
                     </el-row>
 
                     <div class="order-bottom">
-                        <el-button size="small" @click="toChat">联系卖家</el-button>
-                        <el-button size="small" v-if="order.status == 1">退货申请</el-button>
-                        <el-button size="small">交易快照</el-button>
-                        <el-button size="small" v-if="order.status == 0" @click="toConfirmReceipt">确定收货</el-button>
+                        <el-button type="primary" size="small" @click="toChat">联系卖家</el-button>
+                        <el-button type="warning" size="small" v-if="order.status == 1">退货申请</el-button>
+                        <el-button type="success" @click="toSnapShot" size="small">交易快照</el-button>
+                        <el-button type="primary" size="small" v-if="order.status == 0"
+                            :disabled="order.shipId == undefined" @click="toConfirmReceipt">确定收货</el-button>
                     </div>
                 </div>
 
@@ -311,6 +352,34 @@ const toChat = () => {
     userMessageStore.putVirtuaChatUserToMap(order.value!.user);
     userMessageStore.showMessageDrawer();
 }
+
+const getOrderStatusName = (order: Order) => {
+    switch (order.status) {
+        case constant.ORDER_STATUS_CLOSED:
+            return '已取消'
+        case constant.ORDER_STATUS_NORMAL:
+            return order.shipTime ? '等待收货' : '等待发货'
+        case constant.ORDER_STATUS_REFUNDED:
+            return '已退款'
+        case constant.ORDER_STATUS_COMPLETED:
+            return '已完成'
+    }
+}
+const getOrderStatusClass = (order: Order) => {
+    switch (order.status) {
+        case constant.ORDER_STATUS_CLOSED:
+            return 'status-closed'
+        case constant.ORDER_STATUS_NORMAL:
+            return 'status-normal'
+        case constant.ORDER_STATUS_REFUNDED:
+            return 'status-refunded'
+        case constant.ORDER_STATUS_COMPLETED:
+            return 'status-refunded'
+    }
+}
+const toSnapShot = () => {
+    router.push({ name: "commodity-snapshot", params: { "ssid": order.value!.ssid } });
+}
 </script>
 <style scoped>
 .order-wrapper>div {
@@ -329,6 +398,7 @@ const toChat = () => {
     display: flex;
     flex-direction: column;
     margin-left: .5rem;
+    width: 100%;
 }
 
 .commodity-info-wrapper span {
@@ -367,7 +437,7 @@ const toChat = () => {
     align-items: center;
 }
 
-.seller-wrapper .seller-name-wrapper {
+.seller-name-wrapper {
     display: flex;
     flex-direction: column;
     margin-left: .5rem;
@@ -495,5 +565,21 @@ const toChat = () => {
 
 .confirm-seller {
     margin-top: 1rem;
+}
+
+.order-status {
+    font-size: small;
+}
+
+.status-closed {
+    color: gray !important;
+}
+
+.status-normal {
+    color: #e1251b !important;
+}
+
+.status-refunded {
+    color: green !important;
 }
 </style>

@@ -47,23 +47,75 @@
     </el-main>
   </el-container>
 
-  <el-dialog v-model="userStore.loginFormVisible" title="登录" width="30%">
-    <template #footer>
-      <el-form :model="userStore.user" label-width="5rem">
-        <el-form-item label="账号：" required>
-          <el-input v-model="userStore.user.certificate" placeholder="用户名/手机号码/UID" @keydown.enter="onLogin" />
-        </el-form-item>
-        <el-form-item label="密码：" required>
-          <el-input v-model="userStore.user.password" placeholder="请输入密码" @keydown.enter="onLogin" show-password />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onLogin">登录账号</el-button>
+  <el-dialog v-model="userStore.loginFormVisible"
+    :title="userStore.signUpMode ? '注册新用户' : userStore.loginWayPassword ? '密码登录' : '验证码登录'" width="30%">
+    <!-- 登录 -->
+    <el-form v-if="!userStore.signUpMode" :model="userStore.user" label-width="6rem">
+      <el-form-item :label="userStore.loginWayPassword ? '账号：' : '手机号码：'" required>
+        <el-col :span="userStore.loginWayPassword ? 24 : 18">
+          <el-input v-model="userStore.user.certificate"
+            :placeholder="userStore.loginWayPassword ? '用户名/手机号码' : '手机号码'" @keydown.enter="onLogin" />
+        </el-col>
+        <el-col :span="userStore.loginWayPassword ? 0 : 6">
+          <el-button style="width: 100%;" type="primary" @click="sendCode" :disabled="disabledSendCodeButton">{{
+            disabledSendCodeButton ? countdown + '秒后重试' : '发送验证码' }}</el-button>
+        </el-col>
+      </el-form-item>
+      <el-form-item :label="userStore.loginWayPassword ? '密码：' : '验证码：'" required>
+        <el-input v-model="userStore.user.password" :placeholder="userStore.loginWayPassword ? '请输入密码' : '请输入验证码'"
+          @keydown.enter="onLogin" :show-password="userStore.loginWayPassword" />
+      </el-form-item>
+      <el-form-item>
+        <div style="display: flex; justify-content: space-between; width: 100%;">
+          <div>
+            <el-button type="primary" @click="onLogin">登录账号</el-button>
+            <el-button @click="userStore.loginFormVisible = false">取消</el-button>
+          </div>
+          <div>
+            <el-link @click="userStore.changeLoginWay">{{ userStore.loginWayPassword ? '验证码登录' : '密码登录' }}</el-link>
+          </div>
+        </div>
+      </el-form-item>
+    </el-form>
+    <!-- 注册 -->
+    <el-form v-if="userStore.signUpMode" :model="signUpUser" label-width="6rem" ref="signUpForm" :rules="signUpRule">
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="signUpUser.username" placeholder="请输入用户名" />
+      </el-form-item>
+      <el-form-item label="昵称" prop="nickname">
+        <el-input v-model="signUpUser.nickname" placeholder="请输入昵称" />
+      </el-form-item>
+      <el-form-item label="手机号码" prop="phone" required>
+        <el-col :span="18">
+          <el-input v-model="signUpUser.phone" placeholder="手机号码" />
+        </el-col>
+        <el-col :span="6">
+          <el-button style="width: 100%;" type="primary" @click="sendCode" :disabled="disabledSendCodeButton">{{
+            disabledSendCodeButton ? countdown + '秒后重试' : '发送验证码' }}</el-button>
+        </el-col>
+      </el-form-item>
+      <el-form-item label="验证码" prop="validationCode" required>
+        <el-input v-model="signUpUser.validationCode" placeholder="请输入你收到的验证码" />
+      </el-form-item>
+      <el-form-item label="密码" prop="password" required>
+        <el-input v-model="signUpUser.password" placeholder="设置你的密码" show-password />
+      </el-form-item>
+      <el-form-item label="重复密码" prop="repassword" required>
+        <el-input v-model="signUpUser.repassword" placeholder="重复输入你的密码" show-password />
+      </el-form-item>
+      <el-form-item>
+        <div>
+          <el-button type="primary" @click="onSignUp(signUpForm)">注册</el-button>
           <el-button @click="userStore.loginFormVisible = false">取消</el-button>
-        </el-form-item>
-        <el-link style="font-size: smaller;color: gray;" :underline="true">没有账号？创建一个</el-link>
-        <el-form-item>
-        </el-form-item>
-      </el-form>
+        </div>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div style="display: flex; justify-content: flex-end;">
+        <el-link style="font-size: smaller;color: gray;" :underline="true" @click="userStore.changeSignUpMode">{{
+          userStore.signUpMode ? '已有账号?点击登录' : '没有账号？创建一个' }}
+        </el-link>
+      </div>
     </template>
   </el-dialog>
   <div class="chat-wrapper">
@@ -89,20 +141,20 @@
           <el-col :span="showUserList ? 7 : 0">
             <el-scrollbar ref="contactsScrollBar" wrap-style="padding-right:1rem">
               <!-- 列表开始 -->
-              <div class="chatuser-list" @click="toMessage(chatUser.targetUser)" v-for="chatUser in chatUserList"
-                :key="chatUser.targetUser.uid"
-                :class="userMessageStore.chatUser.uid == chatUser.targetUser.uid ? 'chatuser-active' : ''">
+              <div class="chatuser-list" @click="toMessage(chatUser.userTarget)" v-for="chatUser in chatUserList"
+                :key="chatUser.userTarget.uid"
+                :class="userMessageStore.chatUser.uid == chatUser.userTarget.uid ? 'chatuser-active' : ''">
                 <el-row>
                   <el-col :span="6">
                     <el-badge :value="chatUser.unreadCount" :max="99" :hidden="chatUser.unreadCount == 0"
                       class="chat-userlist-messeage-count">
-                      <el-avatar :src="constant.NGINX_SERVER_HOST + chatUser.targetUser.avatar"></el-avatar>
+                      <el-avatar :src="constant.NGINX_SERVER_HOST + chatUser.userTarget.avatar"></el-avatar>
                     </el-badge>
                   </el-col>
                   <el-col :span="17" class="chat-list-name-wrapper">
-                    <span class="chat-nickname">{{ chatUser.targetUser.nickname }}</span>
+                    <span class="chat-nickname">{{ chatUser.userTarget.nickname }}</span>
                     <span class="last-message" :class="chatUser.unreadCount != 0 ? 'unread-message' : ''">{{
-                      chatUser.lastMessage.content }}</span>
+                      chatUser.lastMessage }}</span>
                   </el-col>
                   <el-col :span="1">
                     <span class="close-btn" @click.stop="closeChatUser(chatUser)">
@@ -125,17 +177,55 @@
               <el-scrollbar ref="messageScrollBar" @scroll="messageScrollHandler">
                 <div ref="messageWrapper">
                   <el-row v-for="message in userMessageStore.messageList" :key="message.mid" class="chat-message-wrapper"
+                    :style="message.systemNotify ? { 'align-items': 'flex-start' } : ''"
                     :class="message.uidSend == userStore.user.uid ? 'message-self' : ''">
                     <el-col :span="3">
                       <el-avatar :size="50"
                         :src="constant.NGINX_SERVER_HOST + (message.uidSend == userStore.user.uid ? userStore.user.avatar : userMessageStore.chatUser.avatar)" />
                     </el-col>
-                    <el-col :span="20" :class="message.uidSend == userStore.user.uid ? 'message-self-content' : ''">
+                    <el-col v-if="!message.systemNotify" :span="20"
+                      :class="message.uidSend == userStore.user.uid ? 'message-self-content' : ''">
                       <div class="chat-message-content">
-                        <span>{{ message.content }}</span>
+                        <span v-if="message.contentType == constant.CONTENT_TYPE_TEXT || message.content == undefined">{{
+                          message.content }}</span>
+                        <el-image v-if="message.contentType == constant.CONTENT_TYPE_IMAGE"
+                          :src="constant.NGINX_SERVER_HOST + '/' + message.content" :fit="'fill'"
+                          @load="imageLoadSuccess">
+                          <template #placeholder>
+                            <img src="/img/loading.svg" />
+                          </template>
+                        </el-image>
                       </div>
                     </el-col>
+                    <el-col v-if="message.systemNotify" :span="20"
+                      :class="message.uidSend == userStore.user.uid ? 'message-self-content' : ''">
+                      <el-card>
+                        <el-row>
+                          <el-col :span="12">
+                            <span>{{ message.title }}</span>
+                          </el-col>
+                          <el-col :span="6" :offset="6">
+                            <span style="font-size: xx-small; color: gray;">{{ message.time }}</span>
+                          </el-col>
+                        </el-row>
+                        <el-row>
+                          <el-col>
+                            <div style="margin:2rem 1rem;font-size: smaller;">
+                              {{ message.content }}
+                            </div>
+                          </el-col>
+                        </el-row>
+                        <el-row>
+                          <el-col style="display: flex; justify-content: flex-end;">
+                            <el-link :href="message.url" type="primary">点击查看</el-link>
+                          </el-col>
+                        </el-row>
+                      </el-card>
+                    </el-col>
                   </el-row>
+                  <div style="margin-bottom: 1rem;">
+
+                  </div>
                 </div>
               </el-scrollbar>
             </div>
@@ -144,11 +234,49 @@
               <div class="chat-content-wrapper">
                 <el-input class="chat-content" v-model="userMessageStore.chatMessage" rows="4" maxlength="250"
                   placeholder="请输入消息..." show-word-limit type="textarea" @keydown.enter.prevent="sendMessage"
-                  :disabled="chatUser.uid == '0'" />
+                  :disabled="chatUser.uid == '0' || chatUser.uid == '-1'" />
               </div>
               <div style="flex: auto" class="chat-button-warpper">
-                <el-button type="primary" @click="sendMessage" :disabled="chatUser.uid == '0'">发送</el-button>
-                <el-button type="warning" @click="userMessageStore.clodeMessageDrawer">关闭</el-button>
+                <div style="margin-left: .3rem; display: flex; align-items: center;">
+                  <el-upload v-show="chatUser.uid != '0' && chatUser.uid != '-1'"
+                    :disabled="chatUser.uid == '0' || chatUser.uid == '-1'"
+                    style="  display: flex; justify-content: center;align-items: center;width: 1.2rem;height: 1.2rem; "
+                    :action="constant.SPRINGBOOT_SERVER_HOST + '/api/upload/image'"
+                    :headers="{ [userStore.user.tokenName]: userStore.user.tokenValue }" :show-file-list="false"
+                    :on-success="uploadImageSuccess" :before-upload="beforeSend" :on-error="uploadImageError">
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="#888888" fill-rule="evenodd"
+                          d="M2 5a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v6.5a1 1 0 0 1-.032.25A1 1 0 0 1 22 12v7a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-3a1 1 0 0 1 .032-.25A1.002 1.002 0 0 1 2 15.5V5zm2.994 9.83c-.348.006-.68.022-.994.046V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6.016c-4.297.139-7.4 1.174-9.58 2.623c.826.293 1.75.71 2.656 1.256c1.399.84 2.821 2.02 3.778 3.583a1 1 0 1 1-1.706 1.044c-.736-1.203-1.878-2.178-3.102-2.913c-1.222-.734-2.465-1.192-3.327-1.392a15.466 15.466 0 0 0-3.703-.386h-.022zm1.984-8.342A2.674 2.674 0 0 1 8.5 6c.41 0 1.003.115 1.522.488c.57.41.978 1.086.978 2.012c0 .926-.408 1.601-.978 2.011A2.674 2.674 0 0 1 8.5 11c-.41 0-1.003-.115-1.522-.489C6.408 10.101 6 9.427 6 8.5c0-.926.408-1.601.978-2.012z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </span>
+                  </el-upload>
+                  <el-upload v-show="chatUser.uid != '0' && chatUser.uid != '-1'"
+                    :disabled="chatUser.uid == '0' || chatUser.uid == '-1'"
+                    style="  margin-left: .8rem;  display: flex;  justify-content: center;lign-items: center;width: 1.2rem;height: 1.2rem; "
+                    :action="constant.SPRINGBOOT_SERVER_HOST + '/api/upload/video'"
+                    :headers="{ [userStore.user.tokenName]: userStore.user.tokenValue }" :show-file-list="false"
+                    :on-success="uploadVideoSuccess">
+                    <span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48">
+                        <mask id="ipTVideoTwo0">
+                          <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4">
+                            <path d="M39 6H9a3 3 0 0 0-3 3v30a3 3 0 0 0 3 3h30a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3Z" />
+                            <path fill="#555" d="M20.5 28v-6.062l5.25 3.03L31 28l-5.25 3.031l-5.25 3.031V28Z" />
+                            <path d="M6 15h36m-9-9l-6 9m-6-9l-6 9" />
+                          </g>
+                        </mask>
+                        <path fill="#888888" d="M0 0h48v48H0z" mask="url(#ipTVideoTwo0)" />
+                      </svg>
+                    </span>
+                  </el-upload>
+                </div>
+                <div>
+                  <el-button type="primary" @click="sendMessage"
+                    :disabled="chatUser.uid == '0' || chatUser.uid == '-1'">发送</el-button>
+                  <el-button type="warning" @click="userMessageStore.clodeMessageDrawer">关闭</el-button>
+                </div>
               </div>
             </div>
           </el-col>
@@ -156,7 +284,6 @@
       </template>
     </el-drawer>
   </div>
-
   <el-dialog v-model="captchaStore.captchaVisble" :fullscreen="true" :close-on-click-modal="false"
     :close-on-press-escape="false" :show-close="false" :center="true" :align-center="true">
     <CaptchaSlider v-if="captchaStore.captchaVisble" />
@@ -169,14 +296,15 @@ import constant from './common/constant';
 import Header from "./components/Header.vue";
 import Search from "./components/Search.vue";
 import router from './router'
-import { ElLoading, ElMessage, ElNotification } from 'element-plus'
+import { ElLoading, ElMessage, type FormRules, type FormInstance } from 'element-plus'
 import { useModeStore, useUserStore, useLoadingStore, useUserMessageStore, useCaptchaStore, useCommodityListStore } from '@/stores'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import type User from './interface/User';
 import CaptchaSlider from '@/components/CaptchaSlider.vue';
 import type { ChatUser } from './interface/UserMessage';
-
+import { FetchPostFileWithToken, FetchPostWithToken } from '@/util/FetchUtil'
+import SSEInit from './util/SSEUtil';
 
 const captchaStore = useCaptchaStore();
 const loadingStore = useLoadingStore();
@@ -270,11 +398,130 @@ const onLogin = () => {
   }).catch((e: Error) => {
     if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
       // 储存本次操作
-      const captchaStore = useCaptchaStore();
       captchaStore.nextMethod = onLogin;
     }
   })
 
+}
+const signUpForm = ref<FormInstance>();
+const repasswordValidator = (rule: any, value: any, callback: any) => {
+  if (value != signUpUser.password) {
+    callback(new Error('两次密码不一致'));
+    return;
+  }
+  callback()
+}
+const signUpUser = reactive({
+  validationCode: '',
+  username: '',
+  password: '',
+  repassword: '',
+  phone: '',
+  nickname: '',
+  avatar: '',
+});
+const signUpRule = reactive<FormRules>({
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { pattern: /^[A-Za-z][A-Za-z0-9]{5,10}$/, message: '允许英文或数字,但开头必须是英文,长度应在5-10之间', trigger: 'blur' }
+  ],
+  nickname: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 5, max: 10, message: '长度应在5-10之间', trigger: 'blur' },
+  ],
+  phone: [
+    { required: true, message: '请输入手机号码', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' },
+  ],
+  validationCode: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { pattern: /^\d{4,6}$/, message: '请输入正确的验证码', trigger: 'blur' },
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { pattern: /^[a-zA-Z0-9]{6,20}$/, message: '请输入6-20位密码', trigger: 'blur' },
+  ],
+  repassword: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { validator: repasswordValidator },
+  ],
+});
+const onSignUp = (signUpForm: FormInstance | undefined) => {
+  if (!signUpForm) return
+  signUpForm.validate((valid) => {
+    if (valid) {
+      FetchPostWithToken("/api/user/register", JSON.stringify(signUpUser)).then(data => {
+        ElMessage.success("注册成功，已为你自动登录");
+        userStore.user = data;
+        userStore.logged = true;
+        userStore.loginFormVisible = false;
+        localStorage.setItem(constant.TOKEN_NAME_KEY, userStore.user?.tokenName as string);
+        localStorage.setItem(constant.TOKEN_VALUE_KEY, userStore.user?.tokenValue as string);
+        //连接SSE
+        userStore.sseClient = SSEInit();
+        userMessageStore.fetchChatUserList();
+        //如果是首重载首页以获得推荐商品
+        if (window.location.pathname == '/') {
+          let modeStore = useModeStore();
+          modeStore.isRouterAlive = false;
+          nextTick(() => {
+            modeStore.isRouterAlive = true;
+          });
+        }
+      }).catch((e: Error) => {
+      if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        // 储存本次操作
+        captchaStore.nextMethod = sendCode;
+        captchaStore.nextMethodParam = undefined;
+      }
+    });
+    } else {
+      return false
+    }
+  })
+}
+//发送验证码
+const sendCode = () => {
+  const send = (phoneNumber: string) => {
+    FetchPostWithToken("/api/user/code/" + phoneNumber).then(data => {
+      ElMessage.success("验证码发送成功，请注意查收");
+      //禁用按钮，并进入倒计时
+      disabledSendCodeButton.value = true;
+      let timer = setInterval(() => {
+        if (countdown.value > 0) {
+          countdown.value--;
+        } else {
+          disabledSendCodeButton.value = false;
+          clearInterval(timer);
+        }
+      }, 1000);
+
+    }).catch((e: Error) => {
+      if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        // 储存本次操作
+        captchaStore.nextMethod = sendCode;
+        captchaStore.nextMethodParam = undefined;
+      }
+    });
+  }
+
+  if (userStore.signUpMode) {
+    signUpForm.value!.validateField('phone', (valid) => {
+      if (valid) {
+        send(signUpUser.phone)
+      }
+      return false
+    });
+    return;
+  }
+  if (!userStore.loginWayPassword) {
+    //验证手机号
+    if (!/^1[3-9]\d{9}$/.test(userStore.user.certificate)) {
+      ElMessage.error("请输入正确的手机号码！")
+      return;
+    }
+    send(userStore.user.certificate);
+  }
 }
 //监听路由，随时更改mode
 const rout = useRoute();
@@ -297,11 +544,19 @@ const openUserList = () => {
   }
   showUserList.value = !showUserList.value;
 }
+
+const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
 const toMessage = async (chatUser: User) => {
+  count.value = 0;
   userMessageStore.chatUser = chatUser;
   userMessageStore.messageList = [];
-  let result = await userMessageStore.fetchMessage()
-
+  let result = await userMessageStore.fetchMessage();
+  let messageWithImage = userMessageStore.messageList.filter(messageL => {
+    return messageL.contentType == constant.CONTENT_TYPE_IMAGE;
+  });
+  while (count.value < messageWithImage.length) {
+    await sleep(50);
+  }
   nextTick(() => {
     messageScrollBar.value.scrollTo({
       top: messageWrapper.value.clientHeight,
@@ -365,10 +620,97 @@ const messageScrollHandler = async (sroll: { scrollTop: number }) => {
     lastTop = sroll.scrollTop;
   }
 }
-
+const count = ref(0)
+const imageLoadSuccess = (e: Event) => {
+  count.value++;
+}
 watch(tipMMessagePlaySymbols, () => {
   tipAudio.value.play();
 });
+//发送图片
+
+const uploadImageSuccess = async (response: any) => {
+  if (response.flag) {
+    count.value = 0
+    //发送图片
+    await userMessageStore.chatSend({ content: response.data, contentType: constant.CONTENT_TYPE_IMAGE });
+    while (count.value < 1) {
+      await sleep(50);
+    }
+    nextTick(() => {
+      if (messageScrollBar.value == undefined) {
+        return;
+      }
+      messageScrollBar.value.scrollTo({
+        top: messageWrapper.value.clientHeight,
+        behavior: "smooth",
+      });
+    });
+
+  } else if (response.code == constant.NOT_LOGIN_CODE) {
+    ElMessage.error('登录过期，请重新登录');
+    userStore.loginFormVisible = true;
+  } else {
+    ElMessage({
+      message: response.message,
+      type: "error"
+    });
+  }
+
+}
+const uploadImageError = (error: any) => {
+  if (error.code == constant.NOT_LOGIN_CODE) {
+    ElMessage.error('登录过期，请重新登录');
+    userStore.loginFormVisible = true;
+  } else {
+    ElMessage({
+      message: error.message,
+      type: "error"
+    });
+  }
+}
+const beforeSend = (rawFile: any) => {
+  if (rawFile.type.slice(0, 6) !== 'image/') {
+    ElMessage.error('必须上传图片类型文件!')
+    return false
+  } else if (rawFile.size / 1024 / 1024 > 5) {
+    ElMessage.error('图片不能大于5MB!')
+    return false
+  }
+  return true
+}
+
+//上传视频并发送
+const uploadVideoSuccess = async (response: any) => {
+  if (response.flag) {
+    //发送视频
+    await userMessageStore.chatSend({ content: response.data, contentType: constant.CONTENT_TYPE_VIDEO });
+    // while (count.value < 1) {
+    //   await sleep(50);
+    // }
+    nextTick(() => {
+      if (messageScrollBar.value == undefined) {
+        return;
+      }
+      messageScrollBar.value.scrollTo({
+        top: messageWrapper.value.clientHeight,
+        behavior: "smooth",
+      });
+    });
+
+  } else if (response.code == constant.NOT_LOGIN_CODE) {
+    ElMessage.error('登录过期，请重新登录');
+    userStore.loginFormVisible = true;
+  } else {
+    ElMessage({
+      message: response.message,
+      type: "error"
+    });
+  }
+}
+
+const disabledSendCodeButton = ref(false);
+const countdown = ref(constant.SEND_CODE_Interval)
 
 onMounted(() => {
   // userMessageStore.messageScrollBar = messageScrollBar;
@@ -477,6 +819,8 @@ onMounted(() => {
   margin-top: 1.5rem;
 }
 
+
+
 .message-self {
   flex-direction: row-reverse;
 }
@@ -526,7 +870,7 @@ onMounted(() => {
 .chat-button-warpper {
   margin-top: 1rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
 
 }
 

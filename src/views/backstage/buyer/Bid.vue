@@ -15,8 +15,11 @@
             <el-card v-for="bid in bids" :key="bid.bids[0].bid">
                 <el-row class="bid-wrapper">
                     <el-col :span="6">
-                        <el-image :src="constant.NGINX_SERVER_HOST + '/' + bid.cover" :fit="'fill'"
-                            class="cover"></el-image>
+                        <a :href="'/commodity/' + bid.cid">
+                            <el-image :src="constant.NGINX_SERVER_HOST + '/' + bid.cover" :fit="'fill'"
+                                class="cover"></el-image>
+                        </a>
+
                     </el-col>
                     <el-col :span="14">
                         <div class="commodity-info-wrapper">
@@ -49,9 +52,15 @@
                             <span class="reply" :class="sellerReplyClass(bid)">{{ bid.bids[0].replySeller }}</span>
                         </div>
                         <div class="bid-button">
-                            <el-button size="small" type="primary">联系卖家</el-button>
-                            <el-button :disabled="bid.bids[0].agree != undefined || bid.bids[0].cancel == true" size="small"
-                                type="danger" @click="revoke(bid)">撤销出价</el-button>
+                            <el-button size="small" type="primary" @click="toChat(bid.bids[0].seller)">联系卖家</el-button>
+                            <el-popconfirm title="确定要撤销出价吗?" confirm-button-text="确定撤销" cancel-button-text="不撤销"
+                                confirm-button-type="danger" cancel-button-type="primary" @confirm="revoke(bid)"
+                                width="11rem">
+                                <template #reference>
+                                    <el-button :disabled="bid.bids[0].agree != undefined || bid.bids[0].cancel == true"
+                                        size="small" type="danger">撤销出价</el-button>
+                                </template>
+                            </el-popconfirm>
                         </div>
                     </el-col>
                 </el-row>
@@ -63,16 +72,16 @@
 import { ref, computed, onMounted } from 'vue';
 import type { CommodityBid } from '@/interface/CommodityBid';
 import { FetchGetWithToken, FetchPostWithToken } from '@/util/FetchUtil';
-import { useUserStore, usePathStore, useLoadingStore, useCaptchaStore } from '@/stores';
+import { useUserStore, usePathStore, useLoadingStore, useCaptchaStore, useUserMessageStore } from '@/stores';
 import constant from '@/common/constant';
 import { ElMessage } from 'element-plus';
-import type { data } from 'dom7';
+import type User from '@/interface/User';
 const loadingStore = useLoadingStore();
 const show = ref();
 const userStore = useUserStore();
 const pathStore = usePathStore();
 const bids = ref<CommodityBid[]>();
-
+const userMessageStore = useUserMessageStore();
 const fetchCommodityBids = () => {
     userStore.checkLogin().then(data => {
         FetchGetWithToken("/api/bid").then(data => {
@@ -104,14 +113,29 @@ const revoke = (bid: CommodityBid) => {
 
 
 const sellerReply = (bid: CommodityBid) => {
+
+    if (bid.bids[0].cancel) {
+        return "已撤销出价";
+    }
     return bid.bids[0].replySeller == undefined ? '卖家未回复' : bid.bids[0].agree ? '卖家已同意此报价' : '卖家已拒绝此报价'
 }
 const sellerReplyClass = (bid: CommodityBid) => {
+    if (bid.bids[0].cancel) {
+        return "rejected-reply";
+    }
     return bid.bids[0].replySeller == undefined ? '' : bid.bids[0].agree ? 'agreed-reply' : 'rejected-reply'
 
 }
 const myBidPriceClass = (bid: CommodityBid) => {
     return bid.bids[0].replySeller == undefined ? 'unanswered' : bid.bids[0].agree ? 'agreed' : 'rejected'
+}
+
+const toChat = (seller: User) => {
+    userMessageStore.chatUser =seller;
+    userMessageStore.messageList = [];
+    userMessageStore.fetchMessage();
+    userMessageStore.putVirtuaChatUserToMap(seller);
+    userMessageStore.showMessageDrawer();
 }
 
 onMounted(() => {

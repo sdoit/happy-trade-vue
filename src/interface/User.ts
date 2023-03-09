@@ -3,11 +3,13 @@ export default interface User {
     uid: string,
     username: string,
     password: string,
+    repassword: string,
     phone: string,
     nickname: string,
     avatar: string,
     introduction: string,
     banedTime: string,
+    
 
     tokenName: string,
     tokenValue: string,

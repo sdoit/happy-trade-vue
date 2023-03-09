@@ -1,5 +1,11 @@
 <template>
     <div>
+        <el-affix :offset="100" style="margin-bottom: 5rem;" v-if="$route.meta.snapshot">
+            <div style=" display: flex; justify-content: center;">
+                <el-alert title="商品快照" type="warning" description="本页面提供订单创建时的商品描述，买卖双方发生交易争执时，本页面作为判断依据。" :closable="false"
+                    show-icon style="width: 50%;" />
+            </div>
+        </el-affix>
         <el-result v-if="resultVisible" title="商品已售出" sub-title="来晚了，去看看其他商品把">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 1024 1024">
@@ -67,7 +73,21 @@
                                         v-if="!commodity?.freeShipping">邮费：￥ {{ commodity?.fare }}</span>
                                 </el-col>
                                 <el-col :span="5" class="right-wrapper">
-                                    <el-button type="warning" :icon="Star" @click="collect" circle />
+                                    <span @click="collect" style="cursor: pointer;">
+                                        <svg v-if="!commodity!.favorite" t="1677921226870" class="icon"
+                                            viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                                            p-id="3212" width="24" height="24">
+                                            <path
+                                                d="M1010.522034 378.125967c-2.697435-7.186679-9.568936-11.9471-17.244756-11.9471l-317.167616-0.024559L531.542078 29.566386c-2.907213-6.767124-9.56382-11.149944-16.924461-11.149944-0.021489 0-0.042979 0-0.064468 0-7.386224 0.025583-14.042831 4.461615-16.910135 11.269671L355.918175 366.154307l-319.960219 0.024559c-7.66354 0-14.524808 4.746094-17.231453 11.915377-2.706645 7.169283-0.690732 15.264659 5.061272 20.329001l264.485767 232.853325-87.217411 311.044152c-2.061962 7.354502 0.62831 15.21861 6.764054 19.768229 6.135744 4.548596 14.44192 4.840238 20.881586 0.730641l285.916868-182.503591 285.915845 182.503591c3.027963 1.933025 6.471388 2.892887 9.909697 2.892887 3.796466 0 7.584746-1.171686 10.799974-3.497661 6.124488-4.431939 8.919137-12.156878 7.04751-19.481703l-43.378973-169.779801c-0.10847-0.425695-0.233314-0.848321-0.37146-1.264806-7.653307-22.956851-15.889899-63.611783-9.262968-77.967746 4.264117-9.235338 0.233314-20.179598-9.004071-24.443715-9.239432-4.264117-20.180622-0.233314-24.443715 9.004071-7.04137 15.252379-7.662517 37.273928-1.899256 67.321268 3.518127 18.34788 8.340969 33.67189 9.441023 37.062104l31.686676 124.018571L524.528338 742.937696c-6.043646-3.857864-13.776771-3.857864-19.820418 0L249.554706 905.804041l77.314877-275.729855c1.910513-6.814196-0.251733-14.121626-5.563716-18.797112L84.751243 403.013797l283.396465-0.021489c7.40976 0 14.097066-4.441149 16.97358-11.269671L514.783393 83.893712l132.266419 307.947628c2.90619 6.765077 9.56075 11.149944 16.923438 11.149944l280.237519 0.021489L711.389166 606.468558c-7.659447 6.693446-8.443299 18.329461-1.74883 25.989931 6.693446 7.659447 18.331507 8.442276 25.989931 1.74883l269.766027-235.739049C1011.175927 393.417231 1013.219469 385.311623 1010.522034 378.125967z"
+                                                fill="#FF9000" p-id="3213"></path>
+                                        </svg>
+                                        <svg v-else t="1677921569185" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                                            xmlns="http://www.w3.org/2000/svg" p-id="3525" width="24" height="24">
+                                            <path
+                                                d="M1006.942208 391.708672c-2.10944-5.599232-7.458816-9.310208-13.459456-9.310208L672.516096 382.398464 526.367744 42.118144c-2.251776-5.26336-7.45472-8.675328-13.205504-8.675328-0.021504 0-0.043008 0-0.043008 0-5.772288 0-10.975232 3.45088-13.2096 8.762368L356.626432 382.399488 32.821248 382.399488c-5.983232 0-11.355136 3.709952-13.459456 9.271296-2.10944 5.604352-0.54784 11.91936 3.959808 15.880192L290.67264 642.930688l-88.240128 314.625024c-1.600512 5.72928 0.504832 11.880448 5.28896 15.418368 4.780032 3.53792 11.246592 3.791872 16.303104 0.590848l289.137664-184.52992 289.133568 184.52992c2.359296 1.514496 5.056512 2.230272 7.7312 2.230272 2.989056 0 5.961728-0.927744 8.489984-2.7392 4.780032-3.493888 6.928384-9.560064 5.413888-15.29344l-84.93568-319.50848L1002.939392 407.59296C1007.468544 403.633152 1009.047552 397.313024 1006.942208 391.708672z"
+                                                fill="#FF9000" p-id="3526"></path>
+                                        </svg>
+                                    </span>
                                 </el-col>
                             </el-row>
                             <el-row class="seller-wrapper">
@@ -134,16 +154,19 @@
                                         cancel-button-text="我要出价" confirm-button-type="danger" cancel-button-type="primary"
                                         @confirm="goOrder" @cancel="toBidView" width="20rem">
                                         <template #reference>
-                                            <el-button type="danger">直接购买</el-button>
+                                            <el-button type="danger"
+                                                :disabled="($route.meta.snapshot as boolean)">直接购买</el-button>
                                         </template>
                                     </el-popconfirm>
 
                                 </el-col>
                                 <el-col :span="3">
-                                    <el-button type="success" @click="toChat">联系卖家</el-button>
+                                    <el-button type="success" @click="toChat"
+                                        :disabled="($route.meta.snapshot as boolean)">联系卖家</el-button>
                                 </el-col>
                                 <el-col :span="2">
-                                    <el-button type="primary" @click="toBidView">出价</el-button>
+                                    <el-button type="primary" @click="toBidView"
+                                        :disabled="($route.meta.snapshot as boolean)">出价</el-button>
                                 </el-col>
 
                             </el-row>
@@ -239,7 +262,8 @@
                                     </svg>
                                 </template>
                                 <template #extra>
-                                    <el-button type="primary" size="large" @click="goBid">我要出价</el-button>
+                                    <el-button type="primary" size="large" @click="goBid"
+                                        :disabled="($route.meta.snapshot as boolean)">我要出价</el-button>
                                 </template>
                             </el-result>
                         </el-col>
@@ -247,7 +271,7 @@
                     <el-row>
                         <el-col class="right-wrapper">
                             <el-button v-if="bids != undefined && bids != null && bids.length > 0" type="primary"
-                                size="large" @click="goBid">我要出价</el-button>
+                                size="large" @click="goBid" :disabled="($route.meta.snapshot as boolean)">我要出价</el-button>
                         </el-col>
                     </el-row>
                 </el-col>
@@ -448,13 +472,17 @@ const resultVisible = ref(false);
 const Route = useRoute();
 const commodity = ref<Commodity>();
 const fetchCommodity = () => {
-    FetchGetWithToken("/api/commodity/" + Route.params.cid)
+    let url = "/api/commodity/" + Route.params.cid;
+    if (Route.meta.snapshot) {
+        url = "/api/commodity/snapshot/" + Route.params.ssid;
+    }
+    FetchGetWithToken(url)
         .then(data => {
             if (data == null || data.cid == undefined) {
                 router.push({ path: "/404" });
             }
             console.log(data.sold);
-            if (data.sold) {
+            if (data.sold && !Route.meta.snapshot) {
                 //商品已售出
                 resultVisible.value = true;
                 console.log("商品已售出");
@@ -465,15 +493,15 @@ const fetchCommodity = () => {
             commodity.value = data;
             //设置商品描述 富文本
             valueHtml.value = commodity.value?.description;
-
             emits('loadDone');
+            fetchCommodityBid(commodity.value!.cid as string);;
             loadingStore.clodeLoading();
         });
 }
 fetchCommodity();
 const bids = ref<Bid[]>([]);
-const fetchCommodityBid = () => {
-    FetchGetWithToken("/api/bid/commodity/" + Route.params.cid)
+const fetchCommodityBid = (cid: string) => {
+    FetchGetWithToken("/api/bid/commodity/" + cid)
         .then(data => {
             if (data == null) {
                 return;
@@ -491,11 +519,11 @@ const collect = () => {
         cid: commodity.value?.cid
     })).then(result => {
         ElMessage({
-            message: "收藏成功",
-            type: 'success'
+            message: result ? "收藏成功" : "已取消收藏",
+            type: result ? 'success' : 'warning'
         });
         //点亮图标
-        //
+        commodity.value!.favorite = result as boolean;
     }).catch((e: Error) => {
         if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
             // 储存本次操作
@@ -835,7 +863,7 @@ const paySuccessCallBack = (type: string, url?: string) => {
         type: 'success',
     });
     if (type == "bid") {
-        fetchCommodityBid();
+        fetchCommodityBid(commodity.value?.cid!);
     } else {
         //跳转到订单详情
         router.push({ path: url as string });
@@ -874,7 +902,7 @@ const payTimeOutCallBack = (type: string) => {
                     type: 'success',
                 });
                 if (type == "bid") {
-                    fetchCommodityBid();
+                    fetchCommodityBid(commodity.value?.cid!);
                 } else {
                     //跳转到订单详情
                     console.log("跳转到订单详情")
@@ -905,7 +933,7 @@ const toAddressSetting = () => {
 
 onMounted(() => {
 
-    fetchCommodityBid();
+
 })
 </script>
 

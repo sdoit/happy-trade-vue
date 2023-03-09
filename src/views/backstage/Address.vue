@@ -109,7 +109,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from "vue";
-import { useUserStore, useLoadingStore,useCaptchaStore } from "@/stores"
+import { useUserStore, useLoadingStore, useCaptchaStore } from "@/stores"
 import { FetchGetWithToken, FetchPostWithToken, FetchDeleteWithToken, FetchPutWithToken } from "@/util/FetchUtil"
 import type UserAddress from "@/interface/UserAddress"
 import type { Province, City, Area, Street } from "@/interface/Address"
@@ -201,6 +201,11 @@ const add = () => {
         });
         return;
     }
+    if (addressAdd.phone.length != 11) {
+        ElMessage.error("手机号码格式不正确");
+        return;
+
+    }
     if (addressAdd.streetCode == '') {
         ElMessage({
             message: '请选择地址',
@@ -240,12 +245,12 @@ const add = () => {
         loading.close();
     }).catch((e: Error) => {
         if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
-          // 储存本次操作
-          const captchaStore = useCaptchaStore();
-          captchaStore.nextMethod = add;
-          captchaStore.nextMethodParam=undefined
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = add;
+            captchaStore.nextMethodParam = undefined
         }
-      });
+    });
 }
 const toUpdateAddress = (address: UserAddress) => {
     fetchProvinceList();

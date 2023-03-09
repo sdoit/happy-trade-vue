@@ -22,4 +22,13 @@ export default {
     ORDER_STATUS_CLOSED: -1,
     ORDER_STATUS_NORMAL: 0,
     ORDER_STATUS_COMPLETED: 1,
+
+
+    CONTENT_TYPE_TEXT:'TEXT',
+    CONTENT_TYPE_IMAGE:'IMAGE',
+    CONTENT_TYPE_VIDEO:'VIDEO',
+
+
+    //验证码发送间隔
+    SEND_CODE_Interval:180
 }

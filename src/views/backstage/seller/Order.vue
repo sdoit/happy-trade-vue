@@ -21,16 +21,20 @@
                     <el-image :src="
                         constant.NGINX_SERVER_HOST + '/' + order.commodity.cover" class="order-cover"></el-image>
                     <div class="info-wrapper">
-                        <div>
-                            <span class="order-name">{{ order.name }}</span>
-                            <el-tag class="tag" :type="getQualityClass(order.commodity.quality)">{{
-                                order.commodity.quality
-                            }}新</el-tag>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <span class="order-name">{{ order.name }}</span>
+                                <el-tag class="tag" :type="getQualityClass(order.commodity.quality)">{{
+                                    order.commodity.quality
+                                }}新</el-tag>
+                            </div>
+                            <div>
+                                <span class="order-status" :class="getOrderStatusClass(order)">{{ getOrderStatusName(order)
+                                }}</span>
+                            </div>
+
                         </div>
-                        <div>
-                            <span class="order-status" :class="getOrderStatusClass(order)">{{ getOrderStatusName(order)
-                            }}</span>
-                        </div>
+
                         <el-row class="margin-top justify-content-between align-items-center">
                             <el-col :span="9" class="flex align-items-center">
                                 <el-avatar :src="constant.NGINX_SERVER_HOST + order.user.avatar" :size="20"></el-avatar>
@@ -226,6 +230,7 @@ onMounted(() => {
 .tag {
     margin-left: .5rem;
 }
+
 .order-status {
     font-size: small;
 }

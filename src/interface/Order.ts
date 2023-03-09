@@ -1,7 +1,7 @@
 import type User from "./User"
 import type Commodity from "./Commodity"
 import type UserAddress from "./UserAddress"
-
+import type OrderRating from './OrderRating'
 export default interface Order {
     oid: string,
     cid: number,
@@ -18,9 +18,15 @@ export default interface Order {
     cancelTime: string,
     completeTime: string,
     aid: number,
-    shipId:string,
+    shipId: string,
+    exressId: string,
+    expressName: string,
+    orderRatingToSeller:OrderRating,
+    orderRatingToBuyer:OrderRating,
     status: number,
+    ssid: string,
     user: User,
     commodity: Commodity,
     userAddress: UserAddress,
+
 }

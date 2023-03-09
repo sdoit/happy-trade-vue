@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import type User from '@/interface/User';
 import type CommonResult from '@/interface/CommonResult';
 import type { Bid } from '@/interface/CommodityBid';
-import { FetchGetWithToken, FetchPostWithToken, FetchPostWithTokenNoLoginRequired, FetchPutWithToken } from '@/util/FetchUtil';
+import { FetchDeleteWithToken, FetchGetWithToken, FetchPostWithToken, FetchPostWithTokenNoLoginRequired, FetchPutWithToken } from '@/util/FetchUtil';
 import constant from '@/common/constant';
 import type Commodity from '@/interface/Commodity';
 import type UserAddress from '@/interface/UserAddress';
@@ -37,6 +37,9 @@ export const useUserStore = defineStore('user', {
       addressList: {} as UserAddress[],
       sseClient: undefined,
 
+      loginWayPassword: true,
+      // 注册模式
+      signUpMode: false
 
     }
   },
@@ -64,7 +67,8 @@ export const useUserStore = defineStore('user', {
         headers: Header,
         body: JSON.stringify({
           certificate: this.user!.certificate,
-          password: this.user!.password
+          password: this.loginWayPassword ? this.user!.password : null,
+          validationCode: this.loginWayPassword ? null : this.user!.password
         })
       }).then(response => response.json())
         .then((result: CommonResult) => {
@@ -96,6 +100,8 @@ export const useUserStore = defineStore('user', {
             captchaStore.nextMethod = this.login;
             captchaStore.nextMethodParam = undefined;
             captchaStore.captchaTempToken = result.data.captchaToken;
+          } else {
+            ElMessage.error(result.message + "(" + result.code + ")");
           }
           return result
 
@@ -137,7 +143,16 @@ export const useUserStore = defineStore('user', {
           captchaStore.nextMethodParam = undefined;
         }
       });
-    }
+    },
+
+    changeLoginWay() {
+      this.loginWayPassword = !this.loginWayPassword;
+    },
+    changeSignUpMode() {
+      this.user = {} as User;
+      this.signUpMode = !this.signUpMode
+    },
+
   }
 });
 
@@ -224,7 +239,7 @@ export const useUserMessageStore = defineStore('message', {
 
       tipMMessagePlaySymbols: false,
       //当用户向上滚动获取更多消息时，控制滚动条不要自动下滚
-      doNotScroll:false
+      doNotScroll: false
     }
   },
   getters: {
@@ -249,25 +264,40 @@ export const useUserMessageStore = defineStore('message', {
     clodeMessageDrawer() {
       this.chatDrawerVisible = false;
     },
-    async chatSend() {
-      if (this.chatMessage.trim() == '') {
-        return false;
-      }
-      return await FetchPostWithToken("/api/message", JSON.stringify({
+    async chatSend(spacilContent?: {
+      content: string,
+      contentType: string,
+    }) {
+      let contentType = "TEXT"
+      let message = {
         content: this.chatMessage,
-        uidReceive: this.chatUser.uid
-      })).then(data => {
+        uidReceive: this.chatUser.uid,
+        contentType
+      };
+      if (spacilContent != undefined) {
+        message.content = spacilContent.content
+        message.contentType = spacilContent.contentType
+      } else {
+        if (this.chatMessage.trim() == '') {
+          return false;
+        }
+      }
+      return await FetchPostWithToken("/api/message", JSON.stringify(message)).then(data => {
         //发送成功
         if (this.messageMap.has(this.chatUser.uid)) {
           let userMessage = {
-            content: this.chatMessage,
+            content: message.content,
+            contentType: message.contentType,
             uidSend: useUserStore().user.uid,
             uidReceive: this.chatUser.uid,
           } as UserMessage;
-
           this.messageMap.get(this.chatUser.uid)!.push(userMessage);
           if (this.chatUserMap.has(this.chatUser.uid)) {
-            this.chatUserMap.get(this.chatUser.uid)!.lastMessage.content = this.chatMessage
+            if (spacilContent == undefined) {
+              this.chatUserMap.get(this.chatUser.uid)!.lastMessage = this.chatMessage
+            } else {
+              this.chatUserMap.get(this.chatUser.uid)!.lastMessage = '[图片]'
+            }
           } else {
             this.fetchChatUserList();
           }
@@ -275,6 +305,7 @@ export const useUserMessageStore = defineStore('message', {
           return true;
         }
         this.chatMessage = '';
+        this.fetchMessage();
         this.fetchChatUserList();
         return true;
       }).catch((e: Error) => {
@@ -282,9 +313,14 @@ export const useUserMessageStore = defineStore('message', {
           // 储存本次操作
           const captchaStore = useCaptchaStore();
           captchaStore.nextMethod = this.chatSend;
-          captchaStore.nextMethodParam = undefined;
+          if (constant == undefined) {
+            captchaStore.nextMethodParam = undefined;
+          } else {
+            captchaStore.nextMethodParam = spacilContent;
+          }
+
         }
-      });;
+      });
     },
     async fetchMessage(getmore?: boolean) {
       if (this.chatUserMap.has(this.chatUser.uid) && this.chatUserMap.get(this.chatUser.uid)!.unreadCount !== 0) {
@@ -298,25 +334,62 @@ export const useUserMessageStore = defineStore('message', {
         this.messageList = this.messageMap.get(this.chatUser.uid) as UserMessage[];
         return true;
       }
-      console.log("load")
+      console.log("load message from server")
       let page = 1;
       if (this.pageMap.has(this.chatUser.uid)) {
         page = this.pageMap.get(this.chatUser.uid) as number;
       }
-      await FetchGetWithToken("/api/message/" + this.chatUser.uid + "?page=" + page).then(data => {
+      let url = "/api/message/" + this.chatUser.uid + "?page=" + page;
+      if (this.chatUser.uid == "-1") {
+        //获取系统通知
+        url = "/api/message/notification?page=" + page;
+      }
+      await FetchGetWithToken(url).then(data => {
         if (data != null) {
-          let result = data.messages.concat(this.messageList)
-          this.doNotScroll=getmore as boolean
+          let result: Array<UserMessage>;
+          if (this.messageList == undefined) {
+            result = data.messages.reverse()
+          } else {
+            result = data.messages.reverse().concat(this.messageList)
+          }
+          this.doNotScroll = getmore as boolean
           this.messageList = result;
           this.messageMap.set(this.chatUser.uid, result);
         }
       });
     },
+    fetchNotifications() {
+      FetchGetWithToken("/api/message/notification").then(data => {
+        if (data == undefined || data == null || data.lenght == 0) {
+          return;
+        }
+
+      })
+    },
     fetchChatUserList() {
-      FetchGetWithToken("/api/message/list").then(data => {
+      FetchGetWithToken("/api/chatList").then(data => {
+        if (data == undefined || data == null || data.lenght == 0) {
+          return;
+        }
         this.chatUserList = data;
         for (const chatUser of this.chatUserList) {
-          this.chatUserMap.set(chatUser.targetUser.uid, chatUser)
+          if (chatUser.uidTarget == undefined) {
+            //系统通知
+            chatUser.uid = "-1";
+            chatUser.userTarget = {
+              uid: "-1",
+              nickname: '系统通知',
+              avatar: '/image/notify.png'
+            } as User
+            this.chatUserMap.set("-1", chatUser)
+          } else {
+            if (chatUser.contentType == constant.CONTENT_TYPE_IMAGE) {
+              chatUser.lastMessage = '[图片]'
+            } else if (chatUser.contentType == constant.CONTENT_TYPE_VIDEO) {
+              chatUser.lastMessage = '[视频]'
+            }
+            this.chatUserMap.set(chatUser.userTarget.uid, chatUser)
+          }
         }
 
         //设置未读消息数
@@ -327,7 +400,7 @@ export const useUserMessageStore = defineStore('message', {
         this.unreadCount = count;
         //如果没有默认选中，就选中第一个
         if (this.chatUser.uid == "0") {
-          this.chatUser = this.chatUserList[0].targetUser
+          this.chatUser = this.chatUserList[0].userTarget
           this.fetchMessage()
           return;
         }
@@ -335,34 +408,49 @@ export const useUserMessageStore = defineStore('message', {
         //遍历列表，查看是否有chatNewUser
         let haveNew = false;
         for (const chatUser of this.chatUserList) {
-          if (chatUser.targetUser.uid == this.chatNewUser.uid) {
+          if (chatUser.userTarget.uid == this.chatNewUser.uid) {
             haveNew = true;
             return;
           }
         }
         if (!haveNew && this.chatNewUser.uid != "0") {
-          this.chatUserList.push({ lastMessage: { content: '' }, targetUser: this.chatNewUser, unreadCount: 0 } as ChatUser);
-          this.chatUserMap.set(this.chatUser.uid, { lastMessage: { content: '' }, targetUser: this.chatNewUser, unreadCount: 0 } as ChatUser);
+          this.chatUserList.push({ lastMessage: '', userTarget: this.chatNewUser, unreadCount: 0 } as ChatUser);
+          this.chatUserMap.set(this.chatUser.uid, { lastMessage: '', userTarget: this.chatNewUser, unreadCount: 0 } as ChatUser);
         }
       })
     },
+
     //当与新用户发起聊天时，插入一个虚假的用户对象到chatUserMap中，使用户列表里有一个头像
     putVirtuaChatUserToMap(user: User) {
+      //聊天列表中是否存在这个用户
+      let exitsUser = false;
       if (this.chatUserMap.has(this.chatUser.uid) || this.chatUser.uid == "0") {
-        return;
+        for (const chatUser of this.chatUserList) {
+          if (chatUser.userTarget.uid == this.chatUser.uid) {
+            exitsUser = true;
+            return;
+          }
+        }
       }
       //主动插入，但fetchChatUserList() 会覆盖 228行会重新修正
-      this.chatUserList.push({ lastMessage: { content: '' }, targetUser: user } as ChatUser);
-      this.chatUserMap.set(this.chatUser.uid, { lastMessage: { content: '' }, targetUser: user } as ChatUser);
+      this.chatUserList.push({ lastMessage: '', userTarget: user } as ChatUser);
+      this.chatUserMap.set(this.chatUser.uid, { lastMessage: '', userTarget: user } as ChatUser);
       this.chatNewUser = user
     },
     removeChatUser(chatUser: ChatUser) {
-      this.chatUserMap.delete(chatUser.targetUser.uid);
+      this.chatUserMap.delete(chatUser.userTarget.uid);
       this.chatUserList = this.chatUserList.filter((cu) => {
-        return cu.targetUser.uid != chatUser.targetUser.uid
+        return cu.userTarget.uid != chatUser.userTarget.uid
       });
-      this.messageMap.delete(chatUser.targetUser.uid);
+      this.messageMap.delete(chatUser.userTarget.uid);
+      if (chatUser.uidTarget == this.chatUser.uid) {
+        this.messageList = [];
+        this.chatUser.uid = "0";
+        this.chatUser.nickname = "";
+      }
       //发送请求 异步
+      FetchDeleteWithToken("/api/chatList/" + chatUser.uidTarget);
+
     },
     destroy() {
       this.chatDrawerVisible = false,

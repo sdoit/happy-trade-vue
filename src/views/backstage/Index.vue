@@ -77,7 +77,9 @@
                             }}</el-breadcrumb-item>
                         </el-breadcrumb>
                         <div style="margin-top: 2rem;"></div>
-                        <router-view v-slot="{ Component }">
+
+                        <!-- :key="$route.fullPath" -->
+                        <router-view v-slot="{ Component }" > 
                             <transition name="fade">
                                 <component :is="Component" />
                             </transition>

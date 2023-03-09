@@ -19,7 +19,7 @@ export default interface Commodity {
     tags:Tag[],
     freightCollect: boolean,
     freeShipping: boolean,
-
+    favorite:boolean
     bidCount:string
 }
 

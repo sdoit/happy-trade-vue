@@ -29,7 +29,13 @@ const router = createRouter({
     {
       path: '/commodity/:cid',
       name: 'commodity',
-      meta: { mode: 'reception' },
+      meta: { mode: 'reception',snapshot: false },
+      component: () => import('../views/Commodity.vue')
+    },
+    {
+      path: '/commodity/snapshot/:ssid',
+      name: 'commodity-snapshot',
+      meta: { mode: 'reception', snapshot: true },
       component: () => import('../views/Commodity.vue')
     },
     //买家后台

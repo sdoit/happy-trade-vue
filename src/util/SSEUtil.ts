@@ -60,7 +60,7 @@ const SSEInit = () => {
                 title: message.title,
                 message: h('p', { style: 'color: teal,text-align:right' }, [message.content, h('p', { style: 'margin-top:.2rem' }, h('a', { href: message.url, style: 'color: #409eff' }, "点击查看"))]),
                 type: getType(message.falg),
-                duration: 10000
+                duration: 5000
             });
             return;
         } else if (message.type == constant.SSE_MESSAGE_ID_USER_MESSAGE) {

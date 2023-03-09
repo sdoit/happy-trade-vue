@@ -223,6 +223,9 @@ const fetchTagSuggestions = (queryString: string, cb: (arg: any) => void) => {
         for (const tag of data as Tag[]) {
             tagCandidates.push({ tid: tag.tid, value: tag.tag })
         }
+        if (data.length == 0) {
+            tagCandidates.push({ tid: "", value: queryString })
+        }
         cb(tagCandidates);
 
     });
@@ -502,6 +505,9 @@ const submit = () => {
     }
     fetchResult.then(result => {
         ElMessage.success(successMessage);
+        if (Route.meta.edit) {
+            result = commodity.value.cid;
+        }
         router.push({ name: "commodity", params: { cid: result, t: new Date().getTime().toString() } });
         loading.close();
     }).catch((e: Error) => {
