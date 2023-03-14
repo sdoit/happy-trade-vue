@@ -22,8 +22,8 @@
                 <el-col :span="16">
                     <el-row>
                         <el-col :span="7">
-                            <el-image loading="lazy" :src="constant.NGINX_SERVER_HOST + '/' + commodity?.cover"
-                                :fit="'fill'" class="res-img">
+                            <el-image loading="lazy" :src="constant.NGINX_SERVER_HOST + '/' + object?.cover" :fit="'fill'"
+                                class="res-img">
                                 <template #placeholder>
                                     <div class="img-slot-wrapper">
                                         <img src="/img/loading.svg" alt="正在加载" />
@@ -40,43 +40,46 @@
 
                             <el-row>
                                 <el-col>
-                                    <span class="name">{{ commodity?.name }}</span>
+                                    <span class="name"> <span style="color: #e4393c; font-size: large;">{{
+                                        $route.meta.request ? '[求购] ' : '' }} </span> {{ object?.name }} </span>
                                 </el-col>
                             </el-row>
                             <el-row justify="space-between" class="tips">
                                 <el-col :span="12">
                                     <el-row justify="start">
                                         <el-col>
-                                            <span class="commodity-type">{{ commodity?.type.typeName }}</span>
-                                            <span class="quality">{{ Math.round(commodity?.quality! * 10) }}新</span>
-                                            <span class="free-shipping">{{ commodity?.freeShipping ? '包邮' : '' }}</span>
+                                            <span class="commodity-type">{{ object?.type.typeName }}</span>
+                                            <span class="quality">{{ Math.round(object?.quality! * 10) }}新</span>
+                                            <span class="free-shipping">{{ object?.freeShipping ? '包邮' : '' }}</span>
                                         </el-col>
 
 
                                     </el-row>
                                     <el-row justify="start">
                                         <el-col>
-                                            <el-tag v-for="tag in commodity?.tags" :key="tag.tid" :type="getTagType(tag)"
+                                            <el-tag v-for="tag in object?.tags" :key="tag.tid" :type="getTagType(tag)"
                                                 class="commodity-tag">{{ tag.tag }}</el-tag>
                                         </el-col>
                                     </el-row>
                                 </el-col>
                                 <el-col :span="5" class="right-wrapper"><span class="view-count">{{
-                                    commodity?.viewCount == 0 ?
-                                    '您是本商品的第1个看客' : commodity?.viewCount + '人浏览过' }}</span></el-col>
+                                    object?.viewCount == 0 ?
+                                    '您是本' + ($route.meta.request ? '求购' : '商品') + '的第1个看客' : object?.viewCount + '人浏览过'
+                                }}</span></el-col>
                             </el-row>
 
                             <el-row class="price-wrapper" justify="space-between">
                                 <el-col :span="8">
-                                    <span style="color: #e4393c;">￥</span><span class="price">{{ commodity?.price }} </span>
+                                    <span style="color: #e4393c;">{{ $route.meta.request ? '[预计价格] ' : '' }} ￥</span><span
+                                        class="price">{{ object?.price }} </span>
                                     <span style="color: #e4393c; font-size: small;padding-left: .7rem;"
-                                        v-if="!commodity?.freeShipping">邮费：￥ {{ commodity?.fare }}</span>
+                                        v-if="!object?.freeShipping && !$route.meta.request">邮费：￥ {{ object?.fare }}</span>
                                 </el-col>
                                 <el-col :span="5" class="right-wrapper">
                                     <span @click="collect" style="cursor: pointer;">
-                                        <svg v-if="!commodity!.favorite" t="1677921226870" class="icon"
-                                            viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
-                                            p-id="3212" width="24" height="24">
+                                        <svg v-if="!object!.favorite" t="1677921226870" class="icon" viewBox="0 0 1024 1024"
+                                            version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3212" width="24"
+                                            height="24">
                                             <path
                                                 d="M1010.522034 378.125967c-2.697435-7.186679-9.568936-11.9471-17.244756-11.9471l-317.167616-0.024559L531.542078 29.566386c-2.907213-6.767124-9.56382-11.149944-16.924461-11.149944-0.021489 0-0.042979 0-0.064468 0-7.386224 0.025583-14.042831 4.461615-16.910135 11.269671L355.918175 366.154307l-319.960219 0.024559c-7.66354 0-14.524808 4.746094-17.231453 11.915377-2.706645 7.169283-0.690732 15.264659 5.061272 20.329001l264.485767 232.853325-87.217411 311.044152c-2.061962 7.354502 0.62831 15.21861 6.764054 19.768229 6.135744 4.548596 14.44192 4.840238 20.881586 0.730641l285.916868-182.503591 285.915845 182.503591c3.027963 1.933025 6.471388 2.892887 9.909697 2.892887 3.796466 0 7.584746-1.171686 10.799974-3.497661 6.124488-4.431939 8.919137-12.156878 7.04751-19.481703l-43.378973-169.779801c-0.10847-0.425695-0.233314-0.848321-0.37146-1.264806-7.653307-22.956851-15.889899-63.611783-9.262968-77.967746 4.264117-9.235338 0.233314-20.179598-9.004071-24.443715-9.239432-4.264117-20.180622-0.233314-24.443715 9.004071-7.04137 15.252379-7.662517 37.273928-1.899256 67.321268 3.518127 18.34788 8.340969 33.67189 9.441023 37.062104l31.686676 124.018571L524.528338 742.937696c-6.043646-3.857864-13.776771-3.857864-19.820418 0L249.554706 905.804041l77.314877-275.729855c1.910513-6.814196-0.251733-14.121626-5.563716-18.797112L84.751243 403.013797l283.396465-0.021489c7.40976 0 14.097066-4.441149 16.97358-11.269671L514.783393 83.893712l132.266419 307.947628c2.90619 6.765077 9.56075 11.149944 16.923438 11.149944l280.237519 0.021489L711.389166 606.468558c-7.659447 6.693446-8.443299 18.329461-1.74883 25.989931 6.693446 7.659447 18.331507 8.442276 25.989931 1.74883l269.766027-235.739049C1011.175927 393.417231 1013.219469 385.311623 1010.522034 378.125967z"
                                                 fill="#FF9000" p-id="3213"></path>
@@ -98,23 +101,23 @@
                                                 <el-row class="seller-item">
                                                     <el-col :span="4">
                                                         <el-avatar :size="70"
-                                                            :src="constant.NGINX_SERVER_HOST + commodity?.user.avatar" />
+                                                            :src="constant.NGINX_SERVER_HOST + object?.user.avatar" />
                                                     </el-col>
                                                     <el-col :span="20">
                                                         <el-row>
                                                             <el-col class="seller-item-text-wrapper seller-item"><span
                                                                     class="seller-nickname">{{
-                                                                        commodity?.user.nickname
+                                                                        object?.user.nickname
                                                                     }}</span></el-col>
                                                             <el-col class="seller-item-text-wrapper seller-item"><span
                                                                     class="seller-username">@{{
-                                                                        commodity?.user.username
+                                                                        object?.user.username
                                                                     }}</span></el-col>
                                                         </el-row>
                                                         <el-row class="introduction-wrapper">
                                                             <el-col
                                                                 class="seller-item-text-wrapper seller-item introduction"><span>{{
-                                                                    commodity?.user.introduction
+                                                                    object?.user.introduction
                                                                 }}</span></el-col>
                                                         </el-row>
                                                     </el-col>
@@ -124,23 +127,23 @@
                                                 <el-row class="seller-item">
                                                     <el-col class="right-wrapper seller-item-text-wrapper seller-item">
                                                         <span class="seller-record">{{
-                                                            commodity!.user.ratingCountBuyer == 0 ? '此用户还没有购买过商品' :
+                                                            object!.user.ratingCountBuyer == 0 ? '此用户还没有购买过商品' :
                                                             '作为买家的好评率：' +
-                                                            (commodity!.user.goodRatingCountBuyer
-                                                                / commodity!.user.ratingCountBuyer * 100).toFixed(2)
-                                                            + '%' + '(' + commodity?.user.goodRatingCountBuyer
-                                                            + '/' + commodity?.user.ratingCountBuyer + ')' }}</span>
+                                                            (object!.user.goodRatingCountBuyer
+                                                                / object!.user.ratingCountBuyer * 100).toFixed(2)
+                                                            + '%' + '(' + object?.user.goodRatingCountBuyer
+                                                            + '/' + object?.user.ratingCountBuyer + ')' }}</span>
                                                     </el-col>
                                                 </el-row>
                                                 <el-row class="seller-item">
                                                     <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                                        <span class="seller-record">{{ commodity!.user.ratingCountSeller ==
+                                                        <span class="seller-record">{{ object!.user.ratingCountSeller ==
                                                             0
                                                             ? '此用户还没有卖出过商品' : '作为卖家的好评率：' +
-                                                            (commodity!.user.goodRatingCountSeller
-                                                                / commodity!.user.ratingCountSeller * 100).toFixed(2)
-                                                            + '%' + '(' + commodity?.user.goodRatingCountSeller + '/' +
-                                                            commodity?.user.ratingCountSeller + ')' }}</span>
+                                                            (object!.user.goodRatingCountSeller
+                                                                / object!.user.ratingCountSeller * 100).toFixed(2)
+                                                            + '%' + '(' + object?.user.goodRatingCountSeller + '/' +
+                                                            object?.user.ratingCountSeller + ')' }}</span>
                                                     </el-col>
                                                 </el-row>
                                             </el-col>
@@ -154,19 +157,27 @@
                                         cancel-button-text="我要出价" confirm-button-type="danger" cancel-button-type="primary"
                                         @confirm="goOrder" @cancel="toBidView" width="20rem">
                                         <template #reference>
-                                            <el-button type="danger"
-                                                :disabled="($route.meta.snapshot as boolean)">直接购买</el-button>
+                                            <el-button type="danger" v-if="!$route.meta.request"
+                                                :disabled="($route.meta.snapshot as boolean)">{{
+                                                    (!$route.meta.request && commodity?.requestId == undefined) ? '直接购买' :
+                                                    '确认购买' }} </el-button>
                                         </template>
                                     </el-popconfirm>
 
                                 </el-col>
                                 <el-col :span="3">
                                     <el-button type="success" @click="toChat"
-                                        :disabled="($route.meta.snapshot as boolean)">联系卖家</el-button>
+                                        :disabled="($route.meta.snapshot as boolean)">{{ $route.meta.request ? '联系TA' :
+                                            '联系卖家'
+                                        }}
+
+                                    </el-button>
                                 </el-col>
-                                <el-col :span="2">
+                                <el-col :span="commodity!.requestId == undefined ? 2 : 3.5">
                                     <el-button type="primary" @click="toBidView"
-                                        :disabled="($route.meta.snapshot as boolean)">出价</el-button>
+                                        :disabled="($route.meta.snapshot as boolean)">{{ $route.meta.request ? '我有货' :
+                                            commodity!.requestId == undefined ? '出价' : '查看其他商品'
+                                        }}</el-button>
                                 </el-col>
 
                             </el-row>
@@ -175,7 +186,7 @@
 
 
                     </el-row>
-                    <el-divider class="divider">商品详情</el-divider>
+                    <el-divider class="divider">{{ $route.meta.request ? "求购详情" : "商品详情" }}</el-divider>
                     <el-row>
                         <el-col>
                             <el-card shadow="always">
@@ -184,9 +195,10 @@
                             </el-card>
                         </el-col>
                     </el-row>
-                    <el-divider content-position="left" class="divider">出价历史</el-divider>
+                    <el-divider content-position="left" class="divider">{{ $route.meta.request ? "商品出售" :
+                        commodity?.requestId == undefined ? "出价历史" : '本求购的其他商品' }}</el-divider>
                     <el-row>
-                        <el-col>
+                        <el-col v-if="!$route.meta.request && commodity?.requestId == undefined">
                             <el-timeline>
                                 <el-timeline-item v-for="bid in bids"
                                     :type="bid.replySeller ? (bid.agree ? statusTimeLine.agree.type : statusTimeLine.reject.type) : statusTimeLine.unanswered.type"
@@ -223,12 +235,12 @@
                                                 <div class="diversio-wire"></div>
                                             </div>
                                             <div class="quotation-padding"><el-avatar :size="50"
-                                                    :src="constant.NGINX_SERVER_HOST + commodity?.user.avatar" /></div>
+                                                    :src="constant.NGINX_SERVER_HOST + object?.user.avatar" /></div>
                                             <div class="quotation-padding seller-nickname-wrapper">
                                                 <div class="nickname-wrapper">
                                                     <div>
                                                         <span class="quotation-username">{{
-                                                            commodity?.user.nickname
+                                                            object?.user.nickname
                                                         }}</span><el-tag class="seller-tag">卖家</el-tag>
                                                     </div>
                                                 </div>
@@ -248,8 +260,9 @@
                                     </el-card>
                                 </el-timeline-item>
                             </el-timeline>
-                            <el-result v-if="bids == undefined || bids == null || bids.length == 0" title="没有出价"
-                                sub-title="还没有用户出价，期待你成为第一个出价人">
+                            <el-result v-if="bids == undefined || bids == null || bids.length == 0"
+                                :title="$route.meta.request ? '没有商品' : '没有出价'"
+                                :sub-title="$route.meta.request ? '这个用户的求购还没有商品出售' : '还没有用户出价，期待你成为第一个出价人'">
                                 <template #icon>
                                     <svg t="1677403050548" class="icon" viewBox="0 0 1024 1024" version="1.1"
                                         xmlns="http://www.w3.org/2000/svg" p-id="21247" width="200" height="200">
@@ -263,7 +276,90 @@
                                 </template>
                                 <template #extra>
                                     <el-button type="primary" size="large" @click="goBid"
-                                        :disabled="($route.meta.snapshot as boolean)">我要出价</el-button>
+                                        :disabled="($route.meta.snapshot as boolean)">{{ $route.meta.request ? '我要出售' :
+                                            '我要出价' }} </el-button>
+                                </template>
+                            </el-result>
+                        </el-col>
+                        <el-col v-else>
+                            <el-card :body-style="{ padding: '.3rem' }" v-for="commodityForRequest in commoditiesForRequest"
+                                :key="commodityForRequest.cid" shadow="hover" class="card">
+                                <el-row class="commodity-card">
+                                    <el-col :span="5" class="img-wrapper" @click="toCommodity(commodityForRequest.cid)">
+                                        <el-image loading="lazy" :src="
+                                            constant.NGINX_SERVER_HOST + '/' + commodityForRequest.cover
+                                        " :fit="'fill'" class="cover">
+                                            <template #placeholder>
+                                                <div class="img-slot-wrapper">
+                                                    <img src="/img/loading.svg" alt="正在加载" />
+                                                </div>
+                                            </template>
+                                            <template #error>
+                                                <div class="img-slot-wrapper">
+                                                    <img src="/img/error.svg" alt="图片加载失败" />
+                                                </div>
+                                            </template>
+                                        </el-image>
+                                    </el-col>
+                                    <el-col :span="17" class="commodity-info-wrapper">
+                                        <div class="name-wrapper">
+                                            <span class="name"><span style="color: #e4393c;">{{ commodity?.cid ==
+                                                commodityForRequest.cid ? '[当前商品] ' : '' }}</span>
+                                                {{ commodityForRequest.name }}</span>
+                                            <el-tag class="quality" :type="getQualityClass(commodityForRequest.quality)">{{
+                                                commodityForRequest.quality
+                                            }}新</el-tag>
+
+                                            <el-tag class="status"
+                                                :type="commodityForRequest.sold ? 'danger' : commodityForRequest.launched ? 'success' : 'warning'">{{
+                                                    commodityForRequest.sold ? '已售出' : commodityForRequest.launched ? '上架中' :
+                                                    '已下架'
+                                                }}</el-tag>
+                                        </div>
+                                        <div class="priceAndQualityWrapper">
+                                            <span class="price">{{ "￥ " + commodityForRequest.price }}</span>
+                                        </div>
+                                        <div class="info">
+                                            <span>商品编号：{{ commodityForRequest.cid }}</span>
+                                            <span>类型：{{ commodityForRequest.type.typeName }}</span>
+                                            <span class="view-count" v-show="commodityForRequest.viewCount > 0">{{
+                                                commodityForRequest.viewCount
+                                            }}人看过</span>
+                                        </div>
+                                        <div class="bottom-wrapper">
+                                            <div class="bottom">
+                                                <time class="launch-time">{{ commodityForRequest.time }}</time>
+                                                <div class="commodity-button">
+                                                    <el-button type="primary" size="small" v-if="!commodityForRequest.sold"
+                                                        :disabled="commodityForRequest.bidCount == '0'"
+                                                        @click="toCommodity(commodityForRequest.cid)">查看详情</el-button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+
+                            </el-card>
+
+
+                            <el-result
+                                v-if="commoditiesForRequest == undefined || commoditiesForRequest == null || commoditiesForRequest.length == 0"
+                                title="没有其他商品" sub-title="本求购没有其他商品投递了，先看看这个商品或者再等等">
+                                <template #icon>
+                                    <svg t="1677403050548" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                                        xmlns="http://www.w3.org/2000/svg" p-id="21247" width="200" height="200">
+                                        <path
+                                            d="M972.798816 522.111021A319.9994 319.9994 0 0 0 575.99956 1023.99808H52.288542A51.903903 51.903903 0 0 1 0.00064 971.902178V282.49547c0-28.799946 23.039957-52.095902 52.287902-52.095902h868.222372c28.863946 0 52.287902 22.911957 52.287902 52.095902v239.615551zM307.200064 382.783282c28.287947 0 51.199904-22.783957 51.199904-50.751905a51.007904 51.007904 0 0 0-51.199904-50.751904c-28.287947 0-51.199904 22.719957-51.199904 50.751904 0 27.967948 22.911957 50.751905 51.199904 50.751905z m358.399328 0c28.287947 0 51.199904-22.783957 51.199904-50.751905a51.007904 51.007904 0 0 0-51.199904-50.751904c-28.287947 0-51.199904 22.719957-51.199904 50.751904 0 27.967948 22.911957 50.751905 51.199904 50.751905zM767.9992 1023.99808a255.99952 255.99952 0 1 1 0-511.99904 255.99952 255.99952 0 0 1 0 511.99904z m106.6878-248.703534c11.775978 0 21.31196-9.599982 21.31196-21.439959a21.43996 21.43996 0 0 0-21.31196-21.50396h-55.167897l55.039897-55.679896a21.631959 21.631959 0 0 0 0-30.399943 21.24796 21.24796 0 0 0-30.079943 0l-78.271854 78.975852-78.207853-78.975852a21.24796 21.24796 0 0 0-30.207943 0 21.631959 21.631959 0 0 0 0 30.463943l55.167896 55.615896h-51.583903a21.43996 21.43996 0 0 0-21.37596 21.50396c0 11.839978 9.599982 21.43996 21.37596 21.439959h85.31184v43.00792h-85.37584a21.37596 21.37596 0 0 0-21.31196 21.503959c0 11.903978 9.599982 21.56796 21.31196 21.56796h85.37584v50.175906c0 11.903978 9.535982 21.50396 21.31196 21.50396 11.775978 0 21.37596-9.599982 21.37596-21.50396v-50.175906h85.31184c11.775978 0 21.31196-9.599982 21.31196-21.56796a21.37596 21.37596 0 0 0-21.31196-21.503959h-85.31184v-43.00792h85.31184z"
+                                            fill="#515151" p-id="21248"></path>
+                                        <path
+                                            d="M691.199344 255.99952v-51.199904a204.863616 204.863616 0 0 0-409.599232 0V255.99952h51.199904v-50.879905A153.343712 153.343712 0 0 1 486.399728 51.199904C571.199569 51.199904 639.99944 120.319774 639.99944 205.119615V255.99952h51.199904z"
+                                            fill="#515151" p-id="21249"></path>
+                                    </svg>
+                                </template>
+                                <template #extra>
+                                    <el-button type="primary" size="large" @click="goBid"
+                                        :disabled="($route.meta.snapshot as boolean)">{{ $route.meta.request ? '我要出售' :
+                                            '我要出价' }} </el-button>
                                 </template>
                             </el-result>
                         </el-col>
@@ -316,9 +412,9 @@
                 <div class="order-wrapper">
                     <div>
                         <el-space wrap>
-                            <el-image :src="constant.NGINX_SERVER_HOST + '/' + commodity?.cover"
+                            <el-image :src="constant.NGINX_SERVER_HOST + '/' + object?.cover"
                                 style="width: 2rem; height: 2rem"></el-image>
-                            <span class="order-commodity-name">{{ commodity?.name }}</span>
+                            <span class="order-commodity-name">{{ object?.name }}</span>
                         </el-space>
                     </div>
 
@@ -328,18 +424,17 @@
                                 <el-col :span="10">
                                     <el-row class="seller-item">
                                         <el-col :span="6">
-                                            <el-avatar :size="40"
-                                                :src="constant.NGINX_SERVER_HOST + commodity?.user.avatar" />
+                                            <el-avatar :size="40" :src="constant.NGINX_SERVER_HOST + object?.user.avatar" />
                                         </el-col>
                                         <el-col :span="18">
                                             <el-row>
                                                 <el-col class="seller-item-text-wrapper seller-item"><span
                                                         class="seller-nickname">{{
-                                                            commodity?.user.nickname
+                                                            object?.user.nickname
                                                         }}</span></el-col>
                                                 <el-col class="seller-item-text-wrapper seller-item"><span
                                                         class="seller-username">@{{
-                                                            commodity?.user.username
+                                                            object?.user.username
                                                         }}</span></el-col>
                                             </el-row>
                                         </el-col>
@@ -349,22 +444,22 @@
                                     <el-row class="seller-item">
                                         <el-col class="right-wrapper seller-item-text-wrapper seller-item">
                                             <span class="seller-record">{{
-                                                commodity!.user.ratingCountBuyer == 0 ? '此用户还没有购买过商品' :
+                                                object!.user.ratingCountBuyer == 0 ? '此用户还没有购买过商品' :
                                                 '作为买家的好评率：' +
-                                                (commodity!.user.goodRatingCountBuyer
-                                                    / commodity!.user.ratingCountBuyer * 100).toFixed(2)
-                                                + '%' + '(' + commodity?.user.goodRatingCountBuyer
-                                                + '/' + commodity?.user.ratingCountBuyer + ')' }}</span>
+                                                (object!.user.goodRatingCountBuyer
+                                                    / object!.user.ratingCountBuyer * 100).toFixed(2)
+                                                + '%' + '(' + object?.user.goodRatingCountBuyer
+                                                + '/' + object?.user.ratingCountBuyer + ')' }}</span>
                                         </el-col>
                                     </el-row>
                                     <el-row class="seller-item">
                                         <el-col class="right-wrapper seller-item-text-wrapper seller-item">
-                                            <span class="seller-record">{{ commodity!.user.ratingCountBuyer == 0
+                                            <span class="seller-record">{{ object!.user.ratingCountBuyer == 0
                                                 ? '此用户还没有卖出过商品' : '作为卖家的好评率：' +
-                                                (commodity!.user.goodRatingCountSeller
-                                                    / commodity!.user.ratingCountSeller * 100).toFixed(2)
-                                                + '%' + '(' + commodity?.user.goodRatingCountSeller + '/' +
-                                                commodity?.user.ratingCountSeller + ')' }}</span>
+                                                (object!.user.goodRatingCountSeller
+                                                    / object!.user.ratingCountSeller * 100).toFixed(2)
+                                                + '%' + '(' + object?.user.goodRatingCountSeller + '/' +
+                                                object?.user.ratingCountSeller + ')' }}</span>
                                         </el-col>
                                     </el-row>
                                 </el-col>
@@ -420,7 +515,7 @@
                         </el-card>
                     </div>
                     <div class="right-wrapper">
-                        <span class="order-price-seller">￥{{ commodity?.price }}</span>
+                        <span class="order-price-seller">￥{{ object?.price }}</span>
                     </div>
                     <div class="right-wrapper">
                         <el-button :type="nextType" @click="directGoPay" :disabled="goPayAlreadyOrder">
@@ -451,13 +546,13 @@ import type { Bid, CommodityBid } from '@/interface/CommodityBid';
 import type User from "@/interface/User";
 import type UserAddress from "@/interface/UserAddress";
 import type Tag from '@/interface/Tag';
+import type Request from '@/interface/Request';
 import { ref, onMounted, nextTick, shallowRef, onBeforeUnmount } from 'vue';
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 import BidStep1 from "@/components/BidStep1.vue";
 import BidStep2 from "@/components/BidStep2.vue";
 import BidStep3 from "@/components/BidStep3.vue";
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
-import { EventSourcePolyfill } from 'event-source-polyfill';
 import { useUserStore, useBidStepStore, useLoadingStore, useUserMessageStore, useCaptchaStore, usePayStore } from '@/stores'
 import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenRaw } from '@/util/FetchUtil';
 import '@wangeditor/editor/dist/css/style.css'
@@ -470,37 +565,72 @@ const contentVisible = ref(false);
 //result组件
 const resultVisible = ref(false);
 const Route = useRoute();
+const object = ref<Commodity | Request>();
 const commodity = ref<Commodity>();
-const fetchCommodity = () => {
-    let url = "/api/commodity/" + Route.params.cid;
+const request = ref<Request>();
+//用户关于本求购出的商品
+const commoditiesForRequest = ref<Commodity[]>();
+
+
+
+const fetchCommodity = (cid?: string) => {
+    let realCid = cid == undefined ? Route.params.cid : cid;
+    let url = Route.meta.request ? "/api/request/" + Route.params.id : "/api/commodity/" + realCid;
     if (Route.meta.snapshot) {
         url = "/api/commodity/snapshot/" + Route.params.ssid;
     }
     FetchGetWithToken(url)
         .then(data => {
-            if (data == null || data.cid == undefined) {
+            if (data == null || (Route.meta.request && data.rid == undefined) || (!Route.meta.request && data.cid == undefined)) {
                 router.push({ path: "/404" });
             }
-            console.log(data.sold);
+            if (Route.meta.request) {
+                request.value = data;
+                object.value = request.value;
+                contentVisible.value = true;
+                valueHtml.value = request.value!.description;
+                emits('loadDone');
+                //获取本求购的商品
+                fetchCommodityByRequest(request.value!.rid as string);
+                loadingStore.closeLoading();
+                return;
+            }
             if (data.sold && !Route.meta.snapshot) {
                 //商品已售出
                 resultVisible.value = true;
                 console.log("商品已售出");
-                loadingStore.clodeLoading();
+                loadingStore.closeLoading();
                 return;
             }
             contentVisible.value = true
             commodity.value = data;
+            object.value = commodity.value;
             //设置商品描述 富文本
-            valueHtml.value = commodity.value?.description;
+            valueHtml.value = object.value?.description;
             emits('loadDone');
-            fetchCommodityBid(commodity.value!.cid as string);;
-            loadingStore.clodeLoading();
+            if (commodity.value?.requestId != undefined) {
+                //通过求购发布的商品，获取本求购的其他商品
+                fetchCommodityByRequest(commodity.value!.requestId as string);
+            } else {
+                fetchCommodityBid(object.value!.cid as string);;
+            }
+            loadingStore.closeLoading();
         });
 }
 fetchCommodity();
+
+const toCommodity = (cid: string) => {
+    router.go
+    router.push({ name: "commodity", params: { cid: cid } }).then(() => {
+        fetchCommodity(cid);
+        emits("goTop");
+    });
+
+}
+
 const bids = ref<Bid[]>([]);
 const fetchCommodityBid = (cid: string) => {
+
     FetchGetWithToken("/api/bid/commodity/" + cid)
         .then(data => {
             if (data == null) {
@@ -509,21 +639,29 @@ const fetchCommodityBid = (cid: string) => {
             if (data.bids != undefined && data.bids.length > 0) {
                 bids.value = data.bids;
             }
-
+        });
+}
+//获取本求购下的所有商品
+const fetchCommodityByRequest = (rid: string) => {
+    FetchGetWithToken("/api/request/commodity/" + rid)
+        .then(data => {
+            if (data == null) {
+                return;
+            }
+            commoditiesForRequest.value = data;
         });
 }
 
-
 const collect = () => {
-    FetchPostWithToken("/api/favorites", JSON.stringify({
-        cid: commodity.value?.cid
-    })).then(result => {
+    let json = Route.meta.request ? { rid: request.value?.rid } : { cid: commodity.value?.cid }
+    let url = Route.meta.request ? "/api/request/favorites" : "/api/favorites"
+    FetchPostWithToken(url, JSON.stringify(json)).then(result => {
         ElMessage({
             message: result ? "收藏成功" : "已取消收藏",
             type: result ? 'success' : 'warning'
         });
         //点亮图标
-        commodity.value!.favorite = result as boolean;
+        object.value!.favorite = result as boolean;
     }).catch((e: Error) => {
         if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
             // 储存本次操作
@@ -581,10 +719,10 @@ const mode = "default"
 
 /**联系卖家 */
 const toChat = () => {
-    userMessageStore.chatUser = commodity.value?.user as User
+    userMessageStore.chatUser = object.value?.user as User
     userMessageStore.messageList = [];
     userMessageStore.fetchMessage();
-    userMessageStore.putVirtuaChatUserToMap(commodity.value!.user);
+    userMessageStore.putVirtuaChatUserToMap(object.value!.user);
     userMessageStore.showMessageDrawer();
 }
 // const messageList = shallowRef<UserMessage[]>([]);
@@ -713,7 +851,7 @@ const nextStep = ref("下一步");
 const stepComponents = shallowRef([BidStep1, BidStep2, BidStep3]);;
 
 
-const emits = defineEmits(['toBidView', 'loadDone']);
+const emits = defineEmits(['toBidView', 'loadDone', 'goTop']);
 
 //步骤组件对象
 const stepComponent = ref();
@@ -727,8 +865,8 @@ const setStepComponent = (el: any) => {
 
 const openBid = () => {
     bidFormVisible.value = true;
-    bidStepStore.commodity = commodity.value as Commodity;
-    bidStepStore.seller = commodity.value!.user;
+    bidStepStore.commodity = object.value as Commodity;
+    bidStepStore.seller = object.value!.user;
 }
 const stepLast = () => {
     if (step.value > 0) {
@@ -930,7 +1068,21 @@ const toAddressSetting = () => {
     router.push({ name: 'home-address' });
 }
 
+const getQualityClass = (quality: number) => {
+    if (quality >= 9.5) {
+        return 'success' as EpPropMergeType<StringConstructor, "success", unknown>;
 
+    } else if (quality >= 8) {
+        return "warning" as EpPropMergeType<StringConstructor, "warning", unknown>;
+
+    } else if (quality >= 7) {
+
+        return "info" as EpPropMergeType<StringConstructor, "info", unknown>;
+    } else if (quality < 7) {
+        return "danger" as EpPropMergeType<StringConstructor, "danger", unknown>;
+    }
+
+}
 onMounted(() => {
 
 
@@ -1217,6 +1369,104 @@ onMounted(() => {
 .step-content-wrapper {
     height: 22rem;
     width: 50rem;
+}
+
+
+
+.card {
+    margin-top: .5rem;
+}
+
+.commodity-card {
+    justify-content: space-around;
+}
+
+.img-wrapper {
+    cursor: pointer;
+}
+
+.loading-tips {
+    text-align: center;
+    font-size: small;
+    color: gray;
+    margin-top: .3rem;
+}
+
+.name-wrapper {
+    display: flex;
+    align-items: flex-start;
+}
+
+.name-wrapper .status {
+    margin-left: .5rem;
+}
+
+.name {
+    font-size: large;
+    font-weight: 700;
+}
+
+.commodity-info-wrapper {
+    font-size: small;
+}
+
+.commodity-info-wrapper>div {
+    margin-top: .5rem;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+}
+
+.info>span {
+    margin-top: .5rem;
+}
+
+.priceAndQualityWrapper {
+    margin-top: 1rem !important;
+}
+
+.quality {
+    margin-left: .3rem;
+}
+
+.price {
+    font-size: larger;
+    color: #e4393c;
+}
+
+.bottom-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.bottom {
+    display: flex;
+    justify-content: space-between;
+}
+
+.view-count {
+    font-size: small;
+    color: gray;
+}
+
+.launch-time {
+    margin-top: .3rem;
+    font-size: small;
+    color: gray;
+}
+
+
+
+.commodity-button {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.commodity-button>button {
+    margin-top: .3rem;
 }
 </style>
 <style>

@@ -35,7 +35,7 @@
         <el-row :justify="'center'">
           <el-col :span="24">
             <router-view v-slot="{ Component }" v-if="modeStore.isRouterAlive" @toBidView="toBidView"
-              @loadDone="loadDone">
+              @loadDone="loadDone" @goTop="goTop">
               <transition name="bounce">
                 <component :is="Component" />
               </transition>
@@ -712,6 +712,13 @@ const uploadVideoSuccess = async (response: any) => {
 const disabledSendCodeButton = ref(false);
 const countdown = ref(constant.SEND_CODE_Interval)
 
+
+const goTop=()=>{
+  scrollbar.value.scrollTo({
+    top: 300,
+    behavior: "smooth",
+  });
+}
 onMounted(() => {
   // userMessageStore.messageScrollBar = messageScrollBar;
   // userMessageStore.messageWrapper = messageWrapper;

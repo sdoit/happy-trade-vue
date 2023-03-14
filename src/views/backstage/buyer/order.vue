@@ -71,7 +71,7 @@ const pathStore = usePathStore();
 //获取订单
 FetchGetWithToken("/api/order").then(data => {
     orders.value = data;
-    loadingStore.clodeLoading();
+    loadingStore.closeLoading();
 });
 const getQualityClass = (quality: number) => {
     if (quality >= 9.5) {

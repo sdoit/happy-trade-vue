@@ -142,7 +142,7 @@ const fetchUserAddress = () => {
         .then(data => {
             addressList.value = data;
 
-            loadingStore.clodeLoading();
+            loadingStore.closeLoading();
 
         });
 }

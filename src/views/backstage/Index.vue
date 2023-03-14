@@ -27,6 +27,7 @@
                                     </template>
                                     <el-menu-item-group title="订单">
                                         <el-menu-item index="/buyer/order">我的订单</el-menu-item>
+                                        <el-menu-item index="/buyer/request">我的求购</el-menu-item>
                                         <el-menu-item index="/buyer/bid">我的出价</el-menu-item>
                                     </el-menu-item-group>
                                     <el-menu-item-group title="浏览">

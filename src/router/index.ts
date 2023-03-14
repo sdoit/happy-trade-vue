@@ -29,13 +29,19 @@ const router = createRouter({
     {
       path: '/commodity/:cid',
       name: 'commodity',
-      meta: { mode: 'reception',snapshot: false },
+      meta: { mode: 'reception', snapshot: false },
       component: () => import('../views/Commodity.vue')
     },
     {
       path: '/commodity/snapshot/:ssid',
       name: 'commodity-snapshot',
       meta: { mode: 'reception', snapshot: true },
+      component: () => import('../views/Commodity.vue')
+    },
+    {
+      path: '/request/:id',
+      name: 'request',
+      meta: { mode: 'reception', snapshot: false, request: true },
       component: () => import('../views/Commodity.vue')
     },
     //买家后台
@@ -51,10 +57,16 @@ const router = createRouter({
           name: 'buyer-index',
           component: () => import('../views/backstage/buyer/Order.vue')
         },
+
         {
           path: 'bid',
           name: 'buyer-bid',
           component: () => import('../views/backstage/buyer/Bid.vue')
+        },
+        {
+          path: 'request',
+          name: 'buyer-request',
+          component: () => import('../views/backstage/buyer/Request.vue')
         },
         {
           path: 'favorites',
@@ -143,7 +155,14 @@ const router = createRouter({
     {
       path: '/launch',
       name: 'launch',
-      meta: { mode: 'backstage' },
+      meta: { mode: 'backstage', request: false },
+      component: () => import('../views/backstage/Launch.vue')
+    },
+    //发布求购
+    {
+      path: '/request',
+      name: 'request-launch',
+      meta: { mode: 'backstage', request: true },
       component: () => import('../views/backstage/Launch.vue')
     },
     //商品编辑

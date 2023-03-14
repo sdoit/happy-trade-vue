@@ -102,7 +102,7 @@ const fetchHistory = (PageNum: number) => {
             loading.value = false;
             show.value = rowCount.value == 0;
 
-            loadingStore.clodeLoading();
+            loadingStore.closeLoading();
         })
 }
 

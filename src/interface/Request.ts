@@ -1,14 +1,14 @@
 import type User from '@/interface/User';
 import type Tag from '@/interface/Tag';
 import type CommodityType from '@/interface/CommodityType';
-export default interface Commodity {
-    cid: string,
+export default interface Request{
+    rid: string,
     uid: string,
     name: string,
     quality: number,
     price: number,
     fare:number,
-    sold: boolean,
+    completed: boolean,
     launched: boolean,
     time: string,
     description: string,
@@ -20,7 +20,5 @@ export default interface Commodity {
     freightCollect: boolean,
     freeShipping: boolean,
     favorite:boolean
-    bidCount:string,
-    requestId:string
+    cidCount:string
 }
-

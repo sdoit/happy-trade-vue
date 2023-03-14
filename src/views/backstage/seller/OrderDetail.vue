@@ -302,7 +302,7 @@ const order = ref<Order>();
 const userMessageStore = useUserMessageStore();
 FetchGetWithToken("/api/order/oid/" + route.params.oid).then(data => {
     order.value = data;
-    loadingStore.clodeLoading();
+    loadingStore.closeLoading();
 
 })
 const toChat = () => {

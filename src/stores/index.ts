@@ -124,6 +124,8 @@ export const useUserStore = defineStore('user', {
         if (result?.flag) {
           //已经登录
           this.user = result.data;
+          this.user.tokenName=this.tokenName as string;
+          this.user.tokenValue=this.tokenValue as string;
           if (this.sseClient == undefined) {
             //连接SSE
             this.sseClient = SSEInit();
@@ -213,7 +215,7 @@ export const useLoadingStore = defineStore('loading', {
     loading() {
       this.isLoading = true;
     },
-    clodeLoading() {
+    closeLoading() {
       this.isLoading = false;
     }
   }

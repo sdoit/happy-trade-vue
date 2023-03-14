@@ -303,7 +303,7 @@ const pathStore = usePathStore();
 const order = ref<Order>();
 FetchGetWithToken("/api/order/oid/" + route.params.oid).then(data => {
     order.value = data;
-    loadingStore.clodeLoading();
+    loadingStore.closeLoading();
 });
 const confirmVisible = ref(false);
 const toConfirmReceipt = () => {

@@ -146,7 +146,7 @@ const fetchcommodities = (PageNum: number) => {
             commodities.value = commodities.value.concat(data);
             console.log(commodities.value);
             loading.value = false;
-            loadingStore.clodeLoading();
+            loadingStore.closeLoading();
 
 
         })

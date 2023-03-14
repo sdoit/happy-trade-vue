@@ -44,7 +44,7 @@ const fetchTypeRecommend = () => {
   })
 }
 const loadDone = () => {
-  loadingStore.clodeLoading();
+  loadingStore.closeLoading();
 
 }
 onMounted(() => {

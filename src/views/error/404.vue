@@ -7,7 +7,7 @@
 import router from '@/router';
 import { useLoadingStore } from '@/stores'
 const loadingStore = useLoadingStore();
-loadingStore.clodeLoading();
+loadingStore.closeLoading();
 
 const goHome = () => {
     router.back();

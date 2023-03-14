@@ -87,7 +87,7 @@ const fetchCommodityBids = () => {
         FetchGetWithToken("/api/bid").then(data => {
             bids.value = data;
             show.value = bids.value == undefined || bids.value.length == 0
-            loadingStore.clodeLoading();
+            loadingStore.closeLoading();
         })
 
     });

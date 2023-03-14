@@ -58,7 +58,7 @@ const fetchUserAmountAndLog = () => {
             userAmountLogs.value = data;
         });
 
-        loadingStore.clodeLoading();
+        loadingStore.closeLoading();
 
     });
 }

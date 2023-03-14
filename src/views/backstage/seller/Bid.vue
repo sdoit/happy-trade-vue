@@ -1,6 +1,5 @@
 <template>
     <div>
-
         <el-result
             v-if="commodityBids == undefined || commodityBids.length == 0 || commodityBids[0].bids == undefined || commodityBids[0].bids.length == 0 && filter == 'all'"
             title="没有出价" sub-title="还没有买家对你的商品出价">
@@ -193,7 +192,7 @@ const fetchBidsByCid = (cid: string) => {
         console.log(commodityBids.value)
         console.log(new Array(result.data))
 
-        loadingStore.clodeLoading();
+        loadingStore.closeLoading();
     });
 }
 
@@ -219,7 +218,7 @@ const fetchSellerBid = () => {
                 type: 'error'
             })
         }
-        loadingStore.clodeLoading();
+        loadingStore.closeLoading();
 
     });
 }

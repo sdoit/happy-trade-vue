@@ -139,7 +139,7 @@ const fetchcommodities = (PageNum: number) => {
                 //首次加载完成
                 emits('loadDone');
             }
-            loadingStore.clodeLoading();
+            loadingStore.closeLoading();
 
         });
 }

@@ -48,15 +48,17 @@
                                     </el-upload>
                                 </el-col>
                                 <el-col :span="20">
-                                    <el-form :model="commodity" label-position="right" label-width="5rem">
+                                    <el-form :model="commodity" label-position="right"
+                                        :label-width="$route.meta.request ? '7rem' : '5rem'">
                                         <el-row>
                                             <el-col :span="18">
-                                                <el-form-item label="商品名：" required>
-                                                    <el-input v-model="commodity.name" />
+                                                <el-form-item :label="$route.meta.request ? '求购商品名：' : '商品名：'" required>
+                                                    <el-input v-model="commodity.name"
+                                                        :placeholder="$route.meta.request ? '填写你要求购的商品名称' : '填写你要发布商品的名称'" />
                                                 </el-form-item>
                                             </el-col>
                                             <el-col :span="6">
-                                                <el-form-item label="成色：" required>
+                                                <el-form-item :label="$route.meta.request ? '可接受的成色' : '成色：'" required>
                                                     <el-input-number v-model="commodity.quality" :precision="1" :min='0'
                                                         :max="9.9" :step="0.1" />
                                                 </el-form-item>
@@ -64,7 +66,7 @@
                                         </el-row>
                                         <el-row>
                                             <el-col :span="14">
-                                                <el-form-item label="价格：" required>
+                                                <el-form-item :label="$route.meta.request ? '预计价格：' : '价格：'" required>
                                                     <el-input v-model="commodity.price" type="number">
                                                         <template #prepend>￥</template>
                                                     </el-input>
@@ -72,7 +74,7 @@
                                             </el-col>
 
                                             <el-col :span="5">
-                                                <el-form-item label="邮费："
+                                                <el-form-item :label="$route.meta.request ? '可接受的邮费' : '邮费：'"
                                                     :required="!commodity.freeShipping && !commodity.freightCollect">
                                                     <el-input v-model="commodity.fare" type="number"
                                                         :disabled="commodity.freeShipping || commodity.freightCollect">
@@ -135,7 +137,8 @@
                             </div>
                         </div>
                         <div class="launch-button">
-                            <el-button type="primary" size="large" @click="submit">提交</el-button>
+                            <el-button type="primary" size="large" @click="submit">{{ $route.meta.request ? '发布求购' :
+                                '发布商品' }}</el-button>
                         </div>
                     </div>
                 </el-col>
@@ -161,6 +164,8 @@ import type Node from 'element-plus/es/components/cascader-panel/src/node';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 import type Tag from '@/interface/Tag';
+const Route = useRoute();
+
 const loadingStore = useLoadingStore();
 const userStore = useUserStore();
 const commodity = ref({
@@ -317,7 +322,8 @@ const toolbarConfig = {
 type InsertFnType = (url: string, alt: string, href: string) => void;
 
 const editorConfig = {
-    placeholder: '请输入商品描述...',
+
+    placeholder: Route.meta.request ? '请输入你要收购商品的详细描述和要求...' : '请输入商品描述以吸引更多买家...',
     MENU_CONF: {
         uploadImage: {
             server: constant.SPRINGBOOT_SERVER_HOST + '/api/upload/image',
@@ -390,7 +396,6 @@ const editorConfig = {
         }
     }
 }
-const Route = useRoute();
 onMounted(() => {
     //读取模式（新建或编辑）
     if (Route.meta.edit) {
@@ -415,11 +420,11 @@ onMounted(() => {
             coverUrl.value = constant.NGINX_SERVER_HOST + "/" + commodity.value.cover;
             //设置商品描述 富文本
             valueHtml.value = commodity.value.description;
-            loadingStore.clodeLoading();
+            loadingStore.closeLoading();
 
         });
     }
-    loadingStore.clodeLoading();
+    loadingStore.closeLoading();
 
 
 });
@@ -495,20 +500,25 @@ const submit = () => {
         background: 'rgba(0, 0, 0, 0.7)',
     });
     commodity.value.description = editorRef.value.getHtml();
+    let url = Route.meta.request ? "/api/request" : "/api/commodity";
     let fetchResult;
     let successMessage = "发布成功，即将跳转到商品详情页"
     if (Route.meta.edit) {
-        fetchResult = FetchPutWithToken("/api/commodity", JSON.stringify(commodity.value));
+        fetchResult = FetchPutWithToken(url, JSON.stringify(commodity.value));
         successMessage = "编辑成功，即将跳转到商品详情页"
     } else {
-        fetchResult = FetchPostWithToken("/api/commodity", JSON.stringify(commodity.value))
+        fetchResult = FetchPostWithToken(url, JSON.stringify(commodity.value))
     }
     fetchResult.then(result => {
         ElMessage.success(successMessage);
         if (Route.meta.edit) {
             result = commodity.value.cid;
         }
-        router.push({ name: "commodity", params: { cid: result, t: new Date().getTime().toString() } });
+        if (Route.meta.request) {
+            router.push({ name: "request", params: { cid: result, t: new Date().getTime().toString() } });
+        } else {
+            router.push({ name: "commodity", params: { cid: result, t: new Date().getTime().toString() } });
+        }
         loading.close();
     }).catch((e: Error) => {
         if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
