@@ -13,6 +13,26 @@ import type { ChatUser } from '@/interface/UserMessage';
 import { ref, nextTick } from 'vue';
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute } from 'vue-router';
+export const useScrollbarStore = defineStore('scrollbar', {
+  state: () => {
+    return {
+      //滚动条实例
+      scrollbar: ref(),
+    }
+  },
+  getters: {},
+  actions: {
+    scrollSmoothTo(top: number) {
+      this.scrollbar.scrollTo({
+        top: top,
+        behavior: "smooth",
+      });
+    }
+
+  }
+});
+
+
 export const useModeStore = defineStore('mode', {
   state: () => {
     return {
@@ -124,8 +144,8 @@ export const useUserStore = defineStore('user', {
         if (result?.flag) {
           //已经登录
           this.user = result.data;
-          this.user.tokenName=this.tokenName as string;
-          this.user.tokenValue=this.tokenValue as string;
+          this.user.tokenName = this.tokenName as string;
+          this.user.tokenValue = this.tokenValue as string;
           if (this.sseClient == undefined) {
             //连接SSE
             this.sseClient = SSEInit();
@@ -138,7 +158,7 @@ export const useUserStore = defineStore('user', {
         this.logged = result?.flag as boolean;
         return result?.flag;
       }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
           // 储存本次操作
           const captchaStore = useCaptchaStore();
           captchaStore.nextMethod = this.checkLogin;
@@ -241,7 +261,8 @@ export const useUserMessageStore = defineStore('message', {
 
       tipMMessagePlaySymbols: false,
       //当用户向上滚动获取更多消息时，控制滚动条不要自动下滚
-      doNotScroll: false
+      doNotScroll: false,
+      sending: false
     }
   },
   getters: {
@@ -269,7 +290,12 @@ export const useUserMessageStore = defineStore('message', {
     async chatSend(spacilContent?: {
       content: string,
       contentType: string,
+      // 本次发送是重试
+      retry?: boolean,
+      i?: number,
     }) {
+      let index = -1;
+      this.sending = true;
       let contentType = "TEXT"
       let message = {
         content: this.chatMessage,
@@ -277,23 +303,28 @@ export const useUserMessageStore = defineStore('message', {
         contentType
       };
       if (spacilContent != undefined) {
-        message.content = spacilContent.content
-        message.contentType = spacilContent.contentType
+        message.content = spacilContent.content ? spacilContent.content : message.content;
+        message.contentType = spacilContent.contentType ? spacilContent.contentType : message.contentType;
+        index = spacilContent.i ? spacilContent.i : index;
       } else {
         if (this.chatMessage.trim() == '') {
           return false;
         }
       }
-      return await FetchPostWithToken("/api/message", JSON.stringify(message)).then(data => {
-        //发送成功
+
+      if (spacilContent == undefined || !spacilContent.retry) {
+        //将消息展示到消息列表
         if (this.messageMap.has(this.chatUser.uid)) {
           let userMessage = {
-            content: message.content,
+            content: this.chatMessage,
+            status: constant.MESSAGE_STATUS_SENDING,
             contentType: message.contentType,
             uidSend: useUserStore().user.uid,
             uidReceive: this.chatUser.uid,
           } as UserMessage;
-          this.messageMap.get(this.chatUser.uid)!.push(userMessage);
+          let messageList = this.messageMap.get(this.chatUser.uid)!;
+          index = messageList.length;
+          messageList.push(userMessage);
           if (this.chatUserMap.has(this.chatUser.uid)) {
             if (spacilContent == undefined) {
               this.chatUserMap.get(this.chatUser.uid)!.lastMessage = this.chatMessage
@@ -303,26 +334,53 @@ export const useUserMessageStore = defineStore('message', {
           } else {
             this.fetchChatUserList();
           }
-          this.chatMessage = '';
+
+        }
+      }
+      let messages: UserMessage[] = this.messageMap.get(this.chatUser.uid) as UserMessage[];
+      return await FetchPostWithToken("/api/message", JSON.stringify(message)).then(data => {
+        //发送成功
+        this.chatMessage = '';
+        this.sending = false;
+        if (this.messageMap.has(this.chatUser.uid)) {
+          messages[index].content = data;
+          messages[index].status = constant.MESSAGE_STATUS_SEND_SUCCESS;
+          if (this.chatUserMap.has(this.chatUser.uid)) {
+            if (spacilContent == undefined) {
+              this.chatUserMap.get(this.chatUser.uid)!.lastMessage = data
+            }
+          }
+        }
+        else {
+          this.fetchMessage();
+          this.fetchChatUserList();
           return true;
         }
-        this.chatMessage = '';
-        this.fetchMessage();
-        this.fetchChatUserList();
-        return true;
       }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        this.sending = false;
+        messages[messages.length - 1].status = constant.MESSAGE_STATUS_SEND_FAILED;
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
           // 储存本次操作
           const captchaStore = useCaptchaStore();
           captchaStore.nextMethod = this.chatSend;
           if (constant == undefined) {
             captchaStore.nextMethodParam = undefined;
           } else {
-            captchaStore.nextMethodParam = spacilContent;
+            if (spacilContent == undefined) {
+              captchaStore.nextMethodParam = { retry: true, i: index };
+            } else {
+              spacilContent.retry = true;
+              spacilContent.i = index;
+              captchaStore.nextMethodParam = spacilContent;
+
+            }
+
           }
 
         }
       });
+
+
     },
     async fetchMessage(getmore?: boolean) {
       if (this.chatUserMap.has(this.chatUser.uid) && this.chatUserMap.get(this.chatUser.uid)!.unreadCount !== 0) {

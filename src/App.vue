@@ -34,8 +34,8 @@
         <div v-if="modeStore.mode == constant.MODE_RECEPTION" class="content-head"></div>
         <el-row :justify="'center'">
           <el-col :span="24">
-            <router-view v-slot="{ Component }" v-if="modeStore.isRouterAlive" @toBidView="toBidView"
-              @loadDone="loadDone" @goTop="goTop">
+            <router-view v-slot="{ Component }" v-if="modeStore.isRouterAlive" @toBidView="toBidView" @loadDone="loadDone"
+              @goTop="goTop">
               <transition name="bounce">
                 <component :is="Component" />
               </transition>
@@ -53,8 +53,8 @@
     <el-form v-if="!userStore.signUpMode" :model="userStore.user" label-width="6rem">
       <el-form-item :label="userStore.loginWayPassword ? '账号：' : '手机号码：'" required>
         <el-col :span="userStore.loginWayPassword ? 24 : 18">
-          <el-input v-model="userStore.user.certificate"
-            :placeholder="userStore.loginWayPassword ? '用户名/手机号码' : '手机号码'" @keydown.enter="onLogin" />
+          <el-input v-model="userStore.user.certificate" :placeholder="userStore.loginWayPassword ? '用户名/手机号码' : '手机号码'"
+            @keydown.enter="onLogin" />
         </el-col>
         <el-col :span="userStore.loginWayPassword ? 0 : 6">
           <el-button style="width: 100%;" type="primary" @click="sendCode" :disabled="disabledSendCodeButton">{{
@@ -184,7 +184,21 @@
                         :src="constant.NGINX_SERVER_HOST + (message.uidSend == userStore.user.uid ? userStore.user.avatar : userMessageStore.chatUser.avatar)" />
                     </el-col>
                     <el-col v-if="!message.systemNotify" :span="20"
-                      :class="message.uidSend == userStore.user.uid ? 'message-self-content' : ''">
+                      :class="message.uidSend == userStore.user.uid ? 'message-self-content' : ''" class="message">
+                      <svg v-if="message.status==constant.MESSAGE_STATUS_SENDING" xmlns="http://www.w3.org/2000/svg" class="sendLoading" width="12" height="12"
+                        viewBox="0 0 24 24">
+                        <path fill="#ffffff"
+                          d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity="1" />
+                        <path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z">
+                          <animateTransform attributeName="transform" dur="1s" from="0 12 12" repeatCount="indefinite"
+                            to="360 12 12" type="rotate" />
+                        </path>
+                      </svg>
+                      <svg v-if="message.status==constant.MESSAGE_STATUS_SEND_FAILED" xmlns="http://www.w3.org/2000/svg" class="sendLoading" width="12" height="12"
+                        viewBox="0 0 16 16">
+                        <path fill="#B22222"
+                          d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2a1 1 0 0 0 0-2z" />
+                      </svg>
                       <div class="chat-message-content">
                         <span v-if="message.contentType == constant.CONTENT_TYPE_TEXT || message.content == undefined">{{
                           message.content }}</span>
@@ -232,7 +246,7 @@
             <!-- 消息发送框 -->
             <div class="message-input-wrapper">
               <div class="chat-content-wrapper">
-                <el-input class="chat-content" v-model="userMessageStore.chatMessage" rows="4" maxlength="250"
+                <el-input class="chat-content" ref="messageInpuer" v-model="userMessageStore.chatMessage" rows="4" maxlength="250"
                   placeholder="请输入消息..." show-word-limit type="textarea" @keydown.enter.prevent="sendMessage"
                   :disabled="chatUser.uid == '0' || chatUser.uid == '-1'" />
               </div>
@@ -297,7 +311,7 @@ import Header from "./components/Header.vue";
 import Search from "./components/Search.vue";
 import router from './router'
 import { ElLoading, ElMessage, type FormRules, type FormInstance } from 'element-plus'
-import { useModeStore, useUserStore, useLoadingStore, useUserMessageStore, useCaptchaStore, useCommodityListStore } from '@/stores'
+import { useModeStore, useUserStore, useLoadingStore, useUserMessageStore, useCaptchaStore, useCommodityListStore, useScrollbarStore } from '@/stores'
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import type User from './interface/User';
@@ -324,8 +338,8 @@ const logoMarLeft = ref(0);
 const logoWidth = ref(20);
 const lastscrollTop = ref(0)
 const mapSearchBar = function (scroll: { scrollTop: number, scrollLeft: number }) {
-  if (lockScroll.value && scroll.scrollTop < 320) {
-    scrollbar.value.setScrollTop(320);
+  if (lockScroll.value && scroll.scrollTop < constant.SCROLLTOP) {
+    scrollbar.value.setScrollTop(constant.SCROLLTOP);
   }
   if (modeStore.mode == "reception") {
     SearchBar.value.changeSearchBarSize(scroll.scrollTop);
@@ -344,16 +358,16 @@ const mapSearchBar = function (scroll: { scrollTop: number, scrollLeft: number }
 const scrollbar = ref();
 const commodityListStore = useCommodityListStore();
 const search = function (keyword: string) {
-  console.log(keyword);
   SearchBar.value.close();
   router.push({ name: "search", params: { 'keyword': keyword } });
   commodityListStore.url = "/api/commodity?keyword=" + keyword;
 }
-const loadDone = () => {
-  console.log('load Done')
+const loadDone = (anchor?: any) => {
+  scrollbar.value.setScrollTop(0);
+  let top = constant.SCROLLTOP;
   setTimeout(() => {
     scrollbar.value.scrollTo({
-      top: 320,
+      top: top,
       behavior: "smooth",
     });
     setTimeout(() => {
@@ -396,7 +410,7 @@ const onLogin = () => {
     loading.close();
 
   }).catch((e: Error) => {
-    if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+    if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
       // 储存本次操作
       captchaStore.nextMethod = onLogin;
     }
@@ -469,12 +483,12 @@ const onSignUp = (signUpForm: FormInstance | undefined) => {
           });
         }
       }).catch((e: Error) => {
-      if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
-        // 储存本次操作
-        captchaStore.nextMethod = sendCode;
-        captchaStore.nextMethodParam = undefined;
-      }
-    });
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+          // 储存本次操作
+          captchaStore.nextMethod = sendCode;
+          captchaStore.nextMethodParam = undefined;
+        }
+      });
     } else {
       return false
     }
@@ -497,7 +511,7 @@ const sendCode = () => {
       }, 1000);
 
     }).catch((e: Error) => {
-      if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+      if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
         // 储存本次操作
         captchaStore.nextMethod = sendCode;
         captchaStore.nextMethodParam = undefined;
@@ -524,11 +538,11 @@ const sendCode = () => {
   }
 }
 //监听路由，随时更改mode
-const rout = useRoute();
-watch(rout, (value) => {
+const route = useRoute();
+watch(route, (value) => {
   modeStore.mode = value.meta.mode as string;
   loadingStore.loading();
-  if (rout.name == "index") {
+  if (route.meta.mode == "backstage") {
     lockScroll.value = false;
   }
 });
@@ -713,18 +727,23 @@ const disabledSendCodeButton = ref(false);
 const countdown = ref(constant.SEND_CODE_Interval)
 
 
-const goTop=()=>{
+const goTop = () => {
   scrollbar.value.scrollTo({
     top: 300,
     behavior: "smooth",
   });
 }
+const aa = () => {
+  console.log(1)
+}
+const scrollbarStore = useScrollbarStore();
 onMounted(() => {
   // userMessageStore.messageScrollBar = messageScrollBar;
   // userMessageStore.messageWrapper = messageWrapper;
   // console.log(messageScrollBar.value)
   userStore.checkLogin();
   tipAudio.value = new Audio('/audio/newMessage.mp3');
+  scrollbarStore.scrollbar = scrollbar.value;
 })
 
 
@@ -942,6 +961,12 @@ onMounted(() => {
 .close-btn {
   display: none;
 }
+
+.sendLoading {
+  margin-right: -1rem;
+  background: #fbb360;
+  border-radius: 50%;
+}
 </style>
 <style>
 .chat-wrapper .el-drawer__body {
@@ -965,5 +990,15 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   background-color: rgba(0, 0, 0, 0) !important;
+}
+
+.message .el-badge {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.message .el-badge__content {
+  position: relative;
+  cursor: pointer;
 }
 </style>

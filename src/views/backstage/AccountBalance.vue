@@ -75,7 +75,7 @@ const withdrawal = () => {
         fetchUserAmountAndLog();
 
     }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
           // 储存本次操作
           const captchaStore = useCaptchaStore();
           captchaStore.nextMethod = withdrawal;

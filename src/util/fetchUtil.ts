@@ -29,11 +29,11 @@ export const FetchPostWithToken = async (url: string, body?: BodyInit) => {
                 //储存验证码参数
                 captchaStore.imageCaptchaInfo = result.data;
                 captchaStore.captchaVisble = true;
-                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString());
+                throw new Error(JSON.stringify(result));
 
             } else {
                 ElMessage.error(result.message);
-                throw new Error(result.message);
+                throw new Error(JSON.stringify(result));
             }
         })
 }
@@ -62,11 +62,11 @@ export const FetchPostFileWithToken = async (url: string, file: File) => {
                 //储存验证码参数
                 captchaStore.imageCaptchaInfo = result.data;
                 captchaStore.captchaVisble = true;
-                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString());
+                throw new Error(JSON.stringify(result));
 
             } else {
                 ElMessage.error(result.message);
-                throw new Error(result.message);
+                throw new Error(JSON.stringify(result));
             }
         })
 }
@@ -93,10 +93,10 @@ export const FetchDeleteWithToken = async (url: string, body?: BodyInit) => {
                 //储存验证码参数
                 captchaStore.imageCaptchaInfo = result.data;
                 captchaStore.captchaVisble = true;
-                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString());
+                throw new Error(JSON.stringify(result));
             } else {
                 ElMessage.error(result.message);
-                throw new Error(result.message);
+                throw new Error(JSON.stringify(result));
             }
         })
 }
@@ -124,10 +124,10 @@ export const FetchPutWithToken = async (url: string, body?: BodyInit) => {
                 //储存验证码参数
                 captchaStore.imageCaptchaInfo = result.data;
                 captchaStore.captchaVisble = true;
-                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString())
+                throw new Error(JSON.stringify(result))
             } else {
                 ElMessage.error(result.message);
-                throw new Error(result.message);
+                throw new Error(JSON.stringify(result));
             }
         })
 }
@@ -156,7 +156,7 @@ export const FetchGetWithToken = async (url: string) => {
 
             } else {
                 ElMessage.error(result.message);
-                throw new Error(result.message);
+                throw new Error(JSON.stringify(result));
             }
         })
 }
@@ -177,7 +177,7 @@ export const FetchPostWithTokenNoLoginRequired = async (url: string, body?: Body
                 //储存验证码参数
                 captchaStore.imageCaptchaInfo = result.data;
                 captchaStore.captchaVisble = true;
-                throw new Error(constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString())
+                throw new Error(JSON.stringify(result))
             } else {
                 return result;
             }

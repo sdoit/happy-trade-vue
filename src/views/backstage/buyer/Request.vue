@@ -4,8 +4,9 @@
             <div class="wrapper">
                 <el-row>
                     <el-col :span="6">
-                        <el-image :src="constant.NGINX_SERVER_HOST + '/' + request.cover" :fit="'fill'"
-                            class="cover"></el-image>
+                        <a :href="'/request/' + request.rid"><el-image
+                                :src="constant.NGINX_SERVER_HOST + '/' + request.cover" :fit="'fill'"
+                                class="cover"></el-image></a>
                     </el-col>
                     <el-col :span="17" :offset="1" class="bid-wrapper">
                         <div class="commodity-info-wrapper">
@@ -18,7 +19,8 @@
 
                         </div>
                         <div class="commodity-button" style="display: flex; justify-content: flex-end;">
-                            <el-button type="primary" size="small" v-if="!request.completed">编辑</el-button>
+                            <!-- <el-button type="primary" size="small" v-if="!request.completed"
+                                @click="goEdit(request)">编辑</el-button> -->
                             <el-button :type="request.launched ? 'warning' : 'primary'" size="small"
                                 v-if="!request.completed"
                                 @click="request.launched ? getDown(request) : uploaded(request)">{{
@@ -38,7 +40,7 @@
                         </div>
                     </el-col>
                 </el-row>
-                <el-row>
+                <el-row v-if="commodityMap.keys.length > 0">
                     <el-col>
                         <el-divider />
                         <el-card :body-style="{ padding: '.3rem' }" v-for="commodity in commodityMap.get(request.rid) "
@@ -108,13 +110,12 @@ import { ref, reactive, onMounted, watch } from 'vue';
 import type { CommodityBid, Bid } from '@/interface/CommodityBid';
 import type Commodity from '@/interface/Commodity';
 import type Request from '@/interface/Request';
-import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenPage } from '@/util/FetchUtil';
+import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenPage, FetchPutWithToken, FetchDeleteWithToken } from '@/util/FetchUtil';
 import { useUserStore, usePathStore, useLoadingStore, useCaptchaStore } from '@/stores';
 import constant from '@/common/constant';
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 import router from '@/router';
 import { ElLoading, ElMessage } from 'element-plus';
-import { useRoute } from 'vue-router'
 const loadingStore = useLoadingStore();
 const userStore = useUserStore();
 const pathStore = usePathStore();
@@ -125,7 +126,7 @@ const agreeDialogVisible = ref(false);
 const bid = ref<Bid>();
 const commodityOprate = ref<CommodityBid>();
 const agreeMode = ref(true);
-
+const captchaStore = useCaptchaStore();
 
 const fetchRequest = async () => {
     await FetchGetWithToken("/api/request/u").then(data => {
@@ -144,12 +145,43 @@ const fetchCommodityForRequest = async (rid: string) => {
     })
 }
 const getDown = (request: Request) => {
-
+    FetchPutWithToken("/api/request/down/" + request.rid).then(data => {
+        ElMessage.success("下架成功");
+        request.launched = false;
+    }).catch((e: Error) => {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+            // 储存本次操作
+            captchaStore.nextMethod = getDown;
+            captchaStore.nextMethodParam = request;
+        }
+    });
 }
 const uploaded = (request: Request) => {
-
+    FetchPutWithToken("/api/request/uploaded/" + request.rid).then(data => {
+        ElMessage.success("上线成功");
+        request.launched = true;
+    }).catch((e: Error) => {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+            // 储存本次操作
+            captchaStore.nextMethod = uploaded;
+            captchaStore.nextMethodParam = request;
+        }
+    });
+}
+const goEdit = (request: Request) => {
+    router.push({ name: "edit-request", params: { rid: request.rid } });
 }
 const deleteRequest = (request: Request) => {
+    FetchDeleteWithToken("/api/request/" + request.rid).then(data => {
+        ElMessage.success("删除成功，此求购下的所有商品已转为普通商品，移入商品库供其他用户选购");
+        fetchRequest();
+    }).catch((e: Error) => {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+            // 储存本次操作
+            captchaStore.nextMethod = deleteRequest;
+            captchaStore.nextMethodParam = request;
+        }
+    });
 
 }
 const toOrderDetail = (request: Request) => {

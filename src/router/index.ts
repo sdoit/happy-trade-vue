@@ -165,11 +165,25 @@ const router = createRouter({
       meta: { mode: 'backstage', request: true },
       component: () => import('../views/backstage/Launch.vue')
     },
+    //为求购发布商品
+    {
+      path: '/launch/:rid',
+      name: 'launch-for-request',
+      meta: { mode: 'backstage', request: false, launchForRequest: true },
+      component: () => import('../views/backstage/Launch.vue')
+    },
     //商品编辑
     {
       path: '/edit/:cid',
       name: 'edit',
       meta: { mode: 'backstage', edit: 'ture' },
+      component: () => import('../views/backstage/Launch.vue')
+    },
+    //求购编辑
+    {
+      path: '/edit/request/:rid',
+      name: 'edit-request',
+      meta: { mode: 'backstage', edit: 'ture', request: true },
       component: () => import('../views/backstage/Launch.vue')
     },
 

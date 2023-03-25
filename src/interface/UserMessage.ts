@@ -13,6 +13,8 @@ export default interface UserMessage {
     read: boolean,
     systemNotify: boolean
 
+    status:number
+
 }
 export interface ChatUser {
     groupId: string

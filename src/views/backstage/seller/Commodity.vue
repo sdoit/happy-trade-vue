@@ -199,7 +199,7 @@ const getDown = (commodity: Commodity) => {
         ElMessage.success("下架成功");
         commodity.launched = false;
     }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
             // 储存本次操作
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = getDown;
@@ -214,7 +214,7 @@ const uploaded = (commodity: Commodity) => {
         ElMessage.success("上架成功");
         commodity.launched = true;
     }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
             // 储存本次操作
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = uploaded;
@@ -227,8 +227,16 @@ const deleteCommodity = (commodity: Commodity) => {
     FetchDeleteWithToken("/api/commodity/" + commodity.cid).then(result => {
         ElMessage.success("删除成功！");
         //reload
-
-    })
+        page.value-=1;
+        load();
+    }).catch((e: Error) => {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
+            // 储存本次操作
+            const captchaStore = useCaptchaStore();
+            captchaStore.nextMethod = deleteCommodity;
+            captchaStore.nextMethodParam = commodity;
+        }
+    });
 }
 const toLaunch = () => {
     router.push({ name: "launch" });

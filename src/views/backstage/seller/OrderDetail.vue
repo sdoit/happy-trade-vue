@@ -345,7 +345,7 @@ const shipping = () => {
         order.value!.shipTime = new Date().toLocaleTimeString();
         order.value!.shipId = shipId.value;
     }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
             // 储存本次操作
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = shipping;
@@ -401,7 +401,7 @@ const confirmRating = () => {
         ElMessage.success("确认成功!");
         orderRatingVisible.value = false;
     }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
             // 储存本次操作
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = confirmRating;

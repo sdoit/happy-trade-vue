@@ -30,5 +30,13 @@ export default {
 
 
     //验证码发送间隔
-    SEND_CODE_Interval:180
+    SEND_CODE_Interval:180,
+
+
+    SCROLLTOP:325,
+
+
+    MESSAGE_STATUS_SEND_SUCCESS:1,
+    MESSAGE_STATUS_SENDING:0,
+    MESSAGE_STATUS_SEND_FAILED:-1
 }

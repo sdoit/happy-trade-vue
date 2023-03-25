@@ -22,8 +22,8 @@
                 <el-col :span="16">
                     <el-row>
                         <el-col :span="7">
-                            <el-image loading="lazy" :src="constant.NGINX_SERVER_HOST + '/' + object?.cover" :fit="'fill'"
-                                class="res-img">
+                            <el-image ref="Anchor" loading="lazy" :src="constant.NGINX_SERVER_HOST + '/' + object?.cover"
+                                :fit="'fill'" class="res-img">
                                 <template #placeholder>
                                     <div class="img-slot-wrapper">
                                         <img src="/img/loading.svg" alt="正在加载" />
@@ -173,7 +173,7 @@
 
                                     </el-button>
                                 </el-col>
-                                <el-col :span="commodity!.requestId == undefined ? 2 : 3.5">
+                                <el-col :span="(!$route.meta.request && commodity!.requestId == undefined) ? 2 : 3.5">
                                     <el-button type="primary" @click="toBidView"
                                         :disabled="($route.meta.snapshot as boolean)">{{ $route.meta.request ? '我有货' :
                                             commodity!.requestId == undefined ? '出价' : '查看其他商品'
@@ -276,8 +276,7 @@
                                 </template>
                                 <template #extra>
                                     <el-button type="primary" size="large" @click="goBid"
-                                        :disabled="($route.meta.snapshot as boolean)">{{ $route.meta.request ? '我要出售' :
-                                            '我要出价' }} </el-button>
+                                        :disabled="($route.meta.snapshot as boolean)">我要出价</el-button>
                                 </template>
                             </el-result>
                         </el-col>
@@ -357,17 +356,22 @@
                                     </svg>
                                 </template>
                                 <template #extra>
-                                    <el-button type="primary" size="large" @click="goBid"
-                                        :disabled="($route.meta.snapshot as boolean)">{{ $route.meta.request ? '我要出售' :
-                                            '我要出价' }} </el-button>
+                                    <el-button type="primary" size="large" @click="goLaunch"
+                                        :disabled="($route.meta.snapshot as boolean)">我要出售</el-button>
                                 </template>
                             </el-result>
                         </el-col>
                     </el-row>
                     <el-row>
-                        <el-col class="right-wrapper">
+                        <el-col class="right-wrapper" v-if="!$route.meta.request">
                             <el-button v-if="bids != undefined && bids != null && bids.length > 0" type="primary"
                                 size="large" @click="goBid" :disabled="($route.meta.snapshot as boolean)">我要出价</el-button>
+                        </el-col>
+                        <el-col class="right-wrapper" v-else style="margin-top: 1rem;">
+                            <el-button
+                                v-if="commoditiesForRequest != undefined && commoditiesForRequest != null && commoditiesForRequest.length != 0"
+                                type="primary" size="large" @click="goLaunch"
+                                :disabled="($route.meta.snapshot as boolean)">我要出售</el-button>
                         </el-col>
                     </el-row>
                 </el-col>
@@ -546,18 +550,20 @@ import type { Bid, CommodityBid } from '@/interface/CommodityBid';
 import type User from "@/interface/User";
 import type UserAddress from "@/interface/UserAddress";
 import type Tag from '@/interface/Tag';
+import type CommonResult from '@/interface/CommonResult';
 import type Request from '@/interface/Request';
-import { ref, onMounted, nextTick, shallowRef, onBeforeUnmount } from 'vue';
+import { ref, onMounted, nextTick, shallowRef, onBeforeUnmount, watchEffect } from 'vue';
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 import BidStep1 from "@/components/BidStep1.vue";
 import BidStep2 from "@/components/BidStep2.vue";
 import BidStep3 from "@/components/BidStep3.vue";
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
-import { useUserStore, useBidStepStore, useLoadingStore, useUserMessageStore, useCaptchaStore, usePayStore } from '@/stores'
+import { useUserStore, useBidStepStore, useLoadingStore, useUserMessageStore, useCaptchaStore, usePayStore, useScrollbarStore } from '@/stores'
 import { FetchGetWithToken, FetchPostWithToken, FetchGetWithTokenRaw } from '@/util/FetchUtil';
 import '@wangeditor/editor/dist/css/style.css'
 import '@/assets/css/wang.css'
 import router from '@/router';
+const Anchor = ref();
 const userStore = useUserStore();
 const loadingStore = useLoadingStore();
 const userMessageStore = useUserMessageStore();
@@ -589,7 +595,6 @@ const fetchCommodity = (cid?: string) => {
                 object.value = request.value;
                 contentVisible.value = true;
                 valueHtml.value = request.value!.description;
-                emits('loadDone');
                 //获取本求购的商品
                 fetchCommodityByRequest(request.value!.rid as string);
                 loadingStore.closeLoading();
@@ -607,7 +612,7 @@ const fetchCommodity = (cid?: string) => {
             object.value = commodity.value;
             //设置商品描述 富文本
             valueHtml.value = object.value?.description;
-            emits('loadDone');
+
             if (commodity.value?.requestId != undefined) {
                 //通过求购发布的商品，获取本求购的其他商品
                 fetchCommodityByRequest(commodity.value!.requestId as string);
@@ -615,10 +620,15 @@ const fetchCommodity = (cid?: string) => {
                 fetchCommodityBid(object.value!.cid as string);;
             }
             loadingStore.closeLoading();
-        });
+        }).catch((e: Error) => {
+            let result: CommonResult = JSON.parse(e.message);
+            if (!result.flag) {
+                router.push({ name: "404" });
+                loadingStore.closeLoading();
+            }
+        })
 }
 fetchCommodity();
-
 const toCommodity = (cid: string) => {
     router.go
     router.push({ name: "commodity", params: { cid: cid } }).then(() => {
@@ -663,7 +673,7 @@ const collect = () => {
         //点亮图标
         object.value!.favorite = result as boolean;
     }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
             // 储存本次操作
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = collect;
@@ -743,6 +753,10 @@ const addressDeafult = ref<UserAddress>()
 const goOrder = () => {
     userStore.checkLogin().then(result => {
         if (result) {
+            if (userStore.user.uid == commodity.value!.uid) {
+                ElMessage.error("你不能购买自己的商品");
+                return;
+            }
             openOrderDialog();
         } else {
             ElMessage.error('登录过期，请重新登录');
@@ -807,7 +821,7 @@ const directGoPay = () => {
         waitingPayResult("order");
 
     }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
             // 储存本次操作
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = directGoPay;
@@ -817,8 +831,14 @@ const directGoPay = () => {
 
 }
 
-
-
+//为这个求购发布商品
+const goLaunch = async () => {
+    if (! await userStore.checkLogin()) {
+        userStore.loginFormVisible = true;
+        return;
+    }
+    router.push({ name: "launch-for-request", params: { rid: request.value!.rid } });
+}
 
 
 
@@ -916,6 +936,10 @@ const stepNext = () => {
 }
 let loading: any = null;
 const goBid = () => {
+    if (userStore.user.uid == commodity.value!.uid) {
+        ElMessage.error("你不能购买自己的商品");
+        return;
+    }
     loading = ElLoading.service({
         lock: true,
         text: '正在加载...',
@@ -980,7 +1004,7 @@ const goPay = async () => {
 
     }).catch((e: Error) => {
         loading.close();
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
             // 储存本次操作
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = goPay;
@@ -1083,10 +1107,13 @@ const getQualityClass = (quality: number) => {
     }
 
 }
-onMounted(() => {
-
-
+watchEffect(() => {
+    if (Anchor.value) {
+        console.log(Anchor.value);
+        emits("loadDone", Anchor.value);
+    }
 })
+
 </script>
 
 <style scoped>

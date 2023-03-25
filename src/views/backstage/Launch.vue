@@ -12,6 +12,28 @@
             </template>
         </el-result>
         <div v-if="userStore.logged">
+            <el-row :justify="'center'" v-if="$route.meta.launchForRequest" style="margin-bottom: 2rem; height: 12rem;">
+                <el-col :span="16">
+                    <el-card>
+                        <el-row>
+                            <el-col :span="6">
+                                <el-image :src="constant.NGINX_SERVER_HOST + '/' + request?.cover" :fit="'fill'"
+                                    style="width: 10rem;"></el-image>
+                            </el-col>
+                            <el-col :span="17" :offset="1" class="bid-wrapper">
+                                <div class="commodity-info-wrapper" style="display: flex; flex-direction: column;">
+                                    <span class="name">{{ request?.name }}</span>
+                                    <span class="cid">求购编号：{{ request?.rid }}</span>
+                                    <span class="time">发布时间：{{ request?.time }}</span>
+                                    <span class="price">预计价格：￥{{ request?.price }}</span>
+                                    <span class="price">浏览人数：{{ request?.viewCount }}</span>
+                                    <span class="price">出货人数：{{ request?.cidCount }}</span>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-card>
+                </el-col>
+            </el-row>
             <el-row :justify="'center'">
                 <el-col :span="16" class="launch-content-wrapper">
                     <div class="launch-content">
@@ -54,7 +76,7 @@
                                             <el-col :span="18">
                                                 <el-form-item :label="$route.meta.request ? '求购商品名：' : '商品名：'" required>
                                                     <el-input v-model="commodity.name"
-                                                        :placeholder="$route.meta.request ? '填写你要求购的商品名称' : '填写你要发布商品的名称'" />
+                                                        :placeholder="$route.meta.request ? '填写你要求购的商品名称' : $route.meta.launchForRequest ? '请输入商品名，尽量符合原求购的要求' : '填写你要发布商品的名称'" />
                                                 </el-form-item>
                                             </el-col>
                                             <el-col :span="6">
@@ -137,8 +159,9 @@
                             </div>
                         </div>
                         <div class="launch-button">
-                            <el-button type="primary" size="large" @click="submit">{{ $route.meta.request ? '发布求购' :
-                                '发布商品' }}</el-button>
+                            <el-button type="primary" size="large" @click="submit">{{ $route.meta.edit ? '确定编辑' :
+                                ($route.meta.request ? '发布求购' :
+                                    '发布商品') }}</el-button>
                         </div>
                     </div>
                 </el-col>
@@ -149,7 +172,7 @@
 <script lang="ts" setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
-import { useUserStore, useLoadingStore, useCaptchaStore } from '@/stores'
+import { useUserStore, useLoadingStore, useCaptchaStore, useScrollbarStore } from '@/stores'
 import '@wangeditor/editor/dist/css/style.css';
 import '@/assets/css/wang.css'
 import type CommonResult from '@/interface/CommonResult';
@@ -164,10 +187,14 @@ import type Node from 'element-plus/es/components/cascader-panel/src/node';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 import type Tag from '@/interface/Tag';
+import type Request from '@/interface/Request';
 const Route = useRoute();
 
 const loadingStore = useLoadingStore();
 const userStore = useUserStore();
+
+const request = ref<Request>();
+
 const commodity = ref({
     cid: 0,
     name: '',
@@ -182,7 +209,8 @@ const commodity = ref({
     },
     description: '',
     cover: '',
-    tags: [] as Tag[]
+    tags: [] as Tag[],
+    requestId: Route.params.rid
 });
 const coverUrl = ref('');
 
@@ -323,7 +351,7 @@ type InsertFnType = (url: string, alt: string, href: string) => void;
 
 const editorConfig = {
 
-    placeholder: Route.meta.request ? '请输入你要收购商品的详细描述和要求...' : '请输入商品描述以吸引更多买家...',
+    placeholder: Route.meta.request ? '请输入你要收购商品的详细描述和要求...' : Route.meta.launchForRequest ? '请输入商品介绍，尽量符合原求购要求' : '请输入商品描述以吸引更多买家...',
     MENU_CONF: {
         uploadImage: {
             server: constant.SPRINGBOOT_SERVER_HOST + '/api/upload/image',
@@ -365,7 +393,6 @@ const editorConfig = {
             //             });
             //         }
             //     })
-
             // },
 
             customInsert(result: CommonResult, insertFn: InsertFnType) {  // TS 语法
@@ -396,10 +423,23 @@ const editorConfig = {
         }
     }
 }
-onMounted(() => {
+onMounted(async () => {
+
+    if (Route.meta.launchForRequest) {
+        //获取 求购 元信息
+        await FetchGetWithToken("/api/request/" + Route.params.rid).then(data => {
+            request.value = data;
+            commodity.value.price = request.value!.price;
+            commodity.value.quality = request.value!.quality;
+            commodity.value.type.tid = request.value!.type.tid;
+            commodity.value.type.typePath = data.type.typePath;
+        });
+    }
+
     //读取模式（新建或编辑）
     if (Route.meta.edit) {
-        FetchGetWithToken("/api/commodity/" + Route.params.cid).then(data => {
+        let url = Route.meta.request ? "/api/request/" : "/api/commodity/"
+        await FetchGetWithToken(url + (Route.meta.request ? Route.params.rid : Route.params.cid)).then(data => {
             if (data.uid != userStore.user.uid && userStore.logged) {
                 ElMessage.error("这不是你的商品");
                 return;
@@ -424,6 +464,7 @@ onMounted(() => {
 
         });
     }
+    useScrollbarStore().scrollSmoothTo(0);
     loadingStore.closeLoading();
 
 
@@ -521,7 +562,7 @@ const submit = () => {
         }
         loading.close();
     }).catch((e: Error) => {
-        if (e.message = constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION.toString()) {
+        if (JSON.parse(e.message).code == constant.THIS_OPERATION_NEEDS_FURTHER_VERIFICATION) {
             // 储存本次操作
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = submit;
@@ -589,6 +630,14 @@ const submit = () => {
 
 .tag-input {
     width: 5rem;
+}
+
+.commodity-info-wrapper {
+    font-size: small;
+}
+
+.commodity-info-wrapper>span {
+    margin-top: .5rem;
 }
 </style>
 <style>
