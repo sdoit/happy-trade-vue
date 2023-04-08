@@ -1,6 +1,5 @@
 <template>
     <div>
-
         <div class="right-wrapper"><el-button type="primary" @click="addAddress">添加新地址</el-button></div>
         <el-card v-for="address in addressList" :key="address.aid" class="card-wrapper">
             <div class="addr-wrapper">

@@ -176,17 +176,18 @@
             <div class="message" v-loading="loadingMoreMessage">
               <el-scrollbar ref="messageScrollBar" @scroll="messageScrollHandler">
                 <div ref="messageWrapper">
-                  <el-row v-for="message in userMessageStore.messageList" :key="message.mid" class="chat-message-wrapper"
-                    :style="message.systemNotify ? { 'align-items': 'flex-start' } : ''"
+                  <el-row v-for="message, index in userMessageStore.messageList" :key="message.mid"
+                    class="chat-message-wrapper" :style="message.systemNotify ? { 'align-items': 'flex-start' } : ''"
                     :class="message.uidSend == userStore.user.uid ? 'message-self' : ''">
                     <el-col :span="3">
                       <el-avatar :size="50"
                         :src="constant.NGINX_SERVER_HOST + (message.uidSend == userStore.user.uid ? userStore.user.avatar : userMessageStore.chatUser.avatar)" />
                     </el-col>
                     <el-col v-if="!message.systemNotify" :span="20"
-                      :class="message.uidSend == userStore.user.uid ? 'message-self-content' : ''" class="message">
-                      <svg v-if="message.status==constant.MESSAGE_STATUS_SENDING" xmlns="http://www.w3.org/2000/svg" class="sendLoading" width="12" height="12"
-                        viewBox="0 0 24 24">
+                      :class="message.uidSend == userStore.user.uid ? 'message-self-content' : ''" class="message"
+                      @click="message.status == constant.MESSAGE_STATUS_SEND_FAILED ? userMessageStore.chatSend({ retry: true, i: index }) : null">
+                      <svg v-if="message.status == constant.MESSAGE_STATUS_SENDING" xmlns="http://www.w3.org/2000/svg"
+                        class="sendLoading" width="12" height="12" viewBox="0 0 24 24">
                         <path fill="#ffffff"
                           d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity="1" />
                         <path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z">
@@ -194,8 +195,8 @@
                             to="360 12 12" type="rotate" />
                         </path>
                       </svg>
-                      <svg v-if="message.status==constant.MESSAGE_STATUS_SEND_FAILED" xmlns="http://www.w3.org/2000/svg" class="sendLoading" width="12" height="12"
-                        viewBox="0 0 16 16">
+                      <svg v-if="message.status == constant.MESSAGE_STATUS_SEND_FAILED" xmlns="http://www.w3.org/2000/svg"
+                        class="sendLoading" width="12" height="12" viewBox="0 0 16 16">
                         <path fill="#B22222"
                           d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2a1 1 0 0 0 0-2z" />
                       </svg>
@@ -203,8 +204,7 @@
                         <span v-if="message.contentType == constant.CONTENT_TYPE_TEXT || message.content == undefined">{{
                           message.content }}</span>
                         <el-image v-if="message.contentType == constant.CONTENT_TYPE_IMAGE"
-                          :src="constant.NGINX_SERVER_HOST + '/' + message.content" :fit="'fill'"
-                          @load="imageLoadSuccess">
+                          :src="constant.NGINX_SERVER_HOST + message.content" :fit="'fill'" @load="imageLoadSuccess">
                           <template #placeholder>
                             <img src="/img/loading.svg" />
                           </template>
@@ -246,9 +246,9 @@
             <!-- 消息发送框 -->
             <div class="message-input-wrapper">
               <div class="chat-content-wrapper">
-                <el-input class="chat-content" ref="messageInpuer" v-model="userMessageStore.chatMessage" rows="4" maxlength="250"
-                  placeholder="请输入消息..." show-word-limit type="textarea" @keydown.enter.prevent="sendMessage"
-                  :disabled="chatUser.uid == '0' || chatUser.uid == '-1'" />
+                <el-input class="chat-content" ref="messageInpuer" v-model="userMessageStore.chatMessage" rows="4"
+                  maxlength="250" placeholder="请输入消息..." show-word-limit type="textarea"
+                  @keydown.enter.prevent="sendMessage" :disabled="chatUser.uid == '0' || chatUser.uid == '-1'" />
               </div>
               <div style="flex: auto" class="chat-button-warpper">
                 <div style="margin-left: .3rem; display: flex; align-items: center;">
@@ -362,7 +362,8 @@ const search = function (keyword: string) {
   router.push({ name: "search", params: { 'keyword': keyword } });
   commodityListStore.url = "/api/commodity?keyword=" + keyword;
 }
-const loadDone = (anchor?: any) => {
+const loadDone = () => {
+  console.log("loaddone")
   scrollbar.value.setScrollTop(0);
   let top = constant.SCROLLTOP;
   setTimeout(() => {
@@ -537,14 +538,17 @@ const sendCode = () => {
     send(userStore.user.certificate);
   }
 }
+
 //监听路由，随时更改mode
 const route = useRoute();
 watch(route, (value) => {
+  lockScroll.value = false;
   modeStore.mode = value.meta.mode as string;
   loadingStore.loading();
   if (route.meta.mode == "backstage") {
     lockScroll.value = false;
   }
+
 });
 
 //消息抽屉

@@ -2,7 +2,10 @@
   <div>
     <el-row justify="center">
       <el-col :span="18">
-        <span class="tips-recommendations">{{ userStore.logged ? '你可能感兴趣的品类' : '商品分类' }}</span>
+        <div style="display: flex; justify-content: space-between;">
+          <span class="tips-recommendations">{{ userStore.logged ? '你可能感兴趣的品类' : '商品分类' }}</span>
+          <el-link> <span style="font-size: smaller; font-weight: 500;">查看全部>></span></el-link>
+        </div>
         <el-row justify="space-between" class="type-recommendations">
           <el-col :span="4" v-for="typeRecommend in typeRecommends" :key="typeRecommend.tid">
             <RouterLink :to="{ name: 'search-type', params: { typeId: typeRecommend.tid } }">
@@ -31,10 +34,10 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import CommodityList from '@/components/CommodityList.vue';
-import { useUserStore, useLoadingStore ,useCommodityListStore} from '@/stores';
+import { useUserStore, useLoadingStore, useCommodityListStore } from '@/stores';
 import { FetchGetWithToken } from '@/util/FetchUtil'
 import type CommodityType from '@/interface/CommodityType'
-const commodityListStore=useCommodityListStore();
+const commodityListStore = useCommodityListStore();
 const userStore = useUserStore();
 const loadingStore = useLoadingStore();
 const typeRecommends = ref<CommodityType[]>([]);
@@ -49,7 +52,7 @@ const loadDone = () => {
 }
 onMounted(() => {
   fetchTypeRecommend();
-  commodityListStore.url= '/api/commodity';
+  commodityListStore.url = '/api/commodity';
 })
 </script>
 

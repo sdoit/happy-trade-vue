@@ -24,7 +24,8 @@
                             <div v-show="userStore.logged">
                                 <el-dropdown>
                                     <div class="nickname-wrapper">
-                                        <el-avatar :size="30" :src="constant.NGINX_SERVER_HOST + userStore.user.avatar" />
+                                        <el-avatar :size="30"
+                                            :src="constant.NGINX_SERVER_HOST + '/' + userStore.user.avatar" />
                                         <span class="nickname">{{ userStore.user.nickname }}</span>
                                         <el-icon class="el-icon--right">
                                             <arrow-down />
@@ -37,16 +38,20 @@
                                                         个人中心</el-link></router-link>
                                             </el-dropdown-item>
                                             <el-dropdown-item>
-                                                <el-link :underline="false" @click="router.push({name:'buyer-order'})">我的订单</el-link>
+                                                <el-link :underline="false"
+                                                    @click="router.push({ name: 'buyer-order' })">我的订单</el-link>
                                             </el-dropdown-item>
                                             <el-dropdown-item>
-                                                <el-link :underline="false" @click="router.push({name:'buyer-history'})">我的足迹</el-link>
+                                                <el-link :underline="false"
+                                                    @click="router.push({ name: 'buyer-history' })">我的足迹</el-link>
                                             </el-dropdown-item>
                                             <el-dropdown-item>
-                                                <el-link :underline="false" @click="router.push({name:'buyer-bid'})">我的出价</el-link>
+                                                <el-link :underline="false"
+                                                    @click="router.push({ name: 'buyer-bid' })">我的出价</el-link>
                                             </el-dropdown-item>
                                             <el-dropdown-item>
-                                                <el-link :underline="false" @click="router.push({name:'seller-commodity'})">我的商品</el-link>
+                                                <el-link :underline="false"
+                                                    @click="router.push({ name: 'seller-commodity' })">我的商品</el-link>
                                             </el-dropdown-item>
 
                                             <el-dropdown-item divided>
@@ -84,8 +89,8 @@
                                     <span>发布商品</span>
                                 </div>
                             </el-link>
-                        </li>    
-                         <li>
+                        </li>
+                        <li>
                             <el-link :underline="false" href="/request">
                                 <div class="link-wrapper">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 2048 2048">
@@ -243,5 +248,4 @@ a {
 
 .logo {
     width: 5.185185185185185rem;
-}
-</style>
+}</style>

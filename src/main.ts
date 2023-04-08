@@ -18,7 +18,6 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 
-
 app.use(pinia);
 app.use(router);
 

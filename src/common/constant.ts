@@ -1,6 +1,6 @@
 export default {
     SPRINGBOOT_SERVER_HOST: "http://localhost:8080",
-    NGINX_SERVER_HOST: "http://localhost:8888",
+    NGINX_SERVER_HOST: "http://localhost:8888/static/",
 
 
     TOKEN_NAME_KEY: "_token_name",

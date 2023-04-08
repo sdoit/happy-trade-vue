@@ -2,7 +2,7 @@ import constant from "@/common/constant";
 import type CommonResult from "@/interface/CommonResult";
 import type CommonResultPage from "@/interface/CommonResultPage";
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
-import { useUserStore, useCaptchaStore } from '@/stores'
+import { useUserStore, useCaptchaStore, useLoadingStore } from '@/stores'
 
 
 export const FetchPostWithToken = async (url: string, body?: BodyInit) => {
@@ -32,7 +32,7 @@ export const FetchPostWithToken = async (url: string, body?: BodyInit) => {
                 throw new Error(JSON.stringify(result));
 
             } else {
-                ElMessage.error(result.message);
+                ElMessage.error(result.message + " (" + result.code + ")");
                 throw new Error(JSON.stringify(result));
             }
         })
@@ -65,7 +65,8 @@ export const FetchPostFileWithToken = async (url: string, file: File) => {
                 throw new Error(JSON.stringify(result));
 
             } else {
-                ElMessage.error(result.message);
+                ElMessage.error(result.message + " (" + result.code + ")");
+                useLoadingStore().closeLoading();
                 throw new Error(JSON.stringify(result));
             }
         })
@@ -95,7 +96,7 @@ export const FetchDeleteWithToken = async (url: string, body?: BodyInit) => {
                 captchaStore.captchaVisble = true;
                 throw new Error(JSON.stringify(result));
             } else {
-                ElMessage.error(result.message);
+                ElMessage.error(result.message + " (" + result.code + ")");
                 throw new Error(JSON.stringify(result));
             }
         })
@@ -126,7 +127,7 @@ export const FetchPutWithToken = async (url: string, body?: BodyInit) => {
                 captchaStore.captchaVisble = true;
                 throw new Error(JSON.stringify(result))
             } else {
-                ElMessage.error(result.message);
+                ElMessage.error(result.message + " (" + result.code + ")");
                 throw new Error(JSON.stringify(result));
             }
         })
@@ -155,7 +156,7 @@ export const FetchGetWithToken = async (url: string) => {
                 captchaStore.captchaVisble = true;
 
             } else {
-                ElMessage.error(result.message);
+                ElMessage.error(result.message + " (" + result.code + ")");
                 throw new Error(JSON.stringify(result));
             }
         })

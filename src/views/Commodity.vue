@@ -826,8 +826,10 @@ const directGoPay = () => {
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = directGoPay;
             captchaStore.nextMethodParam = undefined;
+        }else{
+            loading.close();
         }
-    });;
+    });
 
 }
 
@@ -835,6 +837,10 @@ const directGoPay = () => {
 const goLaunch = async () => {
     if (! await userStore.checkLogin()) {
         userStore.loginFormVisible = true;
+        return;
+    }
+    if (userStore.user.uid == request.value!.uid) {
+        ElMessage.error("你不能自己为自己的求购发布商品")
         return;
     }
     router.push({ name: "launch-for-request", params: { rid: request.value!.rid } });
@@ -1009,8 +1015,10 @@ const goPay = async () => {
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = goPay;
             captchaStore.nextMethodParam = undefined;
+        }else{
+            loading.close();
         }
-    });;
+    });
 }
 const paySuccessCallBack = (type: string, url?: string) => {
     const message = {

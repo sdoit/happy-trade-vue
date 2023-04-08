@@ -288,8 +288,8 @@ export const useUserMessageStore = defineStore('message', {
       this.chatDrawerVisible = false;
     },
     async chatSend(spacilContent?: {
-      content: string,
-      contentType: string,
+      content?: string,
+      contentType?: string,
       // 本次发送是重试
       retry?: boolean,
       i?: number,
@@ -306,6 +306,9 @@ export const useUserMessageStore = defineStore('message', {
         message.content = spacilContent.content ? spacilContent.content : message.content;
         message.contentType = spacilContent.contentType ? spacilContent.contentType : message.contentType;
         index = spacilContent.i ? spacilContent.i : index;
+        if (spacilContent.retry && spacilContent.i) {
+          message.content = this.messageMap.get(this.chatUser.uid)![spacilContent.i].content;
+        }
       } else {
         if (this.chatMessage.trim() == '') {
           return false;
@@ -337,10 +340,11 @@ export const useUserMessageStore = defineStore('message', {
 
         }
       }
+      this.chatMessage = '';
       let messages: UserMessage[] = this.messageMap.get(this.chatUser.uid) as UserMessage[];
       return await FetchPostWithToken("/api/message", JSON.stringify(message)).then(data => {
         //发送成功
-        this.chatMessage = '';
+       
         this.sending = false;
         if (this.messageMap.has(this.chatUser.uid)) {
           messages[index].content = data;

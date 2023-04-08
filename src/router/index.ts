@@ -149,6 +149,11 @@ const router = createRouter({
           name: 'home-wallet',
           component: () => import('@/views/backstage/AccountBalance.vue')
         },
+        {
+          path: 'user',
+          name: 'home-user',
+          component: () => import('@/views/backstage/User.vue')
+        },
       ]
     },
     //商品发布

@@ -61,7 +61,7 @@
                                     </el-icon>
                                     <span>账户余额</span>
                                 </el-menu-item>
-                                <el-menu-item index="9">
+                                <el-menu-item index="/home/user">
                                     <el-icon>
                                         <setting />
                                     </el-icon>
