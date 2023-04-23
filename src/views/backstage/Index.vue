@@ -18,7 +18,7 @@
                     <el-col :span="5" style="display: flex;">
                         <el-affix :offset="60" class="menu-affix">
                             <el-menu :default-active="active" @open="handleOpen" @close="handleClose" :router="true">
-                                <el-sub-menu index="1">
+                                <el-sub-menu index="1" v-if="!userStore.user.admin">
                                     <template #title>
                                         <el-icon>
                                             <location />
@@ -35,7 +35,7 @@
                                         <el-menu-item index="/buyer/history">浏览历史</el-menu-item>
                                     </el-menu-item-group>
                                 </el-sub-menu>
-                                <el-sub-menu index="2">
+                                <el-sub-menu index="2" v-if="!userStore.user.admin">
                                     <template #title>
                                         <el-icon><icon-menu /></el-icon>
                                         <span>卖家中心</span>
@@ -49,13 +49,23 @@
                                         <el-menu-item index="1-2">...</el-menu-item>
                                     </el-menu-item-group>
                                 </el-sub-menu>
-                                <el-menu-item index="/home/address">
+                                <el-sub-menu index="3" v-if="userStore.user.admin">
+                                    <template #title>
+                                        <el-icon><icon-menu /></el-icon>
+                                        <span>管理员中心</span>
+                                    </template>
+                                    <el-menu-item index="/admin/violation">违规处理</el-menu-item>
+                                    <el-menu-item index="/admin/report">举报管理</el-menu-item>
+                                    <el-menu-item index="/admin/complaint">申诉管理</el-menu-item>
+                                    <el-menu-item index="/404">纠纷介入</el-menu-item>
+                                </el-sub-menu>
+                                <el-menu-item index="/home/address" v-if="!userStore.user.admin">
                                     <el-icon>
                                         <LocationFilled />
                                     </el-icon>
                                     <span>地址管理</span>
                                 </el-menu-item>
-                                <el-menu-item index="/home/wallet">
+                                <el-menu-item index="/home/wallet" v-if="!userStore.user.admin">
                                     <el-icon>
                                         <document />
                                     </el-icon>
@@ -80,7 +90,7 @@
                         <div style="margin-top: 2rem;"></div>
 
                         <!-- :key="$route.fullPath" -->
-                        <router-view v-slot="{ Component }" > 
+                        <router-view v-slot="{ Component }">
                             <transition name="fade">
                                 <component :is="Component" />
                             </transition>
@@ -170,5 +180,4 @@ onMounted(() => {
     opacity: 0;
 }
 </style>
-<style>
-</style>
+<style></style>

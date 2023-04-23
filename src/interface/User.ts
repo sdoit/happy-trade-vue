@@ -9,7 +9,7 @@ export default interface User {
     avatar: string,
     introduction: string,
     banedTime: string,
-    
+    admin:boolean
 
     tokenName: string,
     tokenValue: string,

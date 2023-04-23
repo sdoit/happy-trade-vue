@@ -15,19 +15,64 @@
             <el-row :justify="'center'" v-if="$route.meta.launchForRequest" style="margin-bottom: 2rem; height: 12rem;">
                 <el-col :span="16">
                     <el-card>
-                        <el-row>
+                        <span style="font-size: smaller;">原求购信息</span>
+                        <el-row justify="center">
                             <el-col :span="6">
                                 <el-image :src="constant.NGINX_SERVER_HOST + '/' + request?.cover" :fit="'fill'"
                                     style="width: 10rem;"></el-image>
                             </el-col>
-                            <el-col :span="17" :offset="1" class="bid-wrapper">
+                            <el-col :span="8" :offset="1" class="bid-wrapper">
                                 <div class="commodity-info-wrapper" style="display: flex; flex-direction: column;">
-                                    <span class="name">{{ request?.name }}</span>
-                                    <span class="cid">求购编号：{{ request?.rid }}</span>
-                                    <span class="time">发布时间：{{ request?.time }}</span>
-                                    <span class="price">预计价格：￥{{ request?.price }}</span>
-                                    <span class="price">浏览人数：{{ request?.viewCount }}</span>
-                                    <span class="price">出货人数：{{ request?.cidCount }}</span>
+                                    <el-row>
+                                        <el-col>
+                                            <span class="name">{{ request?.name }}</span>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row style="margin-top: 2rem;">
+                                        <el-col :span="12">
+                                            <span class="rid">求购编号：</span>
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <span class="rid">{{ request?.rid }}</span>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row class="request-item">
+                                        <el-col :span="12">
+                                            <span class="time">发布时间：</span>
+
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <span class="time">{{ request?.time }}</span>
+
+                                        </el-col>
+                                    </el-row>
+                                    <el-row class="request-item">
+                                        <el-col :span="12">
+                                            <span class="price">预计价格：</span>
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <span class="price">￥{{ request?.price }}</span>
+
+                                        </el-col>
+                                    </el-row>
+                                    <el-row class="request-item">
+                                        <el-col :span="12">
+                                            <span class="price">浏览人数：</span>
+                                        </el-col>
+                                        <el-col :span="12">
+
+                                            <span class="price">{{ request?.viewCount }}</span>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row class="request-item">
+                                        <el-col :span="12">
+                                            <span class="price">出货人数：</span>
+                                        </el-col>
+                                        <el-col :span="12">
+
+                                            <span class="price">{{ request?.cidCount }}</span>
+                                        </el-col>
+                                    </el-row>
                                 </div>
                             </el-col>
                         </el-row>
@@ -633,11 +678,20 @@ const submit = () => {
 }
 
 .commodity-info-wrapper {
-    font-size: small;
+    font-size: .9rem;
 }
 
 .commodity-info-wrapper>span {
     margin-top: .5rem;
+}
+
+.name {
+    font-size: x-large;
+    font-weight: 700;
+
+}
+.request-item{
+    margin-top: .4rem;
 }
 </style>
 <style>

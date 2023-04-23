@@ -5,6 +5,8 @@
 import CommodityList from '@/components/CommodityList.vue';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { useCommodityListStore } from "@/stores"
+import constant from '@/common/constant';
 const Route = useRoute();
 // const url = ref('/api/commodity?keyword=');
 // if (Route.name == "search-type") {
@@ -12,7 +14,9 @@ const Route = useRoute();
 // } else if (Route.name == "search") {
 //     url.value = '/api/commodity?keyword=' + Route.params.keyword
 // }
-const url = ref('/api/commodity?keyword=' + Route.params.keyword);
+const commodityListStore = useCommodityListStore();
+const url = ref(Route.meta.type ? "/api/commodity/type/" + Route.params.typeId : commodityListStore.searchMode == constant.SEARCH_FOR_COMMODITY ? '/api/commodity?keyword=' :
+    '/api/commodity?keyword=' + Route.params.keyword);
 const emits = defineEmits(['loadDone'])
 const loadDone = () => {
     emits("loadDone");

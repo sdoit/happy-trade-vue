@@ -1,9 +1,15 @@
 <template>
-    <div>
+    <div style="display: flex;">
 
         <el-autocomplete v-model="keyword" :fetch-suggestions="querySearchAsync" placeholder="请输入商品名" class="searchBar"
             :style="{ width: width + '%', marginLeft: marginLeft + '%' }" :trigger-on-focus="false" size="large"
             @select="$emit('search', keyword)" ref="searchBar" @keydown.enter="$emit('search', keyword)">
+            <template #prepend>
+                <el-select v-model="commodityListStore.searchMode" size="large" style="width: 5rem;">
+                    <el-option label="商品" :value=constant.SEARCH_FOR_COMMODITY />
+                    <el-option label="求购" :value=constant.SEARCH_FOR_REQUEST />
+                </el-select>
+            </template>
             <template #append>
                 <el-button :icon="Search" @click="$emit('search', keyword)">搜索</el-button>
             </template>
@@ -15,7 +21,9 @@ import { onMounted, ref, computed } from "vue";
 import { Link, Search } from '@element-plus/icons-vue'
 import constant from "@/common/constant";
 import type CommonResult from "@/interface/CommonResult";
-defineProps(['scrollTop'])
+import { useCommodityListStore } from '@/stores'
+defineProps(['scrollTop']);
+const commodityListStore = useCommodityListStore();
 // 搜索框大小控制
 const width = ref(100)
 const marginLeft = ref(0)
@@ -62,5 +70,6 @@ defineExpose({
     width: 100%;
 }
 </style>
+<style></style>
 
 

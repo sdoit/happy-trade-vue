@@ -283,7 +283,7 @@ onMounted(() => {
 .close-btn,
 .slider-move-track,
 .slider-move-btn {
-    background: url(https://static.geetest.com/static/ant/sprite.1.2.4.png) no-repeat;
+    background: url("/img/sprite.1.2.4.png") no-repeat;
 }
 
 .refresh-btn,

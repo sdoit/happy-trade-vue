@@ -112,6 +112,8 @@ const getOrderStatusName = (order: Order) => {
             return order.shipTime ? '等待收货' : '等待发货'
         case constant.ORDER_STATUS_REFUNDED:
             return '已退款'
+        case constant.ORDER_STATUS_REFUNDING:
+            return '退款中'
         case constant.ORDER_STATUS_COMPLETED:
             return '已完成'
     }

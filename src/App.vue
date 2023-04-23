@@ -360,7 +360,11 @@ const commodityListStore = useCommodityListStore();
 const search = function (keyword: string) {
   SearchBar.value.close();
   router.push({ name: "search", params: { 'keyword': keyword } });
-  commodityListStore.url = "/api/commodity?keyword=" + keyword;
+  if (commodityListStore.searchMode == constant.SEARCH_FOR_COMMODITY) {
+    commodityListStore.url = "/api/commodity?keyword=" + keyword;
+  } else if (commodityListStore.searchMode == constant.SEARCH_FOR_REQUEST) {
+    commodityListStore.url = "/api/request?keyword=" + keyword;
+  }
 }
 const loadDone = () => {
   console.log("loaddone")

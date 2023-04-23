@@ -93,6 +93,11 @@
                                     </span>
                                 </el-col>
                             </el-row>
+                            <el-row style="margin-top: 1rem;">
+                                <el-col>
+                                    <el-link type="warning" @click="reportFormVisible = true">举报</el-link>
+                                </el-col>
+                            </el-row>
                             <el-row class="seller-wrapper">
                                 <el-col>
                                     <el-card class="box-card">
@@ -538,6 +543,17 @@
 
         </div>
 
+        <el-dialog v-model="reportFormVisible" width="20rem">
+            <el-form>
+                <el-form-item label="举报理由">
+                    <el-input v-model="reason" placeholder="请输入你举报的理由" />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button type="primary" @click="report">确定举报</el-button>
+                <el-button @click="reportFormVisible = false">取消</el-button>
+            </template>
+        </el-dialog>
     </div>
 </template>
 <script setup lang="ts">
@@ -826,7 +842,7 @@ const directGoPay = () => {
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = directGoPay;
             captchaStore.nextMethodParam = undefined;
-        }else{
+        } else {
             loading.close();
         }
     });
@@ -1015,7 +1031,7 @@ const goPay = async () => {
             const captchaStore = useCaptchaStore();
             captchaStore.nextMethod = goPay;
             captchaStore.nextMethodParam = undefined;
-        }else{
+        } else {
             loading.close();
         }
     });
@@ -1120,7 +1136,22 @@ watchEffect(() => {
         console.log(Anchor.value);
         emits("loadDone", Anchor.value);
     }
-})
+});
+//举报
+const reportFormVisible = ref(false);
+const reason = ref();
+const report = () => {
+
+    FetchPostWithToken("/admin/report", JSON.stringify({
+        target: Route.meta.request ? "求购" : "商品",
+        targetId: Route.meta.request ? request.value?.rid : commodity.value?.cid,
+        uid: Route.meta.request ? request.value?.uid : request.value?.uid,
+        reason: reason.value
+    })).then(data => {
+        ElMessage.success("举报成功");
+        reportFormVisible.value = false;
+    })
+}
 
 </script>
 
@@ -1187,7 +1218,7 @@ watchEffect(() => {
 }
 
 .seller-wrapper {
-    margin-top: 3rem;
+    margin-top: 2rem;
 }
 
 .seller-item {

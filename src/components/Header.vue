@@ -24,8 +24,8 @@
                             <div v-show="userStore.logged">
                                 <el-dropdown>
                                     <div class="nickname-wrapper">
-                                        <el-avatar :size="30"
-                                            :src="constant.NGINX_SERVER_HOST + '/' + userStore.user.avatar" />
+                                        <el-avatar v-if="userStore.user.avatar != undefined" :size="30"
+                                            :src="constant.NGINX_SERVER_HOST + userStore.user.avatar" />
                                         <span class="nickname">{{ userStore.user.nickname }}</span>
                                         <el-icon class="el-icon--right">
                                             <arrow-down />
@@ -33,26 +33,42 @@
                                     </div>
                                     <template #dropdown>
                                         <el-dropdown-menu v-show="userStore.logged">
-                                            <el-dropdown-item>
-                                                <router-link :to="{ name: 'buyer-order' }"><el-link :underline="false">
-                                                        个人中心</el-link></router-link>
-                                            </el-dropdown-item>
-                                            <el-dropdown-item>
-                                                <el-link :underline="false"
-                                                    @click="router.push({ name: 'buyer-order' })">我的订单</el-link>
-                                            </el-dropdown-item>
-                                            <el-dropdown-item>
-                                                <el-link :underline="false"
-                                                    @click="router.push({ name: 'buyer-history' })">我的足迹</el-link>
-                                            </el-dropdown-item>
-                                            <el-dropdown-item>
-                                                <el-link :underline="false"
-                                                    @click="router.push({ name: 'buyer-bid' })">我的出价</el-link>
-                                            </el-dropdown-item>
-                                            <el-dropdown-item>
-                                                <el-link :underline="false"
-                                                    @click="router.push({ name: 'seller-commodity' })">我的商品</el-link>
-                                            </el-dropdown-item>
+                                            <template v-if="!userStore.user.admin">
+                                                <el-dropdown-item>
+                                                    <router-link :to="{ name: 'buyer-order' }"><el-link :underline="false">
+                                                            个人中心</el-link></router-link>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item>
+                                                    <el-link :underline="false"
+                                                        @click="router.push({ name: 'buyer-order' })">我的订单</el-link>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item>
+                                                    <el-link :underline="false"
+                                                        @click="router.push({ name: 'buyer-history' })">我的足迹</el-link>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item>
+                                                    <el-link :underline="false"
+                                                        @click="router.push({ name: 'buyer-bid' })">我的出价</el-link>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item>
+                                                    <el-link :underline="false"
+                                                        @click="router.push({ name: 'seller-commodity' })">我的商品</el-link>
+                                                </el-dropdown-item>
+                                            </template>
+                                            <template v-else>
+                                                <el-dropdown-item>
+                                                    <el-link :underline="false"
+                                                        @click="router.push({ name: 'admin-report' })">举报管理</el-link>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item>
+                                                    <el-link :underline="false"
+                                                        @click="router.push({ name: 'admin-complaint' })">申诉管理</el-link>
+                                                </el-dropdown-item>
+                                                <el-dropdown-item>
+                                                    <el-link :underline="false"
+                                                        @click="router.push({ name: 'admin-violation' })">违规处理</el-link>
+                                                </el-dropdown-item>
+                                            </template>
 
                                             <el-dropdown-item divided>
                                                 <el-link :underline="false" @click="loginOut">退出登录</el-link>
@@ -248,4 +264,5 @@ a {
 
 .logo {
     width: 5.185185185185185rem;
-}</style>
+}
+</style>

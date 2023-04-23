@@ -2,12 +2,16 @@
     <div class="infinite-list-wrapper" v-if="isMounted">
         <div v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled" infinite-scroll-immediate="false">
             <el-row v-for="i in rowCount" class="list-item" :gutter="5">
-                <el-col v-for="commodity in data.slice((i - 1) * 4, i * 4)" :key="commodity.cid" :span="4">
-                    <router-link :to="{ name: 'commodity', params: { cid: commodity.cid } }" class="a">
+                <el-col v-for="commodityOrRequest in data.slice((i - 1) * 4, i * 4)"
+                    :key="forRequest ? commodityOrRequest.rid : commodityOrRequest.cid" :span="4">
+                    <router-link
+                        :to="{ name: forRequest ? 'request' : 'commodity', params: forRequest ? { id: commodityOrRequest.rid } : { cid: commodityOrRequest.cid } }"
+                        class="a">
                         <el-card :body-style="{ padding: '.3rem' }" shadow="hover">
                             <div class="img-wrapper">
                                 <el-image loading="lazy" :src="
-                                    constant.NGINX_SERVER_HOST + '/' + commodity.cover" :fit="'fill'" class="cover">
+                                    constant.NGINX_SERVER_HOST + '/' + commodityOrRequest.cover" :fit="'fill'"
+                                    class="cover">
                                     <template #placeholder>
                                         <div class="img-slot-wrapper">
                                             <img src="/img/loading.svg" alt="正在加载" />
@@ -22,30 +26,31 @@
                             </div>
                             <div style="padding: 14px">
                                 <div class="priceAndQualityWrapper">
-                                    <span class="price">{{ "￥ " + commodity.price }}</span>
-                                    <el-tag class="quality" :type="getQualityClass(commodity.quality)">{{
-                                        commodity.quality
+                                    <span class="price">{{ "￥ " + commodityOrRequest.price }}</span>
+                                    <el-tag class="quality" :type="getQualityClass(commodityOrRequest.quality)">{{
+                                        commodityOrRequest.quality
                                     }}新</el-tag>
                                 </div>
                                 <div class="name-wrapper">
-                                    <span class="name">{{ commodity.name }}</span>
+                                    <span class="name"> {{ forRequest ? '[求购] ' : '' }} {{ commodityOrRequest.name }}</span>
                                 </div>
 
                                 <el-row class="seller-wrapper">
                                     <el-col :span="4">
-                                        <el-avatar :size="40" :src="constant.NGINX_SERVER_HOST + commodity.user.avatar" />
+                                        <el-avatar :size="40"
+                                            :src="constant.NGINX_SERVER_HOST + commodityOrRequest.user.avatar" />
                                     </el-col>
                                     <el-col :span="20" class="username-wrapper">
                                         <span class="nickname">{{
-                                            commodity.user.nickname
+                                            commodityOrRequest.user.nickname
                                         }}</span>
-                                        <span class="username">@{{ commodity.user.username }}</span>
+                                        <span class="username">@{{ commodityOrRequest.user.username }}</span>
                                     </el-col>
                                 </el-row>
                                 <div class="bottom">
-                                    <time class="launch-time">{{ commodity.time }}</time>
-                                    <span class="view-count" v-show="commodity.viewCount > 0">{{
-                                        commodity.viewCount
+                                    <time class="launch-time">{{ commodityOrRequest.time }}</time>
+                                    <span class="view-count" v-show="commodityOrRequest.viewCount > 0">{{
+                                        commodityOrRequest.viewCount
                                     }}人看过</span>
                                 </div>
 
@@ -86,7 +91,9 @@ import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 import { useLoadingStore, useCommodityListStore } from '@/stores';
 import { FetchGetWithToken } from '@/util/FetchUtil';
 import { storeToRefs } from 'pinia';
-
+import type Request from '@/interface/Request';
+const { url, searchMode } = storeToRefs(useCommodityListStore());
+const forRequest = ref(constant.SEARCH_FOR_REQUEST == searchMode.value)
 const props = defineProps({
     url: {
         type: String
@@ -101,7 +108,9 @@ const page = ref(0);
 const loading = ref(false);
 const noMore = ref(false);
 const disabled = computed(() => loading.value || noMore.value)
-const data = ref<Commodity[]>([])
+const commodity = ref<Commodity[]>([]);
+const request = ref<Request[]>([]);
+const data = ref<any[]>([]);
 const load = function () {
     loading.value = true
     page.value += 1;
@@ -129,11 +138,19 @@ const fetchcommodities = (PageNum: number) => {
                 loading.value = false;
             }
             if (refresh.value) {
-                data.value = [];
+                commodity.value = [];
+                request.value = [];
                 rowCount.value = 0;
             }
-            data.value = data.value.concat(result);
-            rowCount.value += Math.ceil(result.length / 4);
+            if (constant.SEARCH_FOR_REQUEST == searchMode.value) {
+                request.value = request.value.concat(result);
+                data.value = request.value;
+            } else {
+                commodity.value = commodity.value.concat(result);
+                data.value = commodity.value;
+            }
+            if (data.value)
+                rowCount.value += Math.ceil(result.length / 4);
             loading.value = false;
             if (PageNum == 1) {
                 //首次加载完成
@@ -163,7 +180,7 @@ const getQualityClass = (quality: number) => {
     }
 
 }
-const { url } = storeToRefs(useCommodityListStore());
+
 
 
 
@@ -310,5 +327,4 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     height: 100%;
-}
-</style>
+}</style>

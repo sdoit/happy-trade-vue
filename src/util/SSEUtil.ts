@@ -1,6 +1,7 @@
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import constant from '@/common/constant';
 import type Message from '@/interface/Message';
+import type { ChatUser } from '@/interface/UserMessage';
 import type { EpPropMergeType } from "element-plus/es/utils/vue/props/types";
 import { ElNotification } from 'element-plus'
 import { h } from 'vue';
@@ -50,7 +51,8 @@ const SSEInit = () => {
             title: rawDataArray[2],
             content: rawDataArray[3],
             url: rawDataArray[4],
-            falg: rawDataArray[5]
+            falg: rawDataArray[5],
+            contentType: rawDataArray[6],
         }
 
         if (message.type == constant.SSE_MESSAGE_ID_NOTIFY) {
@@ -70,14 +72,13 @@ const SSEInit = () => {
                 if (userMessageStore.chatUser.uid != message.url) {
                     userMessage!.unreadCount += 1
                 }
-                userMessage!.lastMessage = {
-                    content: message.content
-                } as UserMessage;
+                userMessage!.lastMessage = message.content
                 if (userMessageStore.messageMap.has(message.url)) {
                     userMessageStore.messageMap.get(message.url)!.push(
                         {
                             content: message.content,
                             uidSend: message.url,
+                            contentType: message.contentType,
                             uidReceive: useUserStore().user.uid,
                             read: false,
                             systemNotify: false
@@ -86,22 +87,16 @@ const SSEInit = () => {
             } else {
                 FetchGetWithToken("/api/user/" + message.url).then(data => {
                     const user: User = data;
-                    let newChatUser = {
-                        lastMessage: {
-                            mid: '',
-                            read: false,
-                            systemNotify: false,
-                            title: '',
-                            uidSend: user.uid,
-                            uidReceive: useUserStore().user.uid,
-                            time: '',
-                            content: message.content
-                        } as UserMessage,
-                        targetUser: user,
-                        unreadCount: 1
-                    }
-                    userMessageStore.chatUserMap.set(message.url, newChatUser);
-                    userMessageStore.chatUserList.push(newChatUser);
+                    let lastMessage = {
+                        lastMessage: message.content,
+                        contentType: message.contentType,
+                        uid: useUserStore().user.uid,
+                        userTarget: user,
+                    } as ChatUser;
+
+
+                    userMessageStore.chatUserMap.set(message.url, lastMessage);
+                    userMessageStore.chatUserList.push(lastMessage);
                 })
             }
 

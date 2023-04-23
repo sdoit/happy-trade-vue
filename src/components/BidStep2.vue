@@ -20,32 +20,35 @@
             <el-radio-group v-model="index" class="addr-radio-wrapper">
                 <el-radio :label="index" v-for="address, index in addressList" :key="address.aid" class="addr-radio">
                     <el-card>
-                        <el-space direction="vertical">
-                            <div>
-                                <el-space wrap>
-                                    <div>
-                                        <el-tag v-if="address.defaultAddress">默认</el-tag>
-                                    </div>
-                                    <div>
-                                        <span class="addr-name">{{ address.name }}</span>
-                                    </div>
-                                    <div :span="20">
-                                        <span class="addr-phone">{{ address.phone }}</span>
-                                    </div>
-                                </el-space>
-                            </div>
-                            <div>
-                                <div>
-                                    <span>{{
-                                        address.province + ' ' + address.city + ' ' + address.area + ' ' +
-                                        address.street
-                                        + ' ' + address.address
-                                    }} </span>
-                                </div>
-                            </div>
-                        </el-space>
-
-                    </el-card>
+              <div class="addr-title">
+                <div>
+                  <el-tag v-if="address.defaultAddress">默认</el-tag>
+                </div>
+                <div>
+                  <span class="addr-name">{{ address.name }}</span>
+                </div>
+                <div :span="20" style="align-self: flex-end !important; margin-bottom: .2rem;">
+                  <span class="addr-phone">{{ address.phone }}</span>
+                </div>
+              </div>
+              <div style="margin-top: .8rem">
+                <div>
+                  <span
+                    >{{
+                      address.province +
+                      " " +
+                      address.city +
+                      " " +
+                      address.area +
+                      " " +
+                      address.street +
+                      " " +
+                      address.address
+                    }}
+                  </span>
+                </div>
+              </div>
+            </el-card>
                 </el-radio>
                 <el-result v-if="addressList == undefined || addressList.length == 0" title="没有收货地址"
                     sub-title="你还有没设置收货地址，请先设置收货地址后再下单">
@@ -59,7 +62,7 @@
                         </svg>
                     </template>
                     <template #extra>
-                        <el-button type="primary">去设置</el-button>
+                        <el-button type="primary" @click="goAddress">去设置</el-button>
                     </template>
                 </el-result>
             </el-radio-group>
@@ -75,6 +78,7 @@ import constant from "@/common/constant";
 import { FetchGetWithToken, FetchPostWithToken } from "@/util/FetchUtil"
 import { useUserStore, useBidStepStore } from "@/stores"
 import { ElMessage } from "element-plus";
+import router from "@/router";
 // const props = defineProps(["commodity", 'bid', 'user']);
 // const emits = defineEmits(['checkLogin'])
 const userStore = useUserStore();
@@ -94,6 +98,9 @@ const fetchUserAddress = () => {
 // const getAddress = () => {
 //     return addressList.value[addr.value]
 // }
+const goAddress=()=>{
+    router.push({name:"home-address"})
+}
 watchEffect(() => {
     bidStepStore.address = addressList.value[index.value];
 })
@@ -182,5 +189,15 @@ onMounted(() => {
 .addr-phone {
     font-size: small;
     font-weight: 700;
+}
+.addr-title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.addr-title > * {
+  display: flex;
+  align-items: center;
+  margin-right: .5rem;
 }
 </style>

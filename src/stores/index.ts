@@ -200,7 +200,8 @@ export const useCommodityListStore = defineStore('commodityList', {
 
   state: () => {
     return {
-      url: ''
+      url: '',
+      searchMode: constant.SEARCH_FOR_COMMODITY,
     }
   },
   getters: {},
@@ -344,7 +345,7 @@ export const useUserMessageStore = defineStore('message', {
       let messages: UserMessage[] = this.messageMap.get(this.chatUser.uid) as UserMessage[];
       return await FetchPostWithToken("/api/message", JSON.stringify(message)).then(data => {
         //发送成功
-       
+
         this.sending = false;
         if (this.messageMap.has(this.chatUser.uid)) {
           messages[index].content = data;
@@ -463,7 +464,7 @@ export const useUserMessageStore = defineStore('message', {
         }
         this.unreadCount = count;
         //如果没有默认选中，就选中第一个
-        if (this.chatUser.uid == "0") {
+        if (this.chatUser.uid == "0" && this.chatUserList.length != 0) {
           this.chatUser = this.chatUserList[0].userTarget
           this.fetchMessage()
           return;

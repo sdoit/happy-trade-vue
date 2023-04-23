@@ -100,7 +100,8 @@
                     </el-col>
                 </el-row>
                 <el-divider v-if="order.orderRatingToSeller != undefined && order.orderRatingToBuyer != undefined" />
-                <el-row style="display: flex; justify-content: space-between;" v-if="order.orderRatingToSeller != undefined">
+                <el-row style="display: flex; justify-content: space-between;"
+                    v-if="order.orderRatingToSeller != undefined">
                     <el-col :span="12" class="seller-head">
                         <div>
                             <el-avatar :src="constant.NGINX_SERVER_HOST + userStore.user.avatar"></el-avatar>
@@ -179,13 +180,46 @@
 
                     <div class="order-bottom">
                         <el-button type="primary" size="small" @click="toChat">联系卖家</el-button>
-                        <el-button type="warning" size="small" v-if="order.status == 1">退货申请</el-button>
                         <el-button type="success" @click="toSnapShot" size="small">交易快照</el-button>
+                        <el-button type="warning" size="small" v-if="order.status == 0"
+                            @click="returnVisible = true">退货申请</el-button>
                         <el-button type="primary" size="small" v-if="order.status == 0"
                             :disabled="order.shipId == undefined" @click="toConfirmReceipt">确定收货</el-button>
                     </div>
                 </div>
 
+            </el-card>
+            <el-card class="order-return" v-if="order.status == constant.ORDER_STATUS_REFUNDING">
+                <div
+                    v-if="order.status == constant.ORDER_STATUS_REFUNDING && order?.orderReturn?.agree == true && order.orderReturn.shipId == undefined && order.orderReturn.completed == undefined">
+                    <p>卖家同意退货</p>
+                    <p>回寄地址：</p>
+                    <div class="addr-card" style="margin-top: 1rem;">
+                        <div class="address-wrapper">
+                            <div>
+                                <span class="address-name">{{ order?.orderReturn?.userAddress?.name }}</span>
+                                <span class="address-phone">{{ order?.orderReturn?.userAddress?.phone }}</span>
+                            </div>
+                            <div class="address-detail-wrapper">
+                                <span class="address">{{
+                                    order?.orderReturn?.userAddress?.province + ' ' + order?.orderReturn?.userAddress?.city
+                                    + ' ' +
+                                    order?.orderReturn?.userAddress?.area + ' ' +
+                                    order?.orderReturn?.userAddress?.street
+                                    + ' ' + order?.orderReturn?.userAddress?.address
+                                }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p>已回寄，等待卖家回应</p>
+                    <p>回寄运单号：{{ order.orderReturn.shipId }}</p>
+                </div>
+                <div class="order-bottom"
+                    v-if="order.status == constant.ORDER_STATUS_REFUNDING && order?.orderReturn?.agree == true && order.orderReturn.shipId == undefined && order.orderReturn.completed == undefined">
+                    <el-button size="small" type="primary" @click="returnShipVisible = true">填写回寄快递单号</el-button>
+                </div>
             </el-card>
         </div>
         <div>
@@ -281,6 +315,26 @@
                     </el-col>
                 </el-row>
             </el-dialog>
+
+            <el-dialog v-model=" returnVisible " width="30rem" title="退货申请">
+                <div style="margin-bottom: 1rem;">
+                    <span style="color: gray;">建议与卖家商议后再使用本功能</span>
+                </div>
+                <el-input v-model=" reason " placeholder="请输入退货原因"></el-input>
+
+
+                <template #footer>
+                    <el-button type="primary" @click=" returnCommodity ">确认</el-button>
+                    <el-button type="danger" @click=" returnVisible = false ">取消</el-button>
+                </template>
+            </el-dialog>
+            <el-dialog v-model=" returnShipVisible " title="填写回寄运单号" width="30rem">
+                <el-input v-model=" returnShipId " placeholder="请填写回寄运单号"></el-input>
+                <template #footer>
+                    <el-button type="primary" @click=" confirmReturnShipId ">确认</el-button>
+                    <el-button type="danger" @click=" returnShipVisible = false ">取消</el-button>
+                </template>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -294,6 +348,7 @@ import type Order from '@/interface/Order';
 import { useUserStore, usePathStore, useLoadingStore, useCaptchaStore, useUserMessageStore } from '@/stores';
 import { ElMessage } from 'element-plus';
 import type User from "@/interface/User";
+import { storeToRefs } from "pinia";
 const userMessageStore = useUserMessageStore();
 const cptchaStore = useCaptchaStore();
 const loadingStore = useLoadingStore();
@@ -361,6 +416,8 @@ const getOrderStatusName = (order: Order) => {
             return order.shipTime ? '等待收货' : '等待发货'
         case constant.ORDER_STATUS_REFUNDED:
             return '已退款'
+        case constant.ORDER_STATUS_REFUNDING:
+            return '退款中'
         case constant.ORDER_STATUS_COMPLETED:
             return '已完成'
     }
@@ -379,6 +436,34 @@ const getOrderStatusClass = (order: Order) => {
 }
 const toSnapShot = () => {
     router.push({ name: "commodity-snapshot", params: { "ssid": order.value!.ssid } });
+}
+const returnVisible = ref(false);
+//退货原因
+const reason = ref();
+//退货
+const returnCommodity = () => {
+    if (reason.value.trim() == '') {
+        ElMessage.error("请输入退货原因");
+        return;
+    }
+    FetchPostWithToken("/api/return", JSON.stringify({
+        oid: order.value?.oid,
+        reason: reason.value
+    })).then(data => {
+        ElMessage.success("已发起退货申请，请耐心等待卖家响应");
+        returnVisible.value = false;
+        order.value!.status = constant.ORDER_STATUS_REFUNDING;
+    })
+}
+const returnShipVisible = ref(false);
+const returnShipId = ref();
+const confirmReturnShipId = () => {
+    FetchPostWithToken("/api/return/ship", JSON.stringify({
+        oid: order.value?.oid,
+        shipId: returnShipId.value
+    })).then(data => {
+        ElMessage.success("回寄单号填写成功，请耐心等待卖家回应");
+    })
 }
 </script>
 <style scoped>
@@ -581,5 +666,10 @@ const toSnapShot = () => {
 
 .status-refunded {
     color: green !important;
+}
+
+.order-return p {
+    margin-top: 1rem;
+    font-size: .9rem;
 }
 </style>
